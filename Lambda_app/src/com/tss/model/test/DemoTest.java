@@ -1,0 +1,17 @@
+package com.tss.model.test;
+
+import com.tss.model.IDemo;
+
+public class DemoTest {
+
+	public static void main(String[] args) {
+
+		IDemo object1 = (number) ->
+
+		System.out.println("Function interfaces " + number);
+
+		object1.display(12);
+
+	}
+
+}

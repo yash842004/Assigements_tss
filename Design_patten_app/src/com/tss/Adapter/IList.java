@@ -1,0 +1,6 @@
+package com.tss.Adapter;
+
+public interface IList {
+	public IItem item();
+
+}

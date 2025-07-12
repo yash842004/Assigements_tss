@@ -1,0 +1,17 @@
+package com.tss.builderTest;
+
+import com.tss.builder.Home;
+import com.tss.builder.Home.Requirments;
+
+public class HomeTest {
+
+	public static void main(String[] args) {
+
+		Requirments home1 = new Home.Requirments(1, 3, 1);
+		System.out.println();
+		Requirments home2 = new Home.Requirments(2, 2, 2)
+									.notImportant(2);
+
+	}
+
+}

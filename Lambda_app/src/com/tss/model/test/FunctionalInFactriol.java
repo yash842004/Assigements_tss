@@ -1,0 +1,22 @@
+package com.tss.model.test;
+
+import java.util.function.Function;
+
+import com.tss.model.IFactorial;
+
+public class FunctionalInFactriol {
+
+	public static void main(String[] args) {
+
+		
+		Function<Integer> factorial = (number) -> {
+			int result = 1;
+			for (int i = 1; i <= number; i++) {
+				result *= i;
+			}
+			return result;
+		};
+
+	}
+
+}

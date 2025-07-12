@@ -1,0 +1,34 @@
+package com.tss.ecommers;
+
+import java.util.Scanner;
+
+public class InvoiceTest {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter Invoice ID: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("Enter Description: ");
+        String description = scanner.nextLine();
+
+        System.out.print("Enter Cost: ");
+        double cost = scanner.nextDouble();
+
+        System.out.print("Enter Discount Percent: ");
+        double discountPercent = scanner.nextDouble();
+
+        InvoiceData data = new InvoiceData(id, description, cost, discountPercent);
+        TaxCalculator taxCalculator = new DefaultTaxCalculator();
+        DiscountCalculator discountCalculator = new PercentageDiscountCalculator();
+
+        WithOutInvoice invoice = new WithOutInvoice(data, taxCalculator, discountCalculator);
+        InvoicePrinter printer = new InvoicePrinter();
+
+        printer.print(invoice);
+
+        scanner.close();
+    }
+}

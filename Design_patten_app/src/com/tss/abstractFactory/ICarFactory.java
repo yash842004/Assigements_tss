@@ -1,0 +1,6 @@
+package com.tss.abstractFactory;
+
+public interface ICarFactory {
+	 ICar makeCar();
+
+}

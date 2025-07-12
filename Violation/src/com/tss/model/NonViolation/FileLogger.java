@@ -1,0 +1,11 @@
+package com.tss.model.NonViolation;
+
+public class FileLogger implements ILogger {
+
+	@Override
+	public void log(String err) {
+
+		System.out.println("This is file logger " + err);
+	}
+
+}

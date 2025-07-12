@@ -1,0 +1,7 @@
+package com.tss.adapterTest;
+
+public class ShoppingTest {
+	
+	
+
+}

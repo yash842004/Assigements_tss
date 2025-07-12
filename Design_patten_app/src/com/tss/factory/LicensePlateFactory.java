@@ -1,0 +1,36 @@
+package com.tss.factory;
+
+public class LicensePlateFactory {
+
+	private static LicensePlateFactory instance;
+
+	private LicensePlateFactory() {
+		System.out.println("LicensePlateFactory instance created.");
+	}
+
+	public static synchronized LicensePlateFactory getInstance() {
+		if (instance == null) {
+			instance = new LicensePlateFactory();
+		}
+		return instance;
+	}
+
+	public IGenerateLicenseNumber createGenerator(Vehical_Enum vehicleType) {
+		if (vehicleType == null) {
+			return null;
+		}
+
+		switch (vehicleType) {
+		case TWO_WHEELER:
+			return new TwoWheelerPlate();
+		case FOUR_WHEELER:
+			return new FourWheelerPlate();
+		case HEAVY_VEHICLE:
+			return new HeavyVehicalPlate();
+		default:
+
+			return null;
+		}
+	}
+
+}

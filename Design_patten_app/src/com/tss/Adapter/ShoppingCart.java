@@ -1,0 +1,55 @@
+package com.tss.Adapter;
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ShoppingCart {
+	private List<IItem> cartItems;
+
+	public ShoppingCart() {
+		this.cartItems = new ArrayList<>();
+	}
+
+	public void addItem(IItem item) {
+		if (item != null) {
+			this.cartItems.add(item);
+			System.out.println("Added: " + item.getItemName() + " to cart.");
+		}
+	}
+
+	public void removeAllItems() {
+		this.cartItems.clear();
+		System.out.println("All items removed from cart.");
+	}
+
+	public List<IItem> getCartItems() {
+		return new ArrayList<>(cartItems); // Return a copy
+	}
+
+	public double calculateTotalPrice() {
+		double totalPrice = 0;
+		for (IItem item : cartItems) {
+			totalPrice += item.getPrice();
+		}
+		return totalPrice;
+	}
+
+	public void displayCartContents() {
+		if (cartItems.isEmpty()) {
+			System.out.println("Shopping cart is empty.");
+			return;
+		}
+		System.out.println("\n--- Shopping Cart Contents ---");
+		System.out.println("Item Name\tPrice");
+		System.out.println("--------------------");
+		for (IItem item : cartItems) {
+			System.out.printf("%-15s%.2f%n", item.getItemName(), item.getPrice());
+		}
+		System.out.println("--------------------");
+		System.out.printf("Total\t\t%.2f%n", calculateTotalPrice());
+		System.out.println("-----------------------------\n");
+	}
+
+}

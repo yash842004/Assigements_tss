@@ -1,0 +1,20 @@
+package com.tss.singeleton;
+
+public class DatabaseConnection {
+
+	private static DatabaseConnection connection = null;
+
+	private DatabaseConnection() {
+
+	}
+
+	public static DatabaseConnection instance() {
+
+		if (connection == null) {
+			connection = new DatabaseConnection();
+		}
+
+		return connection;
+	}
+
+}

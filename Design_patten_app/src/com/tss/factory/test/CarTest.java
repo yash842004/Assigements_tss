@@ -1,0 +1,18 @@
+package com.tss.factory.test;
+
+import com.tss.factory.CarFactory;
+import com.tss.factory.CarType;
+import com.tss.factory.ICar;
+
+public class CarTest {
+
+	public static void main(String[] args) {
+
+		CarFactory car = new CarFactory();
+
+		ICar maruti = CarFactory.makeCars(CarType.Maruti);
+		maruti.start();
+		maruti.stop();
+	}
+
+}

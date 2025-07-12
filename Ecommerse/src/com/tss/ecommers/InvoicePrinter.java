@@ -1,0 +1,16 @@
+package com.tss.ecommers;
+
+public class InvoicePrinter {
+
+    public void print(WithOutInvoice invoice) {
+        InvoiceData data = invoice.getData();
+
+        System.out.printf("%-5s %-20s %-10s %-10s %-20s %-15s%n",
+                "ID", "Description", "Amount", "Tax(%)", "Discount Percentage", "Final Amount");
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.printf("%-5d %-20s %-10.2f %-10.2f %-20.2f %-15.2f%n",
+                data.getId(), data.getDescription(), data.getCost(),
+                DefaultTaxCalculator.TAX_PERCENT, data.getDiscountPercent(),
+                invoice.calculateFinalAmount());
+    }
+}
