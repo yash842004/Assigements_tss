@@ -1,0 +1,48 @@
+package com.tss.factory.test;
+
+import java.util.Scanner;
+
+import com.tss.factory.IGenerateLicenseNumber;
+
+public class NumberPlateTest {
+
+	public static void main(String[] args) {
+
+		Scanner scanner = new Scanner(System.in);
+
+        // Get the single instance of the LicensePlateFactory
+		IGenerateLicenseNumber factory = IGenerateLicenseNumber.getInstance();
+
+        System.out.println("--- RTD License Plate Generation System (with Enum, Singleton, Factory) ---");
+
+        while (true) {
+            System.out.println("\nEnter vehicle type (TwoWheeler, FourWheeler, HeavyVehicle) or 'exit' to quit:");
+            System.out.print("Your input: ");
+            String vehicleTypeInput = scanner.nextLine();
+
+            if (vehicleTypeInput.equalsIgnoreCase("exit")) {
+                System.out.println("Exiting application. Goodbye!");
+                break;
+            }
+
+            Vehical_Enum vehicleType = Vehical_Enum.fromString(vehicleTypeInput);
+
+            if (vehicleType != null) {
+            	IGenerateLicenseNumber generator = factory.createGenerator(vehicleType);
+                
+                if (generator != null) { 
+                    String licensePlate = generator.generatePlate();
+                    System.out.println("Generated License Plate for " + vehicleType.name().replace("_", " ") + ": " + licensePlate);
+                } else {
+                    System.out.println("Error: Could not create generator for " + vehicleType.name());
+                }
+            } else {
+                System.out.println("Invalid vehicle type: '" + vehicleTypeInput + "'. Please enter 'TwoWheeler', 'FourWheeler', or 'HeavyVehicle'.");
+            }
+        }
+
+        
+    
+	}
+
+}

@@ -1,0 +1,68 @@
+package com.tss.builder;
+
+public class Home {
+	private int bedRooms;
+	private int bathRooms;
+	private int drawRooms; // optional
+	private int hall;
+
+	public int getBedRooms() {
+		return bedRooms;
+	}
+
+	public int getBathRooms() {
+		return bathRooms;
+	}
+
+	public int getDrawRooms() {
+		return drawRooms;
+	}
+
+	public int getHalls() {
+		return hall;
+	}
+
+	public Home(Requirments requirments) {
+		super();
+		this.bedRooms = bedRooms;
+		this.bathRooms = bathRooms;
+		this.drawRooms = drawRooms;
+		this.hall = hall;
+	}
+
+	public static class Requirments {
+
+		private int bedRooms;
+		private int bathRooms;
+		private int hall;
+
+		private int DrawRooms; // optional
+
+		public Requirments(int bedRooms, int bathRooms, int hall) {
+
+			if (bedRooms == 0 && bathRooms == 0 && hall == 0) {
+				System.out.println("Required things are remaining :{");
+			}
+			System.out.println("Ther are " + this.bedRooms + " Bed Rooms");
+			this.bedRooms = bedRooms;
+			System.out.println("Ther are " + this.bathRooms + " Bed Rooms");
+			this.bathRooms = bathRooms;
+			System.out.println("Ther are " + this.hall + " Bed Rooms");
+			this.hall = hall;
+
+		}
+
+		public Requirments notImportant(int DrawRooms) {
+			this.DrawRooms = DrawRooms;
+			System.out.println("There are " + DrawRooms + " DrawRooms");
+			return this;
+
+		}
+
+		public Home build() {
+			return new Home(this);
+		}
+
+	}
+
+}

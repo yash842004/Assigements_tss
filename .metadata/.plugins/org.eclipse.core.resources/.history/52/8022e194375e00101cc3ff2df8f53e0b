@@ -1,0 +1,6 @@
+package com.tss.facade;
+
+public interface IMenu {
+
+	void dispalyMenu();
+}

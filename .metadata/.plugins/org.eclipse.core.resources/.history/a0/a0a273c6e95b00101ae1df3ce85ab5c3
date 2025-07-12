@@ -1,0 +1,8 @@
+package com.tss.model.violation;
+
+public class PaymentTest {
+
+	public static void main(String args[]) {
+
+	}
+}

@@ -1,0 +1,19 @@
+package com.tss.Adapter;
+
+public class Biscute implements IItem {
+
+	@Override
+	public String getItemName() {
+		// TODO Auto-generated method stub
+		return name;
+	}
+
+	@Override
+	public double getPrice() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	
+	
+}

@@ -1,0 +1,5 @@
+package com.tss.furniture;
+
+public class VictorianFurnitureFactory {
+
+}

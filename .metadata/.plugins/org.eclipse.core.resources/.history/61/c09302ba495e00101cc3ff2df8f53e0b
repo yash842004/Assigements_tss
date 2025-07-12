@@ -1,0 +1,17 @@
+package com.tss.decorater;
+
+public abstract class CarServiceDecorator implements ICarService {
+    protected ICarService carObj; // Renamed from carObj to decoratedCarService for clarity
+
+    // Constructor to wrap a CarService object
+    public CarServiceDecorator(ICarService carObj) {
+        this.carObj = carObj;
+    }
+
+    // Default implementation of getCost() that delegates to the wrapped object
+    // This allows decorators to extend or override the cost calculation.
+    @Override
+    public double getCost() {
+        return carObj.getCost();
+    }
+}

@@ -1,0 +1,9 @@
+package com.tss.singeleton;
+
+public class DatabaseConnection {
+	
+	private DatabaseConnection() {
+		
+	}
+
+}

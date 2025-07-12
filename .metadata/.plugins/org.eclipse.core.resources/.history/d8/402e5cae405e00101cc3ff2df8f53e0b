@@ -1,0 +1,7 @@
+package com.tss.Adapter;
+
+public class Counter {
+	IItem biscute = new Biscute();
+	biscute.getName();
+
+}

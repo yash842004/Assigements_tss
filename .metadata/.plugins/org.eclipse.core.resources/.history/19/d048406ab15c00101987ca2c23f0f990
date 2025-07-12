@@ -1,0 +1,18 @@
+package com.tss.model.test;
+
+import java.util.function.BiConsumer;
+
+import com.tss.model.IAdditionNumber;
+
+public class AdditionNumberTest {
+
+	public static void main(String[] args) {
+
+		BiConsumer<Integer,Integer> number = (number1, number2) -> {
+			return number1 + number2;
+		};
+
+		int result = number.addNumber(2, 2);
+		System.out.println(result);
+	}
+}

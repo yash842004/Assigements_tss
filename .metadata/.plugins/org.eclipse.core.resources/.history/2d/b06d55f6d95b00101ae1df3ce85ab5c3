@@ -1,0 +1,6 @@
+package com.tss.model.violation;
+
+public interface IBird {
+	void getColor();
+
+}

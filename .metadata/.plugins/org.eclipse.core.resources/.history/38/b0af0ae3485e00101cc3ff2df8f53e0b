@@ -1,0 +1,15 @@
+package com.tss.decorater;
+
+public abstract class CarServiceDecorator implements ICarService{
+
+	ICarService carobj = new CarServiceDecorator();
+
+	public  CarServiceDecorator(){
+		
+		return carobj.getCost();
+
+	}
+	
+}
+
+}

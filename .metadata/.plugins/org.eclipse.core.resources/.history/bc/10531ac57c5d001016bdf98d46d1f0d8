@@ -1,0 +1,13 @@
+package com.tss.abstractFactory;
+
+public class MarutiFactory implements ICarFactory{
+
+
+
+	@Override
+	public void  makeCar() {
+		System.out.println("Making the maruti car");	
+			
+	}
+
+}

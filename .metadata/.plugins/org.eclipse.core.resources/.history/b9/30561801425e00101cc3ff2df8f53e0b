@@ -1,0 +1,7 @@
+package com.tss.Adapter;
+
+public interface IItem {
+	void  getName();
+	void getPrice();
+
+}

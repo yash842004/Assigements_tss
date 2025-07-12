@@ -1,0 +1,5 @@
+package com.tss.decorater;
+
+public class CarServiceDecorator {
+
+}

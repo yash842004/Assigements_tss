@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="java.util.Scanner"/>
+    <fullyQualifiedTypeName name="com.tss.Model.Test.Number"/>
+    <fullyQualifiedTypeName name="com.tss.Model.inheretance.model.Circle"/>
+    <fullyQualifiedTypeName name="com.tss.Model.inheretance.model.IDemo"/>
+    <fullyQualifiedTypeName name="java.lang.System"/>
+    <fullyQualifiedTypeName name="jdk.internal.org.jline.terminal.TerminalBuilder.SystemOutput"/>
+    <fullyQualifiedTypeName name="com.tss.model.LoanEligible"/>
+    <fullyQualifiedTypeName name="com.tss.factory.CarType"/>
+    <fullyQualifiedTypeName name="com.tss.builder.Home.Requirments"/>
+</qualifiedTypeNameHistroy>

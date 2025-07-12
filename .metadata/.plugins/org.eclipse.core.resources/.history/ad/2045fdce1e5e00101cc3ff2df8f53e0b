@@ -1,0 +1,20 @@
+package com.tss.prototype;
+
+public class Car extends Vehical {
+
+	private String type;
+	public Car(String model, String color, String engine) {
+		super(model, color, engine);
+		this.type = type;
+
+	}
+
+	@Override
+	public void drive() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+}

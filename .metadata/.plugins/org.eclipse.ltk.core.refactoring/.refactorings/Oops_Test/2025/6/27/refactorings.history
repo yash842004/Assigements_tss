@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename type &apos;com.tss.Model.inheretanceTest.NewShape&apos; to &apos;NewShapeTest&apos;&#x0D;&#x0A;- Original project: &apos;Oops_Test&apos;&#x0D;&#x0A;- Original element: &apos;com.tss.Model.inheretanceTest.NewShape&apos;&#x0D;&#x0A;- Renamed element: &apos;com.tss.Model.inheretanceTest.NewShapeTest&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" description="Rename type &apos;NewShape&apos;" flags="589830" id="org.eclipse.jdt.ui.rename.type" input="/src&lt;com.tss.Model.inheretanceTest{NewShape.java[NewShape" matchStrategy="1" name="NewShapeTest" qualified="false" references="true" similarDeclarations="false" stamp="1751274762410" textual="false" version="1.0"/>
+</session>

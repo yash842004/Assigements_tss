@@ -1,0 +1,16 @@
+package com.tss.decorater;
+
+public class WheelAlign extends CarServiceDecorator {
+
+    // Constructor chains the decoration
+    public WheelAlign(ICarService obj) {
+        super(obj); // Calls the constructor of the abstract decorator to wrap the object
+    }
+
+    @Override
+    public double getCost() {
+        // Add the cost of Wheel Alignment to the cost of the decorated service
+        // Assuming Wheel Alignment adds 400.00 to the base cost or previous decoration
+        return 400.00 + super.getCost(); // "return 400 + super.getCost()" as in the diagram
+    }
+}

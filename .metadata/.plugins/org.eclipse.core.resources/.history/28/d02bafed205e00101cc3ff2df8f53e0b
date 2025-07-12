@@ -1,0 +1,40 @@
+package com.tss.prototype;
+
+public class Car extends Vehical {
+
+	private String carType;
+
+	@Override
+	public String toString() {
+		try {
+			return "Car [carType=" + carType + ", getCarType()=" + getCarType() + ", getModel()=" + getModel()
+					+ ", getColor()=" + getColor() + ", getEngine()=" + getEngine() + ", cloan()=" + cloan()
+					+ ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString()
+					+ "]";
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return carType;
+	}
+
+	public String getCarType() {
+		return carType;
+	}
+
+	public void setCarType(String carType) {
+		this.carType = carType;
+	}
+
+	public Car(String model, String color, Engine engine, String carType) {
+		super(model, color, engine);
+		this.carType = carType;
+
+	}
+
+	@Override
+	public void drive() {
+System.out.println("Driving the "+getColor()+ "engine="+getEngine()+" type "+getCarType()+" car");
+	}
+
+}

@@ -1,0 +1,15 @@
+package com.tss.model.NonViolation;
+
+public class ShoppingCart {
+
+	private IPayment payment;
+
+	public ShoppingCart(IPayment payment) {
+		super();
+		this.payment = payment;
+	}
+	public void checkout(int amount) {
+		payment.pay(amount);
+	}
+	
+}

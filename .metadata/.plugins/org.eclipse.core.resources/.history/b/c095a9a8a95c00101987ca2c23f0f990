@@ -1,0 +1,22 @@
+package com.tss.model.test;
+
+import com.tss.model.IFactorial;
+
+public class FactorialTest {
+
+	public static void main(String[] args) {
+
+		IFactorial factorial = (number) -> {
+			for (int i = 1; i < number; i++) {
+				number = 1;
+
+				number = (number * (i));
+			}
+			System.out.println(number);
+		};
+
+		factorial.factorial(5);
+
+	}
+
+}

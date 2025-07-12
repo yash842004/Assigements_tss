@@ -1,0 +1,38 @@
+package com.tss.prototype;
+
+import java.io.Serializable;
+
+public class Vehical implements Cloneable , Serializable{
+	private String model;
+	private String color;
+	private String engine;
+	
+	public Vehical(String model, String color, String engine) {
+		
+		super();
+		this.model = model;
+		this.color = color;
+		this.engine = engine;
+	}
+	public String getModel() {
+		return model;
+	}
+	public String getColor() {
+		return color;
+	}
+	public String getEngine() {
+		return engine;
+	}
+	public void setModel(String model) {
+		this.model = model;
+	}
+	public void setColor(String color) {
+		this.color = color;
+	}
+	public void setEngine(String engine) {
+		this.engine = engine;
+	}
+
+	
+
+}

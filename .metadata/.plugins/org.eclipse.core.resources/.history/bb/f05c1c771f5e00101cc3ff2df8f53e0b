@@ -1,0 +1,19 @@
+package com.tss.prototype;
+
+public class Bike extends Vehical{
+	
+	private String typeBike;
+
+	public Bike(String model, String color, String engine, String typeBike) {
+		super(model, color, engine);
+		this.typeBike = typeBike;
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public void drive() {
+		System.out.println("Driving the "+getColor()+"type "+getModel()+" car");
+		
+	}
+
+}

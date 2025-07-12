@@ -1,0 +1,26 @@
+package com.tss.prototype;
+
+public class Car extends Vehical {
+
+	private String carType;
+
+	public String getCarType() {
+		return carType;
+	}
+
+	public void setCarType(String carType) {
+		this.carType = carType;
+	}
+
+	public Car(String model, String color, String engine, String carType) {
+		super(model, color, engine);
+		this.carType = carType;
+
+	}
+
+	@Override
+	public void drive() {
+System.out.println("Driving the "+getColor()+"type "+getModel()+" car");
+	}
+
+}

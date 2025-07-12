@@ -11,7 +11,8 @@ public class ServiceTest {
 	public static void main(String[] args) {
 
 		Scanner scanner = new Scanner(System.in);
-        ICarService currentService = new CarInspection(); 
+		CarInspection currentService = new CarInspection(); 
+		OilChange change = new OilChange();
 
 		System.out.println("--- Car Service Selector ---");
 		System.out.println("Base Service: Car Inspection (Cost: $" + currentService.getCost() + ")");

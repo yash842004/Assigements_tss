@@ -1,0 +1,18 @@
+package com.tss.model;
+
+public class LoanEligible {
+
+	private String name;
+	private int age;
+	private int income;
+	private int creditScore;
+
+	public LoanEligible(String name, int age, int income, int creditScore) {
+		super();
+		this.name = name;
+		this.age = age;
+		this.income = income;
+		this.creditScore = creditScore;
+	}
+
+}

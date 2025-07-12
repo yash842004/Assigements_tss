@@ -1,0 +1,36 @@
+package com.tss.Model;
+
+import java.text.ParseException;
+import java.util.Scanner;
+
+public class MainClassForEmp {
+
+	private static final String Employeeread = null;
+
+	public static void main(String[] args) throws ParseException {
+
+
+		Scanner scanner = new Scanner(System.in);
+		Employee emp1 = new Employee();
+
+		
+		
+		private static Employeeread(employee) {
+			System.out.println(" Enter the id of employee: ");
+			emp1.setEmpId(scanner.nextInt());
+			scanner.nextLine();
+			System.out.println(" Enter the Name of employee: ");
+			emp1.setName(scanner.nextLine());
+			System.out.println(" Enter the Joinint Date of employee in formate of yyyy-mm-dd ");
+			emp1.setJoininDate(scanner.nextLine());
+			System.out.println(" Enter the Salary of employee: ");
+			emp1.setSalary(scanner.nextLong());
+			emp1.display();
+			return Employee = new employee();
+			
+			
+		}
+	
+	}
+
+}

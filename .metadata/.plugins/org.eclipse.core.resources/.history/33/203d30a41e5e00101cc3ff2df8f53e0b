@@ -1,0 +1,12 @@
+package com.tss.prototype;
+
+public class Car extends Vehical {
+
+	public Car(String model, String color, String engine) {
+		super(model, color, engine);
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+}

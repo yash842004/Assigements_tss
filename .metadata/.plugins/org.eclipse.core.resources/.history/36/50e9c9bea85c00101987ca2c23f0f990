@@ -1,0 +1,19 @@
+package com.tss.model.test;
+
+import com.tss.model.IFactorial;
+
+public class FactorialTest {
+
+	public static void main(String[] args) {
+
+		float factorial = (number) -> {
+			for (int i = 1; i < number; i++) {
+
+				factorial = (number * (number - 1));
+			}
+			return factorial;
+		};
+
+	}
+
+}

@@ -1,0 +1,26 @@
+package com.tss.Adapter;
+
+public class Biscute implements IItem {
+
+	  private String name;
+	    private double price;
+	
+    public  Biscuit(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+	public String getItemName() {
+		// TODO Auto-generated method stub
+		return name;
+	}
+
+	@Override
+	public double getPrice() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	
+	
+}

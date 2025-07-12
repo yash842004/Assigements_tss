@@ -1,0 +1,43 @@
+package com.tss.abstractFactory.test;
+
+import java.util.Scanner;
+
+import com.tss.abstractFactory.ICar;
+import com.tss.abstractFactory.ICarFactory;
+import com.tss.abstractFactory.MarutiFactory;
+import com.tss.abstractFactory.TataFactory;
+
+public class CarTest {
+
+	public static void main(String[] args) {
+
+		ICarFactory marutiFactory = new MarutiFactory();
+		ICar maruti = marutiFactory.makeCar();
+		ICarFactory tataFactory = new TataFactory();
+		ICar tata = marutiFactory.makeCar();
+		ICarFactory mahndraFactory = new MahindraFactory();
+		ICar mahindra = mahindraFactory.makeCar();
+		
+		maruti.start();
+		maruti.stop();
+		
+		Scanner scanner = new Scanner(System.in);
+		int choise = scanner.nextInt();
+		
+		switch(choise) {
+		
+		case 1:{
+			marutiFactory.makeCar();
+		}
+		case 2:{
+			tataFactory.makeCar();
+		}
+		case 3:{
+			
+		}
+		}
+		
+		
+	}
+
+}

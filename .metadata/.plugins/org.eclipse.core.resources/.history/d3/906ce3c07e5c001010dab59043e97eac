@@ -1,0 +1,11 @@
+package com.tss.model.violation;
+
+public class TaxTest {
+
+	public static void main(String[] args) {
+
+		TaxCalculator tax = new TaxCalculator();
+		tax.calculateTax(100, 21);
+	}
+
+}

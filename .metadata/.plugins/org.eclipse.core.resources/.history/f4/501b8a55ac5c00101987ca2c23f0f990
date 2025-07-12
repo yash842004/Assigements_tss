@@ -1,0 +1,5 @@
+package com.tss.model;
+@FunctionalInterface
+interface IAdditionNumber {
+    int addNumber(int number1, int number2);
+}

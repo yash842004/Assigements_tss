@@ -1,0 +1,17 @@
+package com.tss.decorater;
+
+public class WheelAlign implements ICarService{
+	
+	ICarService obj = new WheelAlign();
+
+	public void WheelAlign() {
+//		ICarService obj = new WheelAlign();
+	}
+
+
+
+	@Override
+	public double getCost() {
+		// TODO Auto-generated method stub
+		return obj.getCost() ;
+	}}

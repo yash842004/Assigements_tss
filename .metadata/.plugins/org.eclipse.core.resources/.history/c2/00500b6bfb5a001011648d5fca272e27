@@ -1,0 +1,116 @@
+package collection_app.com.tss.model;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Collections;
+
+public class MusicTest {
+	Scanner scanner = new Scanner(System.in);
+
+	static List<Song> list = new ArrayList<>();
+	static Song songs = new Song(null, null, 0);
+
+	public static void main(String[] args) {
+
+		boolean condition = true;
+		while (condition) {
+
+			System.out.println("Enter 1 for add songs");
+			System.out.println("Enter 2 for remove songs");
+			System.out.println("Enter 3 for search song");
+			System.out.println("Enter 4 for Display songs");
+			System.out.println("Enter 5 for shuffling the songs");
+
+			Scanner scanner = new Scanner(System.in);
+			System.out.println("Enter the choose");
+			int number = scanner.nextInt();
+
+			switch (number) {
+
+			case 1:
+				addSong(scanner);
+				break;
+			case 2:
+				removeSong(scanner);
+				break;
+			case 3:
+				searchTitle(scanner);
+				break;
+			case 4:
+				displayAllSongs();
+				break;
+			case 5:
+				shufflePlaylist();
+				break;
+			}
+
+		}
+
+	}
+
+	public static void addSong(Scanner scanner) {
+
+		System.out.println("Enter the title of song");
+		String title = scanner.nextLine();
+		songs.setTitle(title);
+		System.out.println("Enter the artist of the song");
+		String artist = scanner.nextLine();
+		int duration = 120;
+		list.add(new Song(title, artist, duration));
+		System.out.println("Song added successfully");
+
+	}
+
+	public static void removeSong(Scanner scanner) {
+		System.out.println("Enter the title of the song to remove:");
+		String title = scanner.next();
+		boolean removed = false;
+
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i).getTitle().equalsIgnoreCase(title)) {
+				list.remove(i);
+				removed = true;
+				System.out.println("Song removed successfully.");
+				break;
+			}
+		}
+
+		if (!removed) {
+			System.out.println("Song not found.");
+		}
+	}
+
+	public static void searchTitle(Scanner scanner) {
+		System.out.println("Enter the title of the song to search:");
+		String title = scanner.next();
+		boolean found = false;
+
+		for (Song song : list) {
+			if (song.getTitle().equalsIgnoreCase(title)) {
+				System.out.println("Song found: " + song);
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			System.out.println("Song not found.");
+		}
+	}
+
+	public static void displayAllSongs() {
+
+		for (Song i : list) {
+			System.out.println(i);
+		}
+	}
+
+	public static void shufflePlaylist() {
+
+		Collections.shuffle(list);
+		System.out.println("Suffled successfully");
+
+	}
+
+}

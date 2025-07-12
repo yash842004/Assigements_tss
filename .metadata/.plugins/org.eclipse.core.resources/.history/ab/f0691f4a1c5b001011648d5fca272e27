@@ -1,0 +1,8 @@
+package com.tss.ecommers;
+
+public class InvoiceCalculator {
+	
+    double calculateTax(double cost);
+
+
+}

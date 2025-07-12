@@ -1,0 +1,7 @@
+package com.tss.model.NonViolation;
+
+public class TaxCalculator {
+	
+	private ILogger logger; 
+
+}

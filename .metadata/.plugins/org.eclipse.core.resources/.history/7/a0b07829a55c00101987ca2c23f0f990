@@ -1,0 +1,11 @@
+package com.tss.model;
+
+public class DemoImpl implements IDemo {
+
+	@Override
+	public void display() {
+System.out.println("Functional interfaces");		
+	}
+	
+
+}

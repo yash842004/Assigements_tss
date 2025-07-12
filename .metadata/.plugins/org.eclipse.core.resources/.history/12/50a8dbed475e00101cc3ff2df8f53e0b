@@ -1,0 +1,17 @@
+package com.tss.decorater;
+
+public class OilChange implements ICarService {
+
+	ICarService obj = new OilChange();
+
+	public ICarService OilChange() {
+
+		super(obj);
+	}
+
+	@Override
+	public double getCost() {
+		return obj.getCost();
+	}
+
+}

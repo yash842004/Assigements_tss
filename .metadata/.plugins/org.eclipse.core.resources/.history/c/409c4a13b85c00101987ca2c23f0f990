@@ -1,0 +1,22 @@
+package com.tss.model.test;
+
+import java.util.function.Supplier;
+
+import com.tss.model.BillGenerator;
+
+public class BillGeneratorTest {
+
+	public static void main(String[] args) {
+
+		
+		BillGenerator bill = new BillGenerator("keyboard",1000);
+		
+		Supplier<BillGenerator> = () ->{
+			bill.get();
+			
+			
+		};
+		
+	}
+
+}

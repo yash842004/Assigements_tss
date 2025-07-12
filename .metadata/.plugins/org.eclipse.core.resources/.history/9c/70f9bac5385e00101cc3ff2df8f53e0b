@@ -1,0 +1,14 @@
+package com.tss.structuralcom.tss.fasade;
+
+public class HotelReception {
+	void getIndianMenu() {
+		
+		IHotel indHotel = new IndianHotal();
+		
+		
+	}
+
+	void getItalianMenu() {
+		
+	}
+}

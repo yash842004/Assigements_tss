@@ -1,0 +1,72 @@
+package com.tss.furniture.Test;
+
+import java.util.Scanner;
+
+import com.tss.furniture.IFurniture;
+import com.tss.furniture.IFurnitureFactory;
+import com.tss.furniture.ModernFurnitureFactory;
+import com.tss.furniture.VictorianFurnitureFactory;
+
+public class FurnitureTest {
+
+	private IFurnitureFactory factory;
+
+	public FurnitureTest(IFurnitureFactory factory) {
+		this.factory = factory;
+	}
+
+	public void orderFurnitureSet() {
+		System.out.println("Ordering a furniture set...");
+		IFurniture table = factory.createTable();
+		IFurniture chair = factory.createChair();
+		IFurniture sofa = factory.createSofa();
+
+		table.describe();
+		chair.describe();
+		sofa.describe();
+		System.out.println("Furniture set ordered successfully!\n");
+	}
+
+	public static void main(String[] args) {
+
+		Scanner scanner = new Scanner(System.in);
+		IFurnitureFactory selectedFactory = null;
+
+		System.out.println("--- Welcome to the Furniture Shop ---");
+
+		while (selectedFactory == null) {
+			System.out.println("Please select a furniture style:");
+			System.out.println("1. Modern");
+			System.out.println("2. Victorian");
+			System.out.print("Enter your choice (1 or 2): ");
+
+			try {
+				int choice = scanner.nextInt();
+				scanner.nextLine();
+
+				switch (choice) {
+				case 1:
+					selectedFactory = new ModernFurnitureFactory();
+					System.out.println("You selected Modern style.");
+					break;
+				case 2:
+					selectedFactory = new VictorianFurnitureFactory();
+					System.out.println("You selected Victorian style.");
+					break;
+				default:
+					System.out.println("Invalid choice. Please enter 1 or 2.");
+				}
+			} catch (Exception e) {
+				System.out.println("Invalid input. Please enter a number.");
+				scanner.nextLine();
+			}
+		}
+
+		FurnitureTest app = new FurnitureTest(selectedFactory);
+		app.orderFurnitureSet();
+
+		System.out.println("--- Thank you for shopping with us! ---");
+
+	}
+
+}

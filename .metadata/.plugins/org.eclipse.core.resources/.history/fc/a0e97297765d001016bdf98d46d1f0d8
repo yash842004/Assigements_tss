@@ -1,0 +1,8 @@
+package com.tss.factory;
+
+public class TwoWheelerPlate {
+	
+	 private static final AtomicInteger twoWheelerCounter = new AtomicInteger(0);
+	    private static final int MAX_COUNTER = 9999;
+
+}

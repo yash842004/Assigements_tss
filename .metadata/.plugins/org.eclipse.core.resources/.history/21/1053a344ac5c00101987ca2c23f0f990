@@ -1,0 +1,17 @@
+package com.tss.model.test;
+
+import com.tss.model.IAdditionNumber;
+
+public class AdditionNumberTest {
+
+	 public static void main(String[] args) {
+
+	        IAdditionNumber number = (number1, number2) -> {
+	            return number1 + number2;
+	        };
+
+	        int result = number.addNumber(10, 33);
+	        System.out.println(result);
+	    }
+
+}

@@ -1,0 +1,19 @@
+package com.tss.Adapter;
+
+public class Biscute implements IItem {
+
+	@Override
+	public void getName() {
+		System.out.println("Biscute");
+		
+	}
+
+	@Override
+	public void getPrice() {
+		int price = 23;
+		
+	}
+	
+	
+
+}

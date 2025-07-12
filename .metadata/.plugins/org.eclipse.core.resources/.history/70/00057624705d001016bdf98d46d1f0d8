@@ -1,0 +1,14 @@
+package com.tss.singeleton.Test;
+
+import com.tss.singeleton.DatabaseConnection;
+
+public class DatabaseConnectionTest {
+
+	public static void main(String[] args) {
+
+		DatabaseConnection d1 = new DatabaseConnection();
+		System.out.println(d1.hashCode());
+
+	}
+
+}

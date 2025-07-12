@@ -1,0 +1,48 @@
+package com.tss.Model.Test;
+
+import java.util.Scanner;
+
+import com.tss.Model.ElectricityBill;
+
+public class ElectricityBillTest {
+
+	public static void main(String[] args) {
+
+		ElectricityBill bill = new ElectricityBill();
+
+		int apartmentNumber;
+		Scanner scanner = new Scanner(System.in);
+//		System.out.println("Enter the number of Apartments: ");
+//		apartmentNumber = scanner.nextInt();
+
+		boolean condition = true;
+		while (condition) {
+			System.out.println("The bill of Apartment- 1");
+			System.out.println();
+			bill.guide();
+			System.out.println();
+			System.out.println("Enter the case: ");
+			int number = scanner.nextInt();
+			switch (number) {
+
+			case 1: {
+				bill.Bill();
+				break;
+			}
+			case 2: {
+				bill.changeCostperUnit();
+				break;
+			}
+			case 3:{
+				bill.currenRate();
+			}
+			case 4:{
+				System.out.println("Exit");
+				condition = false;
+				break;
+			}
+			}
+		}
+	}
+
+}

@@ -1,0 +1,15 @@
+package com.tss.builder;
+
+public class Requirments {
+	
+	private int bedRooms;
+	private int bathRooms;
+	private int Hall;
+
+	private int DrawRooms; // optional
+
+	
+	public Requirments(int bedRooms,int bathRooms,int Hall) {
+		
+	}
+}

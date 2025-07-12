@@ -1,0 +1,11 @@
+package com.tss.model.NonViolation;
+
+public class UPIPayment implements IPayment {
+
+	@Override
+	public void pay(int amount) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

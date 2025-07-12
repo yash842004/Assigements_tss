@@ -1,0 +1,51 @@
+package com.tss.model.test;
+
+import java.util.function.Supplier;
+import java.util.function.Predicate;
+
+
+import com.tss.model.LoanEligible;
+
+public class LoanEligibleTest {
+
+	public static void main(String[] args) {
+
+		LoanEligible person1 = new LoanEligible("om", 89, 53000, 65);
+
+		Supplier<LoanEligible> person = () -> {
+			return person1;
+
+		};
+
+		LoanEligible supplier = person.get();
+		System.out.println("Name of the person: " + supplier.getName());
+		System.out.println("Age of the person: " + supplier.getAge());
+		System.out.println("Income of the person: " + supplier.getIncome());
+		System.out.println("Credite Score of the person: " + supplier.getCreditScore());
+		
+		
+		Predicate<LoanEligible> isEligible = (person1)->{
+			boolean condition;
+			if((person1.getAge() >= 21) && (person1.getIncome() > 25000) && (person1.getCreditScore() >= 650)) {
+				condition = true;
+			
+			}else {
+				condition = false;
+			}
+			return condition;
+			
+		};
+		
+		if(isEligible.test(person1)) {
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+	}
+
+}

@@ -1,0 +1,58 @@
+package com.tss.decoratorTest;
+
+import java.util.Scanner;
+
+import com.tss.decorater.CarInspection;
+import com.tss.decorater.OilChange;
+import com.tss.decorater.WheelAlign;
+
+public class ServiceTest {
+
+	public static void main(String[] args) {
+
+		Scanner scanner = new Scanner(System.in);
+		CarInspection currentService = new CarInspection();
+
+		System.out.println("--- Car Service Selector ---");
+		System.out.println("Base Service: Car Inspection (Cost: $" + currentService.getCost() + ")");
+
+		int choice;
+		do {
+			System.out.println("\nSelect additional services (enter 0 to finish):");
+			System.out.println("1. Add Oil Change (+$500.00)");
+			System.out.println("2. Add Wheel Alignment (+$400.00)");
+			System.out.println("0. Finish and Calculate Total");
+			System.out.print("Enter your choice: ");
+
+			while (!scanner.hasNextInt()) {
+				System.out.println("Invalid input. Please enter a number.");
+				scanner.next();
+				System.out.print("Enter your choice: ");
+			}
+			choice = scanner.nextInt();
+
+			switch (choice) {
+			case 1:
+				currentService = new OilChange(currentService);
+				System.out.println("Oil Change added. Current total: $" + currentService.getCost());
+				break;
+			case 2:
+				currentService = new WheelAlign(currentService);
+				System.out.println("Wheel Alignment added. Current total: $" + currentService.getCost());
+				break;
+			case 0:
+				System.out.println("\nFinishing service selection.");
+				break;
+			default:
+				System.out.println("Invalid option. Please choose again.");
+				break;
+			}
+		} while (choice != 0);
+
+		System.out.println("\n--- Final Car Service Summary ---");
+		System.out.println("Total Cost for Selected Services: $" + currentService.getCost());
+
+		scanner.close();
+	}
+
+}

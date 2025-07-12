@@ -1,0 +1,27 @@
+package com.tss.model.test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.tss.model.Student;
+
+public class StudentTest {
+
+	public static void main(String[] args) {
+
+		List<Student> student = new ArrayList<>();
+		student.add(new Student("Raj", 01, 88));
+		student.add(new Student("rohan", 02, 33));
+		student.add(new Student("meet", 03, 58));
+		student.add(new Student("mehul", 04, 74));
+		student.add(new Student("priya", 05, 43));
+		student.add(new Student("om", 06, 34));
+		student.add(new Student("rahul", 07, 86));
+		student.add(new Student("prite", 08, 22));
+		student.add(new Student("krish", 09, 53));
+		student.add(new Student("komal", 10, 87));
+
+
+	}
+
+}

@@ -1,0 +1,21 @@
+package com.tss.Adapter;
+
+public class Hat {
+	
+	public String getShortName() {
+		return shortName;
+	}
+	public String getLongName() {
+		return longName;
+	}
+	public int getPrice() {
+		return price;
+	}
+
+	private String shortName;
+	private String longName;
+	private int price;
+	
+	
+
+}

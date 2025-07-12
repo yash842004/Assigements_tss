@@ -1,0 +1,5 @@
+package com.tss.factory;
+
+public class Maruti implements ICar{
+
+}

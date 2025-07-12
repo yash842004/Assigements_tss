@@ -1,0 +1,11 @@
+package com.tss.factory;
+
+public class CarFactory extends CarType {
+
+	
+	public  void makeCar((car: CarType):ICar) {
+		
+		
+		
+	}
+}

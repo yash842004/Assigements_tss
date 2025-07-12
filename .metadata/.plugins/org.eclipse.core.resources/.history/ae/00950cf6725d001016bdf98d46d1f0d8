@@ -1,0 +1,12 @@
+package com.tss.factory;
+
+public class CarFactory {
+
+	
+	public  makeCar(CarType, car) {
+		
+		
+		
+		return ICar;
+	}
+}

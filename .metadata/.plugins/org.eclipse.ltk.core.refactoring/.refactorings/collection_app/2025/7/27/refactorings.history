@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;collection_app.com.tss.model.ComparatotId.java&apos; to &apos;ComparatotName.java&apos;&#x0D;&#x0A;- Original project: &apos;collection_app&apos;&#x0D;&#x0A;- Original element: &apos;collection_app.com.tss.model.ComparatotId.java&apos;&#x0D;&#x0A;- Renamed element: &apos;collection_app.com.tss.model.ComparatotName.java&apos;" description="Rename compilation unit &apos;ComparatotId.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;collection_app.com.tss.model{ComparatotId.java" name="ComparatotName.java" references="false" stamp="1751536199471" version="1.0"/>
+</session>

@@ -1,0 +1,6 @@
+package com.tss.model;
+@FunctionalInterface
+public interface IAdditionNumber {
+	void addNumber(int number1, int number2);
+
+}

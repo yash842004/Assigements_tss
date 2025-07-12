@@ -1,0 +1,18 @@
+package com.tss.model.NonViolation;
+
+public class Robot implements IWorkable {
+
+	@Override
+	public void start() {
+System.out.println("start working");		
+	}
+
+	@Override
+	public void stop() {
+		System.out.println("stop working");		
+		
+	}
+	
+	
+
+}

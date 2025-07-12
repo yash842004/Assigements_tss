@@ -1,0 +1,11 @@
+package com.tss.model.NonViolation;
+
+public class Sparrow  implements IBird,IFlable{
+
+	@Override
+	public void getColor() {
+
+		System.out.println("brown color");
+	}
+
+}

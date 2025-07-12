@@ -1,0 +1,7 @@
+package com.tss.model.NonViolation;
+
+public interface IPayment {
+
+	void pay(int amount);
+
+}

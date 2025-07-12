@@ -1,0 +1,20 @@
+package com.tss.Adapter;
+
+public class Biscute implements IList {
+
+	@Override
+	public void getName() {
+		System.out.println("Biscute");
+		 
+		
+	}
+
+	@Override
+	public void getPrice() {
+		int price = 23;
+		
+	}
+	
+	
+
+}

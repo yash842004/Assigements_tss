@@ -1,0 +1,15 @@
+package com.tss.factory;
+
+public class FourWheelerPlate implements IGenerateLicenseNumber {
+
+	@Override
+	public String generatePlate() {
+		 int number = twoWheelerCounter.getAndIncrement();
+	        if (number > MAX_COUNTER) {
+	            number = twoWheelerCounter.getAndIncrement() % (MAX_COUNTER + 1);
+	        }
+	        return String.format("TW%04d", number);		return null;
+	}
+	
+
+}

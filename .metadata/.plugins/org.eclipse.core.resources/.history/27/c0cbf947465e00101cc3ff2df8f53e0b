@@ -1,0 +1,9 @@
+package com.tss.decorater;
+
+public class WheelAlign implements ICarService{
+	
+	WheelAlign(ICarService){
+		
+	}
+
+}
