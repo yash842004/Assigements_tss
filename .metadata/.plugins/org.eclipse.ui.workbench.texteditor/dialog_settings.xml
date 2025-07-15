@@ -4,6 +4,7 @@
 	<section name="java.lang.Class">
 		<item key="replaceBarOpen" value="false"/>
 		<list key="findhistory">
+			<item value="double"/>
 			<item value="get"/>
 			<item value="apply"/>
 			<item value="apply&apos;"/>
