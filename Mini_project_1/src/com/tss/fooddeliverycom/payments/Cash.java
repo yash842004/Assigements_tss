@@ -7,7 +7,7 @@ public class Cash implements IBill {
 	@Override
 	public void processPayment() {
 
-		System.out.println("Your payment is by cash");
+		System.out.println("Your payment is by cash ");
 	}
 
 	@Override

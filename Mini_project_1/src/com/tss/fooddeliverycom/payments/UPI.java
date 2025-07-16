@@ -5,10 +5,7 @@ import java.util.Scanner;
 import com.tss.foodbill.IBill;
 
 public class UPI implements IBill {
-	
-	
-	
-	
+
 	Scanner scanner = new Scanner(System.in);
 	private String upiId;
 	private double amount;
@@ -18,6 +15,7 @@ public class UPI implements IBill {
 		this.upiId = upiId;
 		this.pin = pin;
 	}
+
 	@Override
 	public void processPayment() {
 		int attempt = 1;
@@ -28,7 +26,7 @@ public class UPI implements IBill {
 				System.out.print("Enter PIN: ");
 				int uPin = scanner.nextInt();
 				if (pin == uPin) {
-					System.out.print("Processing UPI payment of $" + amount + " for card: " + upiId);
+					System.out.print("Processing UPI payment of Rs. " + amount + " for card: " + upiId);
 					return;
 				}
 				if (attempt == 5) {
@@ -53,7 +51,7 @@ public class UPI implements IBill {
 		if (!upiId.contains("@")) {
 			return false;
 		}
-		
+
 		String pinStr = String.valueOf(pin);
 		if (pinStr.length() != 4) {
 			System.out.println("Validation failed: PIN must be exactly 4 digits.");

@@ -1,7 +1,6 @@
 package com.tss.fooddelivery.admin;
 
 import java.util.InputMismatchException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -42,8 +41,8 @@ public class Admin extends Menu {
 
 		FoodItem newItem = new FoodItem(id, name, price, category);
 
-		int cuisineChoice = selectCuisine(scanner);
-		switch (cuisineChoice) {
+		int choice = selectFoodType(scanner);
+		switch (choice) {
 		case 1 -> {
 			menu.addFoodItemToIndianMenu(newItem);
 			System.out.println("Item added to Indian menu.");
@@ -61,24 +60,24 @@ public class Admin extends Menu {
 
 	public void viewCurrentMenus(Menu menu) {
 		System.out.println("\n--- Viewing All Menus ---");
-		menu.displayCuisineMenu("Indian", menu.getIndianMenuItems());
-		menu.displayCuisineMenu("Chinese", menu.getChineseMenuItems());
-		menu.displayCuisineMenu("Italian", menu.getItalianMenuItems());
+		menu.displayMenu("Indian", menu.getIndianMenuItems());
+		menu.displayMenu("Chinese", menu.getChineseMenuItems());
+		menu.displayMenu("Italian", menu.getItalianMenuItems());
 	}
 
 	public void removeItems(Scanner scanner, Menu menu) {
 		System.out.println("\n--- Remove Food Item ---");
 
-		int cuisineChoice = selectCuisine(scanner);
-		List<FoodItem> selectedMenu = getMenuList(menu, cuisineChoice);
-		String cuisineName = getCuisineName(cuisineChoice);
+		int choice = selectFoodType(scanner);
+		List<FoodItem> selectedMenu = getMenuList(menu, choice);
+		String cuisineName = getFoodTypes(choice);
 
 		if (selectedMenu.isEmpty()) {
 			System.out.println(cuisineName + " menu is empty. Nothing to remove.");
 			return;
 		}
 
-		menu.displayCuisineMenu(cuisineName, selectedMenu);
+		menu.displayMenu(cuisineName, selectedMenu);
 		int idToRemove = inputInt(scanner, "Enter Food Item ID to remove: ");
 
 		boolean removed = selectedMenu.removeIf(item -> item.getId() == idToRemove);
@@ -92,16 +91,16 @@ public class Admin extends Menu {
 	public void editItems(Scanner scanner, Menu menu) {
 		System.out.println("\n--- Edit Food Item ---");
 
-		int cuisineChoice = selectCuisine(scanner);
+		int cuisineChoice = selectFoodType(scanner);
 		List<FoodItem> selectedMenu = getMenuList(menu, cuisineChoice);
-		String cuisineName = getCuisineName(cuisineChoice);
+		String cuisineName = getFoodTypes(cuisineChoice);
 
 		if (selectedMenu.isEmpty()) {
 			System.out.println(cuisineName + " menu is empty. Nothing to edit.");
 			return;
 		}
 
-		menu.displayCuisineMenu(cuisineName, selectedMenu);
+		menu.displayMenu(cuisineName, selectedMenu);
 		int idToEdit = inputInt(scanner, "Enter Food Item ID to edit: ");
 
 		FoodItem itemToEdit = selectedMenu.stream().filter(item -> item.getId() == idToEdit).findFirst().orElse(null);
@@ -131,16 +130,16 @@ public class Admin extends Menu {
 	public void manageDiscounts(Scanner scanner, Menu menu) {
 		System.out.println("\n--- Manage Discounts ---");
 
-		int cuisineChoice = selectCuisine(scanner);
+		int cuisineChoice = selectFoodType(scanner);
 		List<FoodItem> selectedMenu = getMenuList(menu, cuisineChoice);
-		String cuisineName = getCuisineName(cuisineChoice);
+		String cuisineName = getFoodTypes(cuisineChoice);
 
 		if (selectedMenu.isEmpty()) {
 			System.out.println(cuisineName + " menu is empty. No discounts to manage.");
 			return;
 		}
 
-		menu.displayCuisineMenu(cuisineName, selectedMenu);
+		menu.displayMenu(cuisineName, selectedMenu);
 		int idForDiscount = inputInt(scanner, "Enter Food Item ID to manage discount: ");
 
 		FoodItem item = selectedMenu.stream().filter(f -> f.getId() == idForDiscount).findFirst().orElse(null);
@@ -167,8 +166,8 @@ public class Admin extends Menu {
 		}
 	}
 
-	private int selectCuisine(Scanner scanner) {
-		System.out.println("Select Cuisine:");
+	private int selectFoodType(Scanner scanner) {
+		System.out.println("Select selectFoodType:");
 		System.out.println("1. Indian");
 		System.out.println("2. Chinese");
 		System.out.println("3. Italian");
@@ -185,8 +184,8 @@ public class Admin extends Menu {
 		};
 	}
 
-	private String getCuisineName(int cuisineChoice) {
-		return switch (cuisineChoice) {
+	private String getFoodTypes(int choice) {
+		return switch (choice) {
 		case 1 -> "Indian";
 		case 2 -> "Chinese";
 		case 3 -> "Italian";

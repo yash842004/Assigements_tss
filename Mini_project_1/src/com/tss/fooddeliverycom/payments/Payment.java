@@ -1,5 +1,7 @@
 package com.tss.fooddeliverycom.payments;
 
+import java.util.Scanner;
+
 public class Payment implements IPayments {
 
 	@Override
@@ -14,17 +16,45 @@ public class Payment implements IPayments {
 	@Override
 	public void UPIPay() {
 
-		UPI upi = new UPI(null, 0);
-		upi.processPayment();
-		upi.validatePaymentDetails();
+		Scanner scanner = new Scanner(System.in);
+
+	    System.out.print("Enter your UPI Id: ");
+	    String upiId = scanner.nextLine();
+
+	    System.out.print("Set your 4-digit UPI PIN: ");
+	    int pin = scanner.nextInt();
+
+	    UPI upi = new UPI(upiId, pin);
+
+	    if (upi.validatePaymentDetails()) {
+	        upi.processPayment();
+	    } else {
+	        System.out.println("Payment failed due to invalid details.");
+	    }
 	}
 
 	@Override
 	public void creditCardPay() {
 
-		CreditCard card = new CreditCard(0, null, 0);
-		card.processPayment();
-		card.validatePaymentDetails();
+		 Scanner scanner = new Scanner(System.in);
+
+		    System.out.print("Enter your 16-digit Credit Card Number: ");
+		    long cardNumber = scanner.nextLong();
+		    scanner.nextLine(); // consume leftover newline
+
+		    System.out.print("Enter Card Holder Name: ");
+		    String cardHolder = scanner.nextLine();
+
+		    System.out.print("Set your 4-digit Card PIN: ");
+		    int pin = scanner.nextInt();
+
+		    CreditCard card = new CreditCard(cardNumber, cardHolder, pin);
+
+		    if (card.validatePaymentDetails()) {
+		        card.processPayment();
+		    } else {
+		        System.out.println("Payment failed due to invalid details.");
+		    }
 	}
 
 

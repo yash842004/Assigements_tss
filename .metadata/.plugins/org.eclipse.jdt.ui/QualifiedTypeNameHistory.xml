@@ -9,9 +9,10 @@
     <fullyQualifiedTypeName name="com.tss.model.LoanEligible"/>
     <fullyQualifiedTypeName name="com.tss.factory.CarType"/>
     <fullyQualifiedTypeName name="com.tss.builder.Home.Requirments"/>
-    <fullyQualifiedTypeName name="org.junit.jupiter.api.BeforeEach"/>
     <fullyQualifiedTypeName name="org.junit.jupiter.api.AfterEach"/>
     <fullyQualifiedTypeName name="org.junit.jupiter.api.AfterAll"/>
     <fullyQualifiedTypeName name="org.junit.jupiter.api.BeforeAll"/>
     <fullyQualifiedTypeName name="java.lang.ArithmeticException"/>
+    <fullyQualifiedTypeName name="org.junit.jupiter.api.BeforeEach"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
 </qualifiedTypeNameHistroy>

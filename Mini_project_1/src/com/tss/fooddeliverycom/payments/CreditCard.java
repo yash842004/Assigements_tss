@@ -28,7 +28,7 @@ public class CreditCard implements IBill {
 				System.out.println("Enter PIN: ");
 				int cPin = scanner.nextInt();
 				if (pin == cPin) {
-					System.out.print("Processing Credit Card payment of $" + amount + " for card: " + cardNumber);
+					System.out.print("Processing Credit Card payment of Rs " + amount + " for card: " + cardNumber);
 					return;
 				}
 				if (attempt == 5) {

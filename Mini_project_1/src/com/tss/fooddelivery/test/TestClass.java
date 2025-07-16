@@ -1,11 +1,17 @@
 package com.tss.fooddelivery.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-
+import com.tss.foodbill.CalculateBill;
+import com.tss.foodbill.FoodItem;
 import com.tss.fooddelivery.admin.Admin;
-import com.tss.fooddelivery.customer.OderFood;
+import com.tss.fooddelivery.customer.OrderFood;
+import com.tss.fooddelivery.discount.DiscountMonthly;
+import com.tss.fooddelivery.discount.DiscountService;
+import com.tss.fooddelivery.discount.FestivalDiscount;
+import com.tss.fooddelivery.discount.IDiscount;
 import com.tss.fooddelivery.menu.Menu;
-
 import com.tss.fooddeliverycom.payments.Payment;
 
 public class TestClass {
@@ -15,7 +21,7 @@ public class TestClass {
 		Scanner scanner = new Scanner(System.in);
 		Menu menu = new Menu();
 		Admin admin = new Admin();
-		OderFood oderFood = new OderFood();
+		OrderFood orderFood = new OrderFood();
 		Payment payment = new Payment();
 
 		while (true) {
@@ -36,7 +42,7 @@ public class TestClass {
 					System.out.println("1. View Menu");
 					System.out.println("2. Place Order");
 					System.out.println("3. Back to Main Menu");
-					System.out.println("4. Choices payment");
+					System.out.println("4. Payment Options");
 					System.out.print("Enter your choice: ");
 					int custChoice = scanner.nextInt();
 					scanner.nextLine();
@@ -53,33 +59,97 @@ public class TestClass {
 
 						switch (menuChoice) {
 						case 1:
-							menu.displayCuisineMenu("Indian", menu.getIndianMenuItems());
+							menu.displayMenu("Indian", menu.getIndianMenuItems());
 							break;
 						case 2:
-							menu.displayCuisineMenu("Chinese", menu.getChineseMenuItems());
+							menu.displayMenu("Chinese", menu.getChineseMenuItems());
 							break;
 						case 3:
-							menu.displayCuisineMenu("Italian", menu.getItalianMenuItems());
+							menu.displayMenu("Italian", menu.getItalianMenuItems());
 							break;
-
+						default:
+							System.out.println("Invalid cuisine choice.");
 						}
 						break;
 
 					case 2:
-						oderFood.placeOrder(scanner, menu);
+						List<FoodItem> orderItems = orderFood.placeOrder(scanner, menu);
+
+						if (orderItems != null && !orderItems.isEmpty()) {
+							CalculateBill calculateBill = new CalculateBill();
+							double totalBill = calculateBill.getTotalBillForOrder(orderItems);
+
+							// Apply discounts
+							List<IDiscount> discountList = new ArrayList<>();
+
+							if (totalBill > 500) {
+								System.out.println("Monthly discount applied automatically as bill is greater than 500.");
+								discountList.add(new DiscountMonthly());
+							}
+
+							System.out.print("Apply festival discount? (yes/no): ");
+							if (scanner.nextLine().equalsIgnoreCase("yes")) {
+								discountList.add(new FestivalDiscount());
+							}
+
+							DiscountService discountService = new DiscountService(discountList);
+							double finalBill = discountService.applyAllDiscounts(totalBill);
+
+							System.out.println("Your Final Bill after all applicable discounts: $" + finalBill);
+
+							System.out.print("Proceed to payment? (yes/no): ");
+							String payChoice = scanner.nextLine();
+							if (payChoice.equalsIgnoreCase("yes")) {
+								System.out.println("1. Cash Payment");
+								System.out.println("2. UPI Payment");
+								System.out.println("3. Credit Card Payment");
+
+								int paymentChoice = scanner.nextInt();
+								scanner.nextLine();
+
+								switch (paymentChoice) {
+								case 1:
+									payment.cashPay();
+									break;
+								case 2:
+									payment.UPIPay();
+									break;
+								case 3:
+									payment.creditCardPay();
+									break;
+								default:
+									System.out.println("Invalid payment choice.");
+								}
+
+								System.out.println("Payment completed. Thank you for using Food Delivery Application.");
+								scanner.close();
+								System.exit(0);
+
+							} else {
+								System.out.println("Order placed without payment. Please pay on delivery!");
+								System.out.println("Thank you for ordering. Exiting application...");
+								scanner.close();
+								System.exit(0);
+							}
+
+						} else {
+							System.out.println("No items ordered.");
+						}
 						break;
 
 					case 3:
 						customerMenu = false;
 						break;
+
 					case 4:
-						System.out.println("1. for Cash payment");
-						System.out.println("2. for Upi payment");
-						System.out.println("3. for Credit card payment");
+						System.out.println("1. Cash Payment");
+						System.out.println("2. UPI Payment");
+						System.out.println("3. Credit Card Payment");
 
 						int paymentChoice = scanner.nextInt();
-						switch (paymentChoice) {
+						scanner.nextLine();
 
+						switch (paymentChoice) {
 						case 1:
 							payment.cashPay();
 							break;
@@ -89,8 +159,10 @@ public class TestClass {
 						case 3:
 							payment.creditCardPay();
 							break;
-
+						default:
+							System.out.println("Invalid payment choice.");
 						}
+						break;
 
 					default:
 						System.out.println("Invalid choice. Try again.");

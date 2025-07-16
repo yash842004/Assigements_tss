@@ -13,18 +13,19 @@ class CalculatorTest {
 
 	private static Calculator calculator;
 
-	//@BeforeEach
+	// @BeforeEach
 	@BeforeAll
 	static void init() {
 		calculator = new Calculator();
-		
+
 		System.out.println("befor each");
 	}
+
 //	@AfterEach
 	@AfterAll // must use static key word.
 	static void display() {
 		System.out.println("after each");
-		
+
 	}
 
 	@Test
@@ -55,17 +56,14 @@ class CalculatorTest {
 
 		assertEquals(12, actualResult);
 	}
-	
-	
+
 	@Test
 	void TestDivision() {
 		Calculator calculator = new Calculator();
 
 		int actualResult = calculator.division(6, 2);
-		assertEquals(3,calculator.division(6, 0) );
-		assertThrows(ArithmeticException.class, () -> calculator.division(10, 0),"Number is not divisable by zero");
+		assertEquals(0, calculator.division(6, 0));
+		assertThrows(ArithmeticException.class, () -> calculator.division(10, 0), "Number is not divisable by zero");
 	}
-	
-	
 
 }
