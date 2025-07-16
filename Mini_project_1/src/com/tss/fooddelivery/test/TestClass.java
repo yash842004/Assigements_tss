@@ -3,16 +3,17 @@ package com.tss.fooddelivery.test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import com.tss.foodbill.CalculateBill;
-import com.tss.foodbill.FoodItem;
+
 import com.tss.fooddelivery.admin.Admin;
 import com.tss.fooddelivery.customer.OrderFood;
 import com.tss.fooddelivery.discount.DiscountMonthly;
 import com.tss.fooddelivery.discount.DiscountService;
 import com.tss.fooddelivery.discount.FestivalDiscount;
 import com.tss.fooddelivery.discount.IDiscount;
+import com.tss.fooddelivery.foodbill.CalculateBill;
+import com.tss.fooddelivery.foodbill.FoodItem;
 import com.tss.fooddelivery.menu.Menu;
-import com.tss.fooddeliverycom.payments.Payment;
+import com.tss.fooddelivery.payments.Payment;
 
 public class TestClass {
 

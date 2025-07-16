@@ -4,7 +4,7 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
-import com.tss.foodbill.FoodItem;
+import com.tss.fooddelivery.foodbill.FoodItem;
 import com.tss.fooddelivery.menu.Menu;
 
 public class Admin extends Menu {

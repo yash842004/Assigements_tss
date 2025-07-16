@@ -1,4 +1,4 @@
-package com.tss.fooddeliverycom.payments;
+package com.tss.fooddelivery.payments;
 
 import java.util.Scanner;
 

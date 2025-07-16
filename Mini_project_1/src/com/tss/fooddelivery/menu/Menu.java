@@ -3,7 +3,7 @@ package com.tss.fooddelivery.menu;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tss.foodbill.FoodItem;
+import com.tss.fooddelivery.foodbill.FoodItem;
 
 public class Menu {
 	private List<FoodItem> indianMenuItems = new ArrayList<>();

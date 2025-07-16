@@ -1,34 +1,32 @@
-package com.tss.fooddeliverycom.payments;
+package com.tss.fooddelivery.payments;
 
 import java.util.Scanner;
 
-import com.tss.foodbill.IBill;
+import com.tss.fooddelivery.foodbill.IBill;
 
-public class CreditCard implements IBill {
+public class UPI implements IBill {
 
 	Scanner scanner = new Scanner(System.in);
-
+	private String upiId;
 	private double amount;
-	private long cardNumber;
-	private String cardHolder;
 	private int pin;
 
-	public CreditCard(long cardNumber, String cardHolder, int pin) {
-		this.cardNumber = cardNumber;
-		this.cardHolder = cardHolder;
+	public UPI(String upiId, int pin) {
+		this.upiId = upiId;
 		this.pin = pin;
 	}
 
+	@Override
 	public void processPayment() {
 		int attempt = 1;
 		System.out.println("Enter Amount: ");
 		amount = scanner.nextDouble();
 		if (amount > 0) {
 			while (attempt <= 5) {
-				System.out.println("Enter PIN: ");
-				int cPin = scanner.nextInt();
-				if (pin == cPin) {
-					System.out.print("Processing Credit Card payment of Rs " + amount + " for card: " + cardNumber);
+				System.out.print("Enter PIN: ");
+				int uPin = scanner.nextInt();
+				if (pin == uPin) {
+					System.out.print("Processing UPI payment of Rs. " + amount + " for card: " + upiId);
 					return;
 				}
 				if (attempt == 5) {
@@ -46,14 +44,11 @@ public class CreditCard implements IBill {
 
 	@Override
 	public boolean validatePaymentDetails() {
-		if (cardHolder == null || cardHolder.isEmpty()) {
-			System.out.println("Validation failed: Card holder name is empty.");
+		if (upiId == null || upiId.isEmpty()) {
+			System.out.println("UPI Id can not be empty");
 			return false;
 		}
-
-		String cardNumberStr = String.valueOf(cardNumber);
-		if (cardNumberStr.length() != 16) {
-			System.out.println("Validation failed: Card number must be exactly 16 digits.");
+		if (!upiId.contains("@")) {
 			return false;
 		}
 
@@ -63,7 +58,6 @@ public class CreditCard implements IBill {
 			return false;
 		}
 
-		System.out.println("Validation successful.");
 		return true;
 	}
 

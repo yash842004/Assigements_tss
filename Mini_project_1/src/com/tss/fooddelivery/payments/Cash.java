@@ -1,6 +1,6 @@
-package com.tss.fooddeliverycom.payments;
+package com.tss.fooddelivery.payments;
 
-import com.tss.foodbill.IBill;
+import com.tss.fooddelivery.foodbill.IBill;
 
 public class Cash implements IBill {
 

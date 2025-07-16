@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import com.tss.foodbill.CalculateBill;
-import com.tss.foodbill.FoodItem;
+import com.tss.fooddelivery.foodbill.CalculateBill;
+import com.tss.fooddelivery.foodbill.FoodItem;
 import com.tss.fooddelivery.menu.Menu;
 
 public class OrderFood {

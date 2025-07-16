@@ -1,4 +1,4 @@
-package com.tss.foodbill;
+package com.tss.fooddelivery.foodbill;
 
 public class FoodItem {
     private int id;

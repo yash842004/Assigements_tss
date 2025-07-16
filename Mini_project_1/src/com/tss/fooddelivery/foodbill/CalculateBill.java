@@ -1,4 +1,4 @@
-package com.tss.foodbill;
+package com.tss.fooddelivery.foodbill;
 
 import java.util.List;
 
