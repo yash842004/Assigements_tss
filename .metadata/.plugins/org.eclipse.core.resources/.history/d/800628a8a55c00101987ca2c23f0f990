@@ -1,7 +1,0 @@
-package com.tss.model;
-@FunctionalInterfaces
-public interface IDemo {
-	void display();
-	
-
-}

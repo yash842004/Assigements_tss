@@ -1,9 +1,0 @@
-package com.tss.model;
-
-public class DemoImpl implements IDemo {
-
-	public void display() {
-		System.out.println("Functional interfaces");
-	}
-
-}

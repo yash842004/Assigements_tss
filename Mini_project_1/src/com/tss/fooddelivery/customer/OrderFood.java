@@ -12,9 +12,22 @@ public class OrderFood {
 
     private CalculateBill bill = new CalculateBill();
 
-    public List<FoodItem> placeOrder(Scanner scanner, Menu menu) {
+    public OrderResult placeOrder(Scanner scanner, Menu menu) {
         List<FoodItem> orderList = new ArrayList<>();
         System.out.println("\n--- Place Your Order ---");
+
+        System.out.println("\nPlease enter your delivery address details.");
+        System.out.print("City: ");
+        String city = scanner.nextLine();
+
+        System.out.print("State: ");
+        String state = scanner.nextLine();
+
+        System.out.print("Pincode: ");
+        Long pincode = scanner.nextLong();
+
+        Address address = new Address(city, state, pincode);
+        System.out.println("Your delivery address is set to: " + address);
 
         Menu displayMenu = new Menu();
 
@@ -63,7 +76,6 @@ public class OrderFood {
             scanner.nextLine();
 
             FoodItem item = null;
-
             for (FoodItem food : selectedMenu) {
                 if (food.getId() == id) {
                     item = food;
@@ -82,15 +94,11 @@ public class OrderFood {
 
         if (!orderList.isEmpty()) {
             double totalBill = bill.getTotalBillForOrder(orderList);
-            System.out.println("\nYour Total Bill is: Rs. " + totalBill);
-        }
-
-        if (orderList.isEmpty()) {
+            System.out.println("\nYour Total Bill before discount: Rs " + totalBill);
+        } else {
             System.out.println("No items ordered.");
         }
 
-        return orderList;
+        return new OrderResult(orderList, address);
     }
-
-
 }
