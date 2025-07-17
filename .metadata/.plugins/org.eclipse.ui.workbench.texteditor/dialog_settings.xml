@@ -4,6 +4,7 @@
 	<section name="java.lang.Class">
 		<item key="replaceBarOpen" value="false"/>
 		<list key="findhistory">
+			<item value="inputDouble"/>
 			<item value="DisplayMenu"/>
 			<item value="getFoodTypes"/>
 			<item value="getMenuList"/>

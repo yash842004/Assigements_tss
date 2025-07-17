@@ -40,7 +40,7 @@ public class Payment implements IPayments {
 
 		    System.out.print("Enter your 16-digit Credit Card Number: ");
 		    long cardNumber = scanner.nextLong();
-		    scanner.nextLine(); // consume leftover newline
+		    scanner.nextLine(); 
 
 		    System.out.print("Enter Card Holder Name: ");
 		    String cardHolder = scanner.nextLine();

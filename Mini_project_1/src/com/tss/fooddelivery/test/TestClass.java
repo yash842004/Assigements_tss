@@ -93,7 +93,7 @@ public class TestClass {
                                 discountList.add(new DiscountMonthly());
                             }
 
-                            System.out.print("Apply festival discount? ('yes' for online payment & 'no' for cash payment): ");
+                            System.out.print("Apply festival discount? ('yes' or 'no' ");
                             if (scanner.nextLine().equalsIgnoreCase("yes")) {
                                 discountList.add(new FestivalDiscount());
                             }
@@ -103,7 +103,7 @@ public class TestClass {
 
                             System.out.println("Your Final Bill after all applicable discounts: Rs. " + finalBill);
 
-                            System.out.print("Proceed to payment (yes/no): ");
+                            System.out.print("'yes' for online payment & 'no' for cash payment): ");
                             String payChoice = scanner.nextLine();
 
                             if (payChoice.equalsIgnoreCase("yes")) {
