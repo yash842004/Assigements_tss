@@ -16,7 +16,5 @@ public class Cash implements IBill {
 		System.out.println("Your payment is done.");
 		return true;
 	}
-	
-
 
 }

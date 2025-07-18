@@ -2,7 +2,7 @@ package com.tss.fooddelivery.discount;
 
 public class FestivalDiscount implements IDiscount {
 
-	private double festivalDiscountRate = 0.20; 
+	private double festivalDiscountRate = 0.20;
 
 	@Override
 	public double applyDiscount(double totalAmount) {
