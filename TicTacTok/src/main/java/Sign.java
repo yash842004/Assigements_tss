@@ -1,5 +1,5 @@
 
 public enum Sign {
 
-	X,O,EMPTY;
+	X, O, EMPTY;
 }
