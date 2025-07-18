@@ -5,14 +5,13 @@ import java.util.List;
 import java.util.Scanner;
 import com.tss.fooddelivery.admin.Admin;
 import com.tss.fooddelivery.customer.Address;
+import com.tss.fooddelivery.customer.Cart;
 import com.tss.fooddelivery.customer.OrderFood;
-import com.tss.fooddelivery.customer.OrderResult;
 import com.tss.fooddelivery.discount.DiscountMonthly;
 import com.tss.fooddelivery.discount.DiscountService;
 import com.tss.fooddelivery.discount.FestivalDiscount;
 import com.tss.fooddelivery.discount.IDiscount;
 import com.tss.fooddelivery.foodbill.CalculateBill;
-import com.tss.fooddelivery.foodbill.FoodItem;
 import com.tss.fooddelivery.foodpatner.DeliveryPartnerService;
 import com.tss.fooddelivery.foodpatner.IDeliveryPartnerService;
 import com.tss.fooddelivery.menu.Menu;
@@ -45,12 +44,14 @@ public class TestClass {
 			switch (choice) {
 			case 1:
 				boolean customerMenu = true;
+				Cart cart = new Cart();
+				Address address = orderFood.getDeliveryAddress(scanner);
+
 				while (customerMenu) {
 					System.out.println("\n--- Customer Panel ---");
 					System.out.println("1. View Menu");
-					System.out.println("2. Place Order");
+					System.out.println("2. Manage Cart and Place Order");
 					System.out.println("3. Back to Main Menu");
-					System.out.println("4. Payment Options");
 					System.out.print("Enter your choice: ");
 					int custChoice = scanner.nextInt();
 					scanner.nextLine();
@@ -74,13 +75,11 @@ public class TestClass {
 						break;
 
 					case 2:
-						OrderResult orderResult = orderFood.placeOrder(scanner, menu);
-						List<FoodItem> orderItems = orderResult.getOrderList();
-						Address address = orderResult.getAddress();
+						orderFood.placeOrder(scanner, menu, cart);
 
-						if (orderItems != null && !orderItems.isEmpty()) {
+						if (!cart.isEmpty()) {
 							CalculateBill calculateBill = new CalculateBill();
-							double totalBill = calculateBill.getTotalBillForOrder(orderItems);
+							double totalBill = calculateBill.getTotalBillForOrder(cart.getItems());
 
 							List<IDiscount> discountList = new ArrayList<>();
 
@@ -128,8 +127,7 @@ public class TestClass {
 
 							deliveryService.deliverOrder(address);
 
-							System.out.println(" delivery process completed. Exiting application.");
-							System.out.println("Exiting application.");
+							System.out.println("Delivery process completed. Exiting application.");
 
 							MenuData.saveMenu(menu);
 
@@ -137,7 +135,7 @@ public class TestClass {
 							System.exit(0);
 
 						} else {
-							System.out.println("No items ordered.");
+							System.out.println("Your cart is empty. Please add items before placing order.");
 						}
 						break;
 

@@ -21,7 +21,7 @@ public class MenuData {
 
 	public static Menu loadMenu() {
 		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
-			System.out.println("Menu loaded successfully.");
+			System.out.println("Great Grand Foods :)");
 			return (Menu) in.readObject();
 		} catch (Exception exception) {
 			System.out.println("No saved menu found. Creating new menu.");

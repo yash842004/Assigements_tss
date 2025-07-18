@@ -1,9 +1,0 @@
-package com.tss.builder;
-
-public class Requirments {
-	
-	private int bedRooms;
-	private int bathRooms;
-	private int Halls;
-
-}

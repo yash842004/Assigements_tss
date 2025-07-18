@@ -1,7 +1,5 @@
 package com.tss.fooddelivery.customer;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Scanner;
 import com.tss.fooddelivery.foodbill.FoodItem;
 import com.tss.fooddelivery.menu.Menu;
@@ -10,128 +8,144 @@ import com.tss.fooddelivery.Database.CustomerData;
 
 public class OrderFood {
 
-	private static int nextCustomerId = 1;
+    private static int nextCustomerId = 1;
 
-	public OrderResult placeOrder(Scanner scanner, Menu menu) {
-		List<FoodItem> orderList = new ArrayList<>();
-		System.out.println("\n--- Place Your Order ---");
+    public void placeOrder(Scanner scanner, Menu menu, Cart cart) {
+        System.out.println("\n--- Place Your Order ---");
 
-		Address address = null;
+        boolean ordering = true;
+        while (ordering) {
+            System.out.println("\n--- Cart Menu ---");
+            System.out.println("1. Add Item to Cart");
+            System.out.println("2. Remove Item from Cart");
+            System.out.println("3. View Cart");
+            System.out.println("4. Finish Ordering");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-		System.out.print("Are you an existing customer? yes/no: ");
-		String existing = scanner.nextLine().trim().toLowerCase();
+            switch (choice) {
+                case 1:
+                    System.out.println("\nSelect Cuisine to order from:");
+                    System.out.println("1. Indian");
+                    System.out.println("2. Chinese");
+                    System.out.println("3. Italian");
+                    System.out.print("Enter your choice: ");
+                    int cuisineChoice = scanner.nextInt();
+                    scanner.nextLine();
 
-		if (existing.equals("yes")) {
-			System.out.print("Enter your Customer ID: ");
-			int enteredId = scanner.nextInt();
-			scanner.nextLine();
+                    var selectedMenu = switch (cuisineChoice) {
+                        case 1 -> menu.getIndianMenuItems();
+                        case 2 -> menu.getChineseMenuItems();
+                        case 3 -> menu.getItalianMenuItems();
+                        default -> {
+                            System.out.println("Invalid cuisine choice.");
+                            yield null;
+                        }
+                    };
 
-			List<Address> customers = CustomerData.loadCustomers();
-			for (Address customer : customers) {
-				if (customer.getId() == enteredId) {
-					address = customer;
-					System.out.println("Welcome back! Your details: " + address);
-					break;
-				}
-			}
+                    if (selectedMenu != null) {
+                        System.out.println("\n--- Menu ---");
+                        menu.displayMenu("", selectedMenu);
 
-			if (address == null) {
-				System.out.println("Customer ID not found. Registering as new customer.");
-			}
+                        System.out.print("Enter Food Item ID to add to cart: ");
+                        int id = scanner.nextInt();
+                        scanner.nextLine();
 
-		}
+                        FoodItem item = null;
+                        for (FoodItem food : selectedMenu) {
+                            if (food.getId() == id) {
+                                item = food;
+                                break;
+                            }
+                        }
 
-		if (address == null) {
-			System.out.println("\n Enter your Name");
-			String name = scanner.nextLine();
-			System.out.println("\nPlease enter your delivery address details.");
-			System.out.print("City: ");
-			String city = scanner.nextLine();
+                        if (item != null) {
+                            cart.addItem(item);
+                        } else {
+                            System.out.println("Invalid Food Item ID.");
+                        }
+                    }
+                    break;
 
-			System.out.print("State: ");
-			String state = scanner.nextLine();
+                case 2:
+                    cart.displayCart();
+                    System.out.print("Enter Food Item ID to remove from cart: ");
+                    int removeId = scanner.nextInt();
+                    scanner.nextLine();
+                    cart.removeItem(removeId);
+                    break;
 
-			System.out.print("Pincode: ");
-			Long pincode = scanner.nextLong();
-			scanner.nextLine();
+                case 3:
+                    cart.displayCart();
+                    break;
 
-			int customerId = nextCustomerId++;
+                case 4:
+                    ordering = false;
+                    break;
 
-			address = new Address(customerId, name, city, state, pincode);
-			System.out.println("Your delivery address is set to: " + address);
-			System.out.println("Your generated Customer ID is: " + customerId);
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
 
-			CustomerData.saveCustomer(address);
-		}
+        if (!cart.isEmpty()) {
+            CalculateBill bill = new CalculateBill();
+            double totalBill = bill.getTotalBillForOrder(cart.getItems());
+            System.out.println("Your total bill (before discounts): Rs. " + totalBill);
+        } else {
+            System.out.println("No items ordered.");
+        }
+    }
 
-		boolean ordering = true;
-		while (ordering) {
-			System.out.println("\nSelect Cuisine to order from:");
-			System.out.println("1. Indian");
-			System.out.println("2. Chinese");
-			System.out.println("3. Italian");
-			System.out.println("4. Finish Ordering");
-			System.out.print("Enter your choice: ");
-			int choice = scanner.nextInt();
-			scanner.nextLine();
+    public Address getDeliveryAddress(Scanner scanner) {
+        System.out.print("Are you an existing customer? yes/no: ");
+        String existing = scanner.nextLine().trim().toLowerCase();
 
-			if (choice == 4) {
-				ordering = false;
-				break;
-			}
+        Address address = null;
 
-			List<FoodItem> selectedMenu = null;
-			String cuisineName = "";
+        if (existing.equals("yes")) {
+            System.out.print("Enter your Customer ID: ");
+            int enteredId = scanner.nextInt();
+            scanner.nextLine();
 
-			switch (choice) {
-			case 1:
-				selectedMenu = menu.getIndianMenuItems();
-				cuisineName = "Indian";
-				break;
-			case 2:
-				selectedMenu = menu.getChineseMenuItems();
-				cuisineName = "Chinese";
-				break;
-			case 3:
-				selectedMenu = menu.getItalianMenuItems();
-				cuisineName = "Italian";
-				break;
-			default:
-				System.out.println("Invalid choice.");
-				continue;
-			}
+            var customers = CustomerData.loadCustomers();
+            for (Address customer : customers) {
+                if (customer.getId() == enteredId) {
+                    address = customer;
+                    System.out.println("Welcome back! Your details: " + address);
+                    break;
+                }
+            }
 
-			System.out.println("\n--- " + cuisineName + " Menu ---");
-			menu.displayMenu(cuisineName, selectedMenu);
+            if (address == null) {
+                System.out.println("Customer ID not found. Registering as new customer.");
+            }
+        }
 
-			System.out.print("Enter Food Item ID to add to order: ");
-			int id = scanner.nextInt();
-			scanner.nextLine();
+        if (address == null) {
+            System.out.println("\n Enter your Name");
+            String name = scanner.nextLine();
+            System.out.println("\nPlease enter your delivery address details.");
+            System.out.print("City: ");
+            String city = scanner.nextLine();
 
-			FoodItem item = null;
-			for (FoodItem food : selectedMenu) {
-				if (food.getId() == id) {
-					item = food;
-					break;
-				}
-			}
+            System.out.print("State: ");
+            String state = scanner.nextLine();
 
-			if (item == null) {
-				System.out.println("Invalid Food Item ID.");
-				continue;
-			}
+            System.out.print("Pincode: ");
+            Long pincode = scanner.nextLong();
+            scanner.nextLine();
 
-			orderList.add(item);
-			System.out.println(item.getName() + " added to your order.");
-		}
+            int customerId = nextCustomerId++;
 
-		if (!orderList.isEmpty()) {
-			CalculateBill bill = new CalculateBill();
-			double totalBill = bill.getTotalBillForOrder(orderList);
-		} else {
-			System.out.println("No items ordered.");
-		}
+            address = new Address(customerId, name, city, state, pincode);
+            System.out.println("Your delivery address is set to: " + address);
+            System.out.println("Your generated Customer ID is: " + customerId);
 
-		return new OrderResult(orderList, address);
-	}
+            CustomerData.saveCustomer(address);
+        }
+
+        return address;
+    }
 }
