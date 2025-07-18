@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 public class PlayGame {
 
-	public static void main (String []args) {
+	public static void main (String []args){
 
 		Sign choice[][] = new Sign[3][3];
 		Scanner scanner = new Scanner(System.in);

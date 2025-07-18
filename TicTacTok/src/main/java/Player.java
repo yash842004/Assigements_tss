@@ -2,9 +2,9 @@
 public class Player {
 	
 	private String player;
-	private String symbol;
+	private Sign symbol;
 
-	public Player(String player, String symbol) {
+	public Player(String player, Sign symbol) {
 		super();
 		this.player = player;
 		this.symbol = symbol;
@@ -12,7 +12,7 @@ public class Player {
 	public String getPlayer() {
 		return player;
 	}
-	public String getSymbol() {
+	public Sign getSymbol() {
 		return symbol;
 	}
 

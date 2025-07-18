@@ -1,6 +1,0 @@
-package com.tss.factory;
-
-public interface GenerateLicenseNumber {
-	String generatePlate();
-
-}

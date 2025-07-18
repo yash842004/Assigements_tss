@@ -92,13 +92,15 @@ public class Borad {
 		return true;
 	}
 
-	public void emptyBoard() {
+	public boolean emptyBoard() {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				sign[i][j] = Sign.EMPTY;
-
+					return true;
+					
 			}
 		}
+		return false;
 
 	}
 

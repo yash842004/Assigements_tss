@@ -4,6 +4,8 @@
 	<section name="java.lang.Class">
 		<item key="replaceBarOpen" value="false"/>
 		<list key="findhistory">
+			<item value="placeorder"/>
+			<item value="Address"/>
 			<item value="inputDouble"/>
 			<item value="DisplayMenu"/>
 			<item value="getFoodTypes"/>
@@ -17,8 +19,6 @@
 			<item value="apply&apos;"/>
 			<item value="getId"/>
 			<item value="InsufficientWaterException"/>
-			<item value="accounts"/>
-			<item value="accountIdCounter"/>
 		</list>
 	</section>
 </section>

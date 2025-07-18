@@ -1,6 +1,10 @@
 package com.tss.fooddelivery.foodbill;
 
-public class FoodItem {
+import java.io.Serializable;
+
+public class FoodItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private int id;
     private String name;
     private double price;
@@ -12,39 +16,43 @@ public class FoodItem {
         this.name = name;
         this.price = price;
         this.category = category;
-        this.discountPercentage = 0; 
+        this.discountPercentage = 0;
     }
 
     public int getId() {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public int getDiscountPercentage() {
-        return discountPercentage;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
     public void setPrice(double price) {
         this.price = price;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public int getDiscountPercentage() {
+        return discountPercentage;
     }
 
     public void setDiscountPercentage(int discountPercentage) {
