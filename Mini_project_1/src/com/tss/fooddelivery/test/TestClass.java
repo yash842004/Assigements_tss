@@ -3,6 +3,8 @@ package com.tss.fooddelivery.test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import com.tss.fooddelivery.Database.MenuData;
 import com.tss.fooddelivery.admin.Admin;
 import com.tss.fooddelivery.customer.Address;
 import com.tss.fooddelivery.customer.Cart;
@@ -16,7 +18,6 @@ import com.tss.fooddelivery.foodpatner.DeliveryPartnerService;
 import com.tss.fooddelivery.foodpatner.IDeliveryPartnerService;
 import com.tss.fooddelivery.menu.Menu;
 import com.tss.fooddelivery.payments.Payment;
-import com.tss.fooddelivery.Database.MenuData;
 
 public class TestClass {
 
