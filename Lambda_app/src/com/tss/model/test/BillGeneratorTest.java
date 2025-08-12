@@ -17,11 +17,11 @@ public class BillGeneratorTest {
 		
 		Function<BillGenerator, String> billGenerate = bill -> bill.generateBill();
 			
-			String result = billGenerate.apply(bill);
+			String result = billGenerate.apply((BillGenerator) billGenerate);
 			
 			
 		};
 		
-	}
+	
 
 }

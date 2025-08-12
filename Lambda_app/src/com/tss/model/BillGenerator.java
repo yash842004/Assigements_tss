@@ -23,8 +23,9 @@ public class BillGenerator {
         this.basePrice = basePrice;
     }
 	 public String generateBill() {
-	        double tax = basePrice * TAX_RATE;
-	        double finalAmount = basePrice + tax + SHIPPING_CHARGE;
+	        double tax = basePrice * this.tax;
+	        double finalAmount = basePrice + tax + shipping;
+			return itemName;
 
 
 	    }

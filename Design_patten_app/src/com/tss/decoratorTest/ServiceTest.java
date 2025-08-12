@@ -38,7 +38,7 @@ public class ServiceTest {
 				System.out.println("Oil Change added. Current total: $" + currentService.getCost());
 				break;
 			case 2:
-				currentService = new WheelAlign(currentService);
+				currentService = new CarInspection(currentService);
 				System.out.println("Wheel Alignment added. Current total: $" + currentService.getCost());
 				break;
 			case 0:

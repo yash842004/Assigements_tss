@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+</head>
+<body>
+    <h2>Registration Form</h2>
+    <form action="RegisterServlet" method="post">
+        Name: <input type="text" name="name"><br><br>
+        Address: <textarea name="address"></textarea><br><br>
+        Gender:
+        <input type="radio" name="gender" value="Male">Male
+        <input type="radio" name="gender" value="Female">Female<br><br>
+        City:
+        <select name="city">
+            <option value="Mumbai">Mumbai</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Pune">Pune</option>
+            <option value="Chennai">Chennai</option>
+        </select><br><br>
+        Languages:<br>
+        <input type="checkbox" name="languages" value="Marathi">Marathi<br>
+        <input type="checkbox" name="languages" value="Hindi">Hindi<br>
+        <input type="checkbox" name="languages" value="English">English<br>
+        <input type="checkbox" name="languages" value="Gujarati">Gujarati<br><br>
+        Username: <input type="text" name="username"><br><br>
+        Password: <input type="password" name="password"><br><br>
+        Confirm Password: <input type="password" name="confirmPassword"><br><br>
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>
