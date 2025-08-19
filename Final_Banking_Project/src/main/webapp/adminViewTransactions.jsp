@@ -1,0 +1,106 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Transaction History</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 20px;
+	background-color: #f4f4f4;
+}
+
+.container {
+	background-color: #fff;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+	color: #333;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+th, td {
+	padding: 12px;
+	border: 1px solid #ddd;
+	text-align: left;
+}
+
+th {
+	background-color: #0056b3;
+	color: white;
+}
+
+tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+.credit {
+	color: green;
+}
+
+.debit {
+	color: red;
+}
+
+.back-link {
+	display: inline-block;
+	margin-top: 20px;
+	color: #0056b3;
+	text-decoration: none;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<h2>Transaction History For: ${customerName}</h2>
+		<h3>Account Number: ${accountNumber}</h3>
+
+		<c:choose>
+			<c:when test="${not empty transactions}">
+				<table>
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Description</th>
+							<th>Type</th>
+							<th>Amount</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="tx" items="${transactions}">
+							<tr>
+								<td><fmt:formatDate value="${tx.transactionDate}"
+										pattern="yyyy-MM-dd HH:mm:ss" /></td>
+								<td>${tx.description}</td>
+								<td>${tx.transactionType}</td>
+								<td
+									class="${tx.transactionType.contains('IN') || tx.transactionType.contains('DEPOSIT') ? 'credit' : 'debit'}">
+									<fmt:formatNumber value="${tx.amount}" type="currency"
+										currencySymbol="$" />
+								</td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</c:when>
+			<c:otherwise>
+				<p>No transactions found for this account.</p>
+			</c:otherwise>
+		</c:choose>
+
+		<a href="adminDashboard" class="back-link">&larr; Back to Admin
+			Dashboard</a>
+	</div>
+</body>
+</html>
