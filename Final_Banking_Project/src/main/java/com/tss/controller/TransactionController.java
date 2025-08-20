@@ -66,8 +66,19 @@ public class TransactionController extends HttpServlet {
 			return;
 		}
 
-		if ("/passbook".equals(action)) {
+		switch (action) {
+		case "/passbook":
 			showPassbook(request, response);
+			break;
+		case "/deposit":
+			showDepositForm(request, response);
+			break;
+		case "/withdraw":
+			showWithdrawForm(request, response);
+			break;
+		case "/transfer":
+			showTransferForm(request, response);
+			break;
 		}
 	}
 
@@ -77,14 +88,20 @@ public class TransactionController extends HttpServlet {
 		Customer customer = (Customer) session.getAttribute("customer");
 		BigDecimal amount = new BigDecimal(request.getParameter("amount"));
 
-		Account account = accountDAO.getAccountByCustomerId(customer.getCustomerId());
-		boolean success = accountService.deposit(account.getAccountId(), amount);
+		int accountId = Integer.parseInt(request.getParameter("accountId"));
+		Account account = accountDAO.getAccountById(accountId);
+		if (account == null || account.getCustomerId() != customer.getCustomerId()) {
+			request.setAttribute("errorMessage", "Invalid account selection.");
+			showDepositForm(request, response);
+			return;
+		}
+		boolean success = accountService.deposit(accountId, amount);
 
 		if (success) {
 			response.sendRedirect("dashboard");
 		} else {
 			request.setAttribute("errorMessage", "Deposit failed. Please enter a valid amount.");
-			request.getRequestDispatcher("/WEB-INF/jsp/deposit.jsp").forward(request, response);
+			showDepositForm(request, response);
 		}
 	}
 
@@ -94,14 +111,20 @@ public class TransactionController extends HttpServlet {
 		Customer customer = (Customer) session.getAttribute("customer");
 		BigDecimal amount = new BigDecimal(request.getParameter("amount"));
 
-		Account account = accountDAO.getAccountByCustomerId(customer.getCustomerId());
-		boolean success = accountService.withdraw(account.getAccountId(), amount);
+		int accountId = Integer.parseInt(request.getParameter("accountId"));
+		Account account = accountDAO.getAccountById(accountId);
+		if (account == null || account.getCustomerId() != customer.getCustomerId()) {
+			request.setAttribute("errorMessage", "Invalid account selection.");
+			showWithdrawForm(request, response);
+			return;
+		}
+		boolean success = accountService.withdraw(accountId, amount);
 
 		if (success) {
 			response.sendRedirect("dashboard");
 		} else {
 			request.setAttribute("errorMessage", "Withdrawal failed. Check for sufficient funds.");
-			request.getRequestDispatcher("/WEB-INF/jsp/withdraw.jsp").forward(request, response);
+			showWithdrawForm(request, response);
 		}
 	}
 
@@ -112,14 +135,20 @@ public class TransactionController extends HttpServlet {
 		String toAccountNumber = request.getParameter("toAccountNumber");
 		BigDecimal amount = new BigDecimal(request.getParameter("amount"));
 
-		Account fromAccount = accountDAO.getAccountByCustomerId(customer.getCustomerId());
-		String message = accountService.transferMoney(fromAccount.getAccountId(), toAccountNumber, amount);
+		int fromAccountId = Integer.parseInt(request.getParameter("fromAccountId"));
+		Account fromAccount = accountDAO.getAccountById(fromAccountId);
+		if (fromAccount == null || fromAccount.getCustomerId() != customer.getCustomerId()) {
+			request.setAttribute("errorMessage", "Invalid source account selection.");
+			showTransferForm(request, response);
+			return;
+		}
+		String message = accountService.transferMoney(fromAccountId, toAccountNumber, amount);
 
 		if ("Transfer successful!".equals(message)) {
 			response.sendRedirect("dashboard");
 		} else {
 			request.setAttribute("errorMessage", message);
-			request.getRequestDispatcher("/WEB-INF/jsp/transfer.jsp").forward(request, response);
+			showTransferForm(request, response);
 		}
 	}
 
@@ -128,29 +157,61 @@ public class TransactionController extends HttpServlet {
 		HttpSession session = request.getSession();
 		Customer customer = (Customer) session.getAttribute("customer");
 
-		// Use the customer's ID from the session to find their account
-		Account account = accountDAO.getAccountByCustomerId(customer.getCustomerId());
-
-		// **FIX**: Check if the account was actually found
-		if (account != null) {
-			// If found, use the account's ID to get its transactions
-			List<Transaction> transactions = transactionDAO.getTransactionsByAccountId(account.getAccountId());
-			request.setAttribute("transactions", transactions);
-
-			// This line is for debugging - check your server console (e.g., in
-			// Eclipse/IntelliJ)
-			System.out.println(
-					"Found " + transactions.size() + " transactions for account ID: " + account.getAccountId());
-
-		} else {
-			// This handles the case where no account is linked to the customer
-			// This line will print to your server console if the account is not found
-			System.out.println("CRITICAL: No account found for customer ID: " + customer.getCustomerId());
-			request.setAttribute("transactions", Collections.emptyList()); // Send an empty list to avoid errors on the
-																			// JSP page
+		// Get all accounts for the customer
+		List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
+		
+		if (accounts.isEmpty()) {
+			request.setAttribute("transactions", Collections.emptyList());
+			request.setAttribute("accounts", accounts);
+			request.getRequestDispatcher("/passbook.jsp").forward(request, response);
+			return;
 		}
 
+		// Get account ID from request parameter, or use the first account
+		String accountIdParam = request.getParameter("accountId");
+		int selectedAccountId;
+		
+		if (accountIdParam != null && !accountIdParam.trim().isEmpty()) {
+			selectedAccountId = Integer.parseInt(accountIdParam);
+		} else {
+			selectedAccountId = accounts.get(0).getAccountId();
+		}
+
+		List<Transaction> transactions = transactionDAO.getTransactionsByAccountId(selectedAccountId);
+		request.setAttribute("transactions", transactions);
+		request.setAttribute("accounts", accounts);
+		request.setAttribute("selectedAccountId", selectedAccountId);
+		
+		System.out.println("Found " + transactions.size() + " transactions for account ID: " + selectedAccountId);
+
 		request.getRequestDispatcher("/passbook.jsp").forward(request, response);
+	}
+
+	private void showDepositForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		Customer customer = (Customer) session.getAttribute("customer");
+		List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
+		request.setAttribute("accounts", accounts);
+		request.getRequestDispatcher("/deposit.jsp").forward(request, response);
+	}
+
+	private void showWithdrawForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		Customer customer = (Customer) session.getAttribute("customer");
+		List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
+		request.setAttribute("accounts", accounts);
+		request.getRequestDispatcher("/withdraw.jsp").forward(request, response);
+	}
+
+	private void showTransferForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		Customer customer = (Customer) session.getAttribute("customer");
+		List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
+		request.setAttribute("accounts", accounts);
+		request.getRequestDispatcher("/transfer.jsp").forward(request, response);
 	}
 
 }

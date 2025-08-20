@@ -1,6 +1,7 @@
 package com.tss.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,18 +15,21 @@ import com.tss.dao.AccountDAO;
 import com.tss.dao.CustomerDAO;
 import com.tss.model.Account;
 import com.tss.model.Customer;
+import com.tss.service.CustomerService;
 
 
-@WebServlet(urlPatterns = { "/register", "/login", "/dashboard", "/logout" })
+@WebServlet(urlPatterns = { "/register", "/login", "/dashboard", "/logout", "/openAccount", "/manageAccounts", "/updateAccountType", "/deleteAccount" })
 public class CustomerController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final CustomerDAO customerDAO;
 	private final AccountDAO accountDAO;
+	private final CustomerService customerService;
 
 	public CustomerController() {
 		super();
 		this.customerDAO = new CustomerDAO();
 		this.accountDAO = new AccountDAO();
+		this.customerService = new CustomerService();
 	}
 
 	
@@ -35,6 +39,12 @@ public class CustomerController extends HttpServlet {
 		switch (action) {
 		case "/dashboard":
 			showDashboard(request, response);
+			break;
+		case "/openAccount":
+			showOpenAccountForm(request, response);
+			break;
+		case "/manageAccounts":
+			showManageAccounts(request, response);
 			break;
 		case "/logout":
 			logoutCustomer(request, response);
@@ -52,6 +62,15 @@ public class CustomerController extends HttpServlet {
 			break;
 		case "/login":
 			loginCustomer(request, response);
+			break;
+		case "/openAccount":
+			createAccount(request, response);
+			break;
+		case "/updateAccountType":
+			updateAccountType(request, response);
+			break;
+		case "/deleteAccount":
+			deleteAccount(request, response);
 			break;
 		}
 	}
@@ -105,11 +124,46 @@ public class CustomerController extends HttpServlet {
 		}
 
 		Customer customer = (Customer) session.getAttribute("customer");
-		Account account = accountDAO.getAccountByCustomerId(customer.getCustomerId());
-
+		List<Account> allAccounts = customerService.getAllCustomerAccounts(customer.getCustomerId());
+		
+		// For backward compatibility, keep the first account as the main account
+		Account account = allAccounts.isEmpty() ? null : allAccounts.get(0);
+		
 		request.setAttribute("account", account);
+		request.setAttribute("allAccounts", allAccounts);
 		RequestDispatcher dispatcher = request.getRequestDispatcher("customerDashboard.jsp");
 		dispatcher.forward(request, response);
+	}
+
+	private void showOpenAccountForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("customer") == null) {
+			response.sendRedirect("index.jsp");
+			return;
+		}
+		RequestDispatcher dispatcher = request.getRequestDispatcher("openAccount.jsp");
+		dispatcher.forward(request, response);
+	}
+
+	private void createAccount(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("customer") == null) {
+			response.sendRedirect("index.jsp");
+			return;
+		}
+		Customer customer = (Customer) session.getAttribute("customer");
+		String accountType = request.getParameter("type");
+		boolean created = customerService.createAccountForCustomer(customer.getCustomerId(), accountType);
+		if (!created) {
+			request.setAttribute("errorMessage",
+					"Account not created. It may already exist for this type or the type is invalid.");
+			showOpenAccountForm(request, response);
+			return;
+		}
+		request.setAttribute("successMessage", "Account created successfully.");
+		showDashboard(request, response);
 	}
 
 	private void logoutCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -120,4 +174,60 @@ public class CustomerController extends HttpServlet {
 		response.sendRedirect("index.jsp");
 	}
 
+	private void showManageAccounts(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("customer") == null) {
+			response.sendRedirect("index.jsp");
+			return;
+		}
+
+		Customer customer = (Customer) session.getAttribute("customer");
+		List<Account> accounts = customerService.getAllCustomerAccounts(customer.getCustomerId());
+
+		request.setAttribute("accounts", accounts);
+		RequestDispatcher dispatcher = request.getRequestDispatcher("manageAccounts.jsp");
+		dispatcher.forward(request, response);
+	}
+
+	private void updateAccountType(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("customer") == null) {
+			response.sendRedirect("index.jsp");
+			return;
+		}
+
+		int accountId = Integer.parseInt(request.getParameter("accountId"));
+		String newAccountType = request.getParameter("newAccountType");
+
+		boolean updated = customerService.updateAccountType(accountId, newAccountType);
+		if (updated) {
+			request.setAttribute("successMessage", "Account type updated successfully.");
+		} else {
+			request.setAttribute("errorMessage", "Failed to update account type.");
+		}
+
+		showManageAccounts(request, response);
+	}
+
+	private void deleteAccount(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("customer") == null) {
+			response.sendRedirect("index.jsp");
+			return;
+		}
+
+		int accountId = Integer.parseInt(request.getParameter("accountId"));
+
+		boolean deleted = customerService.deleteAccount(accountId);
+		if (deleted) {
+			request.setAttribute("successMessage", "Account deleted successfully.");
+		} else {
+			request.setAttribute("errorMessage", "Failed to delete account.");
+		}
+
+		showManageAccounts(request, response);
+	}
 }

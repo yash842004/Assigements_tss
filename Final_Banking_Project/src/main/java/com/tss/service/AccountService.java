@@ -24,8 +24,7 @@ public class AccountService {
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 			return false; // Cannot deposit zero or negative amount
 		}
-		Account account = accountDAO.getAccountByCustomerId(accountId); // Assuming customerId == accountId for
-																		// simplicity here, adjust if needed
+		Account account = accountDAO.getAccountById(accountId);
 		if (account == null) {
 			return false;
 		}
@@ -47,7 +46,7 @@ public class AccountService {
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 			return false; // Cannot withdraw zero or negative amount
 		}
-		Account account = accountDAO.getAccountByCustomerId(accountId); // Adjust if needed
+		Account account = accountDAO.getAccountById(accountId);
 		if (account == null || account.getBalance().compareTo(amount) < 0) {
 			return false; // Insufficient funds
 		}
@@ -76,8 +75,7 @@ public class AccountService {
 			conn.setAutoCommit(false); // Start transaction
 
 			Account fromAccount = accountDAO.getAccountById(fromAccountId, conn);
-			Account toAccount = accountDAO.getAccountByNumber(toAccountNumber); // Can use separate connection or pass
-																				// conn
+			Account toAccount = accountDAO.getAccountByNumber(toAccountNumber); 
 
 			if (fromAccount == null) {
 				return "Sender account not found.";

@@ -17,17 +17,22 @@ public class AdminDAO {
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
 			pstmt.setString(1, username);
-			pstmt.setString(2, password); // In a real-world app, compare hashed passwords
+			pstmt.setString(2, password); 
+
+			System.out.println("AdminDAO: Attempting to validate admin with username: " + username);
 
 			try (ResultSet rs = pstmt.executeQuery()) {
 				if (rs.next()) {
 					admin = new Admin();
 					admin.setAdminId(rs.getInt("id"));
 					admin.setUsername(rs.getString("username"));
-					// We don't set the password in the model object for security
+					System.out.println("AdminDAO: Admin validation successful for user: " + username);
+				} else {
+					System.out.println("AdminDAO: No admin found with username: " + username);
 				}
 			}
 		} catch (SQLException e) {
+			System.err.println("AdminDAO: Database error during admin validation: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return admin;

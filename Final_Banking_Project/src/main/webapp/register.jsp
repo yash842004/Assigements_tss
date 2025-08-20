@@ -3,111 +3,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Customer Registration</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraBank - Create Account</title>
 
-<!-- Bootstrap 5 -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1e90ff, #00c6ff);
-  transition: background 0.6s ease;
-}
+    <style>
+        :root {
+            --primary-color: #6c63ff;
+            --dark-bg: #121212;
+            --form-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --muted-color: #888;
+            --border-color: #333;
+        }
 
-/* Card */
-.card {
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  width: 100%;
-  max-width: 450px;
-  padding: 30px;
-  animation: fadeIn 0.8s ease-in-out;
-}
-.card h3 {
-  font-weight: bold;
-  margin-bottom: 20px;
-  text-align: center;
-}
-.card input {
-  border-radius: 10px;
-}
-.btn-register {
-  border-radius: 10px;
-  font-weight: bold;
-  background-color: #0056b3;
-  border: none;
-}
-.btn-register:hover {
-  background-color: #004494;
-}
-.login-link {
-  display: block;
-  margin-top: 15px;
-  text-align: center;
-  font-weight: 500;
-  color: #0056b3;
-  text-decoration: none;
-}
-.login-link:hover {
-  text-decoration: underline;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            max-height: 800px; /* Increased height for more fields */
+            background-color: var(--form-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Left Panel (Illustration) --- */
+        .illustration-panel {
+            flex: 1;
+            background: linear-gradient(160deg, var(--primary-color), #4a40d1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .illustration-panel .shape {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+        .shape1 { width: 200px; height: 200px; top: 10%; left: 15%; animation-delay: 0s; }
+        .shape2 { width: 80px; height: 80px; top: 70%; left: 25%; animation-delay: 3s; }
+        .shape3 { width: 120px; height: 120px; top: 40%; left: 70%; animation-delay: 6s; }
+        .shape4 { width: 50px; height: 50px; top: 20%; left: 80%; animation-delay: 9s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        .illustration-panel .main-icon {
+            font-size: 10rem;
+            color: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+            text-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* --- Right Panel (Form) --- */
+        .form-panel {
+            flex: 1;
+            padding: 2.5rem; /* Adjusted padding */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .form-panel h2 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .form-panel p {
+            color: var(--muted-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.2rem; /* Adjusted margin */
+        }
+        
+        .form-control {
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid var(--border-color);
+            border-radius: 0;
+            padding: 0.5rem 0;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* --- Button Styling --- */
+        .btn-register {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.8rem;
+            transition: all 0.3s ease;
+            background-color: var(--primary-color);
+            border: none;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3);
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 992px) {
+            .illustration-panel {
+                display: none;
+            }
+            .form-panel {
+                padding: 2.5rem;
+            }
+            .register-container {
+                max-height: 100%;
+                height: auto;
+                margin: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="card">
-  <h3>✨ Create Your Account</h3>
+    <div class="register-container">
+        <!-- Left Panel with Illustration -->
+        <div class="illustration-panel">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
+            <div class="shape shape3"></div>
+            <div class="shape shape4"></div>
+            <i class="bi bi-person-plus-fill main-icon"></i>
+        </div>
 
-  <!-- Success Message -->
-  <c:if test="${not empty successMessage}">
-    <div class="alert alert-success text-center">${successMessage}</div>
-  </c:if>
+        <!-- Right Panel with Form -->
+        <div class="form-panel">
+            <h2>Create Your Account</h2>
+            <p>Join AuraBank and start your premium banking journey.</p>
+            
+            <c:if test="${not empty successMessage}">
+                <div class="alert alert-success text-center">${successMessage}</div>
+            </c:if>
 
-  <form action="register" method="post">
-    <div class="mb-3">
-      <label class="form-label" for="fullName">Full Name</label>
-      <input type="text" class="form-control" id="fullName" name="fullName" required>
+            <form action="register" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="address" name="address" placeholder="Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-register">Register</button>
+            </form>
+
+            <div class="login-link">
+                <p>Already have an account? <a href="index.jsp">Login Here</a></p>
+            </div>
+        </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="email">Email</label>
-      <input type="email" class="form-control" id="email" name="email" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="password">Password</label>
-      <input type="password" class="form-control" id="password" name="password" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="address">Address</label>
-      <input type="text" class="form-control" id="address" name="address" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="phone">Phone Number</label>
-      <input type="text" class="form-control" id="phone" name="phone" required>
-    </div>
-
-    <button type="submit" class="btn btn-register w-100">Register</button>
-  </form>
-
-  <a href="index.jsp" class="login-link">Already have an account? Login</a>
-</div>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

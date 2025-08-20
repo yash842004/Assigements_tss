@@ -40,7 +40,6 @@ public class TransactionDAO {
 
 
 
-	// Inside TransactionDAO.java
 
 	public List<Transaction> getTransactionsByAccountId(int accountId) {
 	    List<Transaction> transactions = new ArrayList<>();
@@ -53,12 +52,18 @@ public class TransactionDAO {
 	        try (ResultSet rs = pstmt.executeQuery()) {
 	            while (rs.next()) {
 	                Transaction transaction = new Transaction();
+	                transaction.setTransactionId(rs.getInt("transactionId"));
+	                transaction.setAccountId(rs.getInt("accountId"));
+	                transaction.setTransactionType(rs.getString("transactionType"));
+	                transaction.setAmount(rs.getBigDecimal("amount"));
+	                transaction.setTransactionDate(rs.getTimestamp("transactionDate"));
+	                transaction.setDescription(rs.getString("description"));
 	                transactions.add(transaction);
 	            }
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    }
-	    return transactions; // This will be an empty list if no records are found
+	    return transactions; 
 	}
 }

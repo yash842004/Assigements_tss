@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.tss.model.Account;
 import com.tss.util.DBConnection;
@@ -62,6 +64,36 @@ public class AccountDAO {
 		return account;
 	}
 
+	public boolean existsAccountForCustomerAndType(int customerId, String accountType) {
+		String sql = "SELECT 1 FROM accounts WHERE customerId = ? AND accountType = ? LIMIT 1";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, customerId);
+			pstmt.setString(2, accountType);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				return rs.next();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public List<Account> getAccountsByCustomerIdAll(int customerId) {
+		String sql = "SELECT * FROM accounts WHERE customerId = ?";
+		List<Account> accounts = new ArrayList<>();
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, customerId);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					accounts.add(mapRowToAccount(rs));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+
 	public Account getAccountById(int accountId, Connection conn) throws SQLException {
 		String sql = "SELECT * FROM accounts WHERE accountId = ?";
 		Account account = null;
@@ -72,6 +104,22 @@ public class AccountDAO {
 					account = mapRowToAccount(rs);
 				}
 			}
+		}
+		return account;
+	}
+
+	public Account getAccountById(int accountId) {
+		String sql = "SELECT * FROM accounts WHERE accountId = ?";
+		Account account = null;
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, accountId);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					account = mapRowToAccount(rs);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return account;
 	}
@@ -93,6 +141,31 @@ public class AccountDAO {
 			pstmt.setBigDecimal(1, account.getBalance());
 			pstmt.setInt(2, account.getAccountId());
 			pstmt.executeUpdate();
+		}
+	}
+
+	public boolean updateAccountType(int accountId, String newAccountType) {
+		String sql = "UPDATE accounts SET accountType = ? WHERE accountId = ?";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setString(1, newAccountType);
+			pstmt.setInt(2, accountId);
+			int rowsAffected = pstmt.executeUpdate();
+			return rowsAffected > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public boolean deleteAccount(int accountId) {
+		String sql = "DELETE FROM accounts WHERE accountId = ?";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, accountId);
+			int rowsAffected = pstmt.executeUpdate();
+			return rowsAffected > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 

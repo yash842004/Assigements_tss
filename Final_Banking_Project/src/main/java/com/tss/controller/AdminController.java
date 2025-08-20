@@ -1,6 +1,7 @@
 package com.tss.controller;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -78,6 +79,7 @@ public class AdminController extends HttpServlet {
 		case "/viewTransactions":
 			viewCustomerTransactions(request, response);
 			break;
+
 		case "/adminLogout":
 			logoutAdmin(request, response);
 			break;
@@ -88,13 +90,18 @@ public class AdminController extends HttpServlet {
 			throws IOException, ServletException {
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
+
+		System.out.println("AdminController: Login attempt for username: " + username);
+
 		Admin admin = adminDAO.validateAdmin(username, password);
 
 		if (admin != null) {
 			HttpSession session = request.getSession();
 			session.setAttribute("admin", admin);
+			System.out.println("AdminController: Admin login successful for user: " + username);
 			response.sendRedirect("adminDashboard");
 		} else {
+			System.out.println("AdminController: Admin login failed for user: " + username);
 			request.setAttribute("errorMessage", "Invalid admin credentials.");
 			request.getRequestDispatcher("index.jsp").forward(request, response);
 		}
@@ -104,7 +111,7 @@ public class AdminController extends HttpServlet {
 			throws ServletException, IOException {
 		List<CustomerAccountView> allCustomers = customerDAO.getAllCustomerAccountDetails();
 		request.setAttribute("customers", allCustomers);
-		request.getRequestDispatcher("/WEB-INF/jsp/adminDashboard.jsp").forward(request, response);
+		request.getRequestDispatcher("/adminDashboard.jsp").forward(request, response);
 	}
 
 	private void approveCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -127,7 +134,7 @@ public class AdminController extends HttpServlet {
 
 	private void deactivateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		int customerId = Integer.parseInt(request.getParameter("id"));
-		customerDAO.updateCustomerStatus(customerId, "DEACTIVATED"); 
+		customerDAO.updateCustomerStatus(customerId, "DEACTIVATED");
 		response.sendRedirect("adminDashboard");
 	}
 
@@ -135,19 +142,33 @@ public class AdminController extends HttpServlet {
 			throws ServletException, IOException {
 		int customerId = Integer.parseInt(request.getParameter("id"));
 
-		Account account = accountDAO.getAccountByCustomerId(customerId);
+		List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customerId);
 
-		if (account != null) {
-			List<Transaction> transactions = transactionDAO.getTransactionsByAccountId(account.getAccountId());
-
-			request.setAttribute("transactions", transactions);
+		if (accounts.isEmpty()) {
+			request.setAttribute("errorMessage", "No accounts found for this customer.");
+			request.setAttribute("transactions", Collections.emptyList());
 			request.setAttribute("customerName", customerDAO.getCustomerById(customerId).getFullName());
-			request.setAttribute("accountNumber", account.getAccountNumber());
-		} else {
-			
-			System.out.println("AdminController: No account found for customer ID: " + customerId);
-			request.setAttribute("errorMessage", "No account found for this customer.");
+			request.getRequestDispatcher("adminViewTransactions.jsp").forward(request, response);
+			return;
 		}
+
+		String accountIdParam = request.getParameter("accountId");
+		int selectedAccountId;
+
+		if (accountIdParam != null && !accountIdParam.trim().isEmpty()) {
+			selectedAccountId = Integer.parseInt(accountIdParam);
+		} else {
+			selectedAccountId = accounts.get(0).getAccountId();
+		}
+
+		Account selectedAccount = accountDAO.getAccountById(selectedAccountId);
+		List<Transaction> transactions = transactionDAO.getTransactionsByAccountId(selectedAccountId);
+
+		request.setAttribute("transactions", transactions);
+		request.setAttribute("accounts", accounts);
+		request.setAttribute("selectedAccountId", selectedAccountId);
+		request.setAttribute("customerName", customerDAO.getCustomerById(customerId).getFullName());
+		request.setAttribute("accountNumber", selectedAccount.getAccountNumber());
 
 		request.getRequestDispatcher("adminViewTransactions.jsp").forward(request, response);
 	}

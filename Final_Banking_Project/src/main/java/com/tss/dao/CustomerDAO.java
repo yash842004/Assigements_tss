@@ -45,7 +45,7 @@ public class CustomerDAO {
 					customer.setCustomerId(rs.getInt("id"));
 					customer.setFullName(rs.getString("fullName"));
 					customer.setEmail(rs.getString("email"));
-					customer.setPassword(rs.getString("password")); // Be cautious about loading passwords
+					customer.setPassword(rs.getString("password")); 
 					customer.setAddress(rs.getString("address"));
 					customer.setPhone(rs.getString("phone"));
 					customer.setStatus(rs.getString("status"));
@@ -126,8 +126,8 @@ public class CustomerDAO {
 	public List<CustomerAccountView> getAllCustomerAccountDetails() {
 		List<CustomerAccountView> customerDetails = new ArrayList<>();
 	
-		String sql = "SELECT c.id, c.fullName, c.email, c.phone, c.status, a.accountNumber, a.balance "
-				+ "FROM customers c LEFT JOIN accounts a ON c.id = a.customerId ORDER BY c.id";
+		String sql = "SELECT c.id, c.fullName, c.email, c.phone, c.status, a.accountNumber, a.balance, a.accountType "
+				+ "FROM customers c LEFT JOIN accounts a ON c.id = a.customerId ORDER BY c.id, a.accountId";
 
 		try (Connection conn = DBConnection.getConnection();
 				Statement stmt = conn.createStatement();
@@ -140,8 +140,9 @@ public class CustomerDAO {
 				view.setEmail(rs.getString("email"));
 				view.setPhone(rs.getString("phone"));
 				view.setStatus(rs.getString("status"));
-				view.setAccountNumber(rs.getString("accountNumber")); // Will be null for PENDING users
-				view.setBalance(rs.getBigDecimal("balance")); // Will be null for PENDING users
+				view.setAccountNumber(rs.getString("accountNumber")); 
+				view.setBalance(rs.getBigDecimal("balance")); 
+				view.setAccountType(rs.getString("accountType")); 
 				customerDetails.add(view);
 			}
 		} catch (SQLException e) {

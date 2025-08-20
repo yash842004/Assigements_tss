@@ -10,10 +10,9 @@ public class CustomerAccountView {
 	private String email;
 	private String phone;
 	private String status;
-
-	// Account fields
 	private String accountNumber;
 	private BigDecimal balance;
+	private String accountType;
 
 
 	public int getCustomerId() {
@@ -72,4 +71,11 @@ public class CustomerAccountView {
 		this.balance = balance;
 	}
 
+	public String getAccountType() {
+		return accountType;
+	}
+
+	public void setAccountType(String accountType) {
+		this.accountType = accountType;
+	}
 }
