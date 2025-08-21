@@ -75,8 +75,7 @@ public class AccountService {
 			conn.setAutoCommit(false); // Start transaction
 
 			Account fromAccount = accountDAO.getAccountById(fromAccountId, conn);
-			Account toAccount = accountDAO.getAccountByNumber(toAccountNumber); // Can use separate connection or pass
-																											// conn
+			Account toAccount = accountDAO.getAccountByNumber(toAccountNumber); 
 
 			if (fromAccount == null) {
 				return "Sender account not found.";

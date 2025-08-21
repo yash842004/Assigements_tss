@@ -5,6 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.tss.model.Account;
 import com.tss.util.DBConnection;
@@ -62,6 +66,36 @@ public class AccountDAO {
 		return account;
 	}
 
+	public boolean existsAccountForCustomerAndType(int customerId, String accountType) {
+		String sql = "SELECT 1 FROM accounts WHERE customerId = ? AND accountType = ? LIMIT 1";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, customerId);
+			pstmt.setString(2, accountType);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				return rs.next();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public List<Account> getAccountsByCustomerIdAll(int customerId) {
+		String sql = "SELECT * FROM accounts WHERE customerId = ?";
+		List<Account> accounts = new ArrayList<>();
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, customerId);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					accounts.add(mapRowToAccount(rs));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+
 	public Account getAccountById(int accountId, Connection conn) throws SQLException {
 		String sql = "SELECT * FROM accounts WHERE accountId = ?";
 		Account account = null;
@@ -110,6 +144,60 @@ public class AccountDAO {
 			pstmt.setInt(2, account.getAccountId());
 			pstmt.executeUpdate();
 		}
+	}
+
+	public boolean updateAccountType(int accountId, String newAccountType) {
+		String sql = "UPDATE accounts SET accountType = ? WHERE accountId = ?";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setString(1, newAccountType);
+			pstmt.setInt(2, accountId);
+			int rowsAffected = pstmt.executeUpdate();
+			return rowsAffected > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public boolean deleteAccount(int accountId) {
+		String sql = "DELETE FROM accounts WHERE accountId = ?";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, accountId);
+			int rowsAffected = pstmt.executeUpdate();
+			return rowsAffected > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public List<Account> getAllAccounts() {
+		String sql = "SELECT * FROM accounts";
+		List<Account> accounts = new ArrayList<>();
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+			while (rs.next()) {
+				accounts.add(mapRowToAccount(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+
+	public Map<String, Long> getAccountTypeDistribution() {
+		Map<String, Long> distribution = new HashMap<>();
+		String sql = "SELECT account_type, COUNT(*) as count FROM accounts GROUP BY account_type";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				distribution.put(rs.getString("account_type"), rs.getLong("count"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return distribution;
 	}
 
 	private Account mapRowToAccount(ResultSet rs) throws SQLException {

@@ -1,21 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AuraBank - Customer Dashboard</title>
+<title>AuraBank - Open New Account</title>
 
+<!-- Bootstrap 5 CSS -->
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
 	rel="stylesheet">
-
+<!-- Bootstrap Icons -->
 <link rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!-- Google Fonts: Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
@@ -30,8 +30,6 @@
 	--text-color: #e0e0e0;
 	--muted-color: #888;
 	--border-color: #333;
-	--success-color: #28a745;
-	--danger-color: #dc3545;
 }
 
 body {
@@ -43,6 +41,7 @@ body {
 	min-height: 100vh;
 }
 
+/* --- Sidebar --- */
 .sidebar {
 	width: 260px;
 	background-color: var(--content-bg);
@@ -82,23 +81,32 @@ body {
 	margin-top: auto;
 }
 
+/* --- Main Content --- */
 .main-content {
 	flex-grow: 1;
 	padding: 2rem;
 	overflow-y: auto;
 }
 
-.main-header h1 {
-	font-weight: 700;
+.main-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 	margin-bottom: 2rem;
 }
 
-.dashboard-section {
+.main-header h1 {
+	font-weight: 700;
+	margin: 0;
+}
+
+.form-section {
 	background-color: var(--content-bg);
-	padding: 2rem;
+	padding: 2.5rem;
 	border-radius: 15px;
 	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-	margin-bottom: 2rem;
+	max-width: 600px;
+	margin: auto;
 	animation: fadeIn 1s ease-out;
 }
 
@@ -114,74 +122,49 @@ to {
 
 }
 
-.account-card {
-	background: linear-gradient(135deg, #2a2a2e, #212124);
-	border: 1px solid var(--border-color);
-	padding: 1.5rem;
-	border-radius: 10px;
-	margin-bottom: 1rem;
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.account-card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.account-card .account-type {
-	font-size: 1rem;
-	font-weight: 500;
+/* --- Form Styling --- */
+.form-label {
 	color: var(--muted-color);
-}
-
-.account-card .account-number {
-	font-size: 1.2rem;
-	letter-spacing: 1px;
-	color: var(--text-color);
-}
-
-.account-card .account-balance {
-	font-size: 2rem;
-	font-weight: 700;
-	color: var(--primary-color);
-}
-
-.action-card {
-	background-color: #2a2a2e;
-	border: 1px solid var(--border-color);
-	padding: 1.5rem;
-	border-radius: 10px;
-	text-align: center;
-	transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.action-card:hover {
-	background-color: var(--primary-color);
-	transform: translateY(-5px);
-}
-
-.action-card a {
-	text-decoration: none;
-	color: var(--text-color);
-	font-weight: 500;
-}
-
-.action-card:hover a {
-	color: #fff;
-}
-
-.action-card i {
-	font-size: 2.5rem;
-	display: block;
 	margin-bottom: 0.5rem;
-	color: var(--primary-color);
-	transition: color 0.3s ease;
 }
 
-.action-card:hover i {
-	color: #fff;
+.form-select {
+	background-color: var(--dark-bg);
+	color: var(--text-color);
+	border-color: var(--border-color);
+	padding: 0.75rem 1rem;
 }
 
+.form-select:focus {
+	background-color: var(--dark-bg);
+	color: var(--text-color);
+	border-color: var(--primary-color);
+	box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+}
+
+.form-select option {
+	background-color: var(--content-bg);
+}
+
+.btn-submit {
+	background-color: var(--primary-color);
+	border-color: var(--primary-color);
+	padding: 0.75rem;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+	background-color: #5a50e6;
+	border-color: #5a50e6;
+	transform: translateY(-2px);
+}
+
+.back-link {
+	color: var(--text-color);
+}
+
+/* --- Responsive Design --- */
 @media ( max-width : 992px) {
 	body {
 		flex-direction: column;
@@ -214,18 +197,20 @@ to {
 </head>
 <body>
 
+	<!-- Sidebar Navigation -->
 	<div class="sidebar">
 		<div>
-			<a href="#" class="logo">AuraBank</a>
+			<a href="dashboard" class="logo">AuraBank</a>
 			<ul class="nav flex-column">
-				<li class="nav-item"><a class="nav-link active" href="#"> <i
-						class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
+				<li class="nav-item"><a class="nav-link" href="dashboard">
+						<i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
 				</a></li>
 				<li class="nav-item"><a class="nav-link" href="passbook"> <i
 						class="bi bi-journal-text"></i> <span>Passbook</span>
 				</a></li>
-				<li class="nav-item"><a class="nav-link" href="manageAccounts">
-						<i class="bi bi-gear-fill"></i> <span>Manage Accounts</span>
+				<li class="nav-item"><a class="nav-link active"
+					href="manageAccounts"> <i class="bi bi-gear-fill"></i> <span>Manage
+							Accounts</span>
 				</a></li>
 			</ul>
 		</div>
@@ -236,68 +221,42 @@ to {
 		</div>
 	</div>
 
+	<!-- Main Content -->
 	<div class="main-content">
 		<div class="main-header">
-			<h1>
-				Welcome, <span class="text-primary">${sessionScope.customer.fullName}</span>
-			</h1>
+			<h1>Open a New Account</h1>
+			<a href="dashboard" class="btn btn-outline-secondary back-link">
+				<i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+			</a>
 		</div>
 
-		<div class="dashboard-section">
-			<h3 class="mb-4">Your Account Summary</h3>
-			<c:choose>
-				<c:when test="${empty allAccounts}">
-					<p>
-						<strong>No accounts found.</strong> Please open an account to get
-						started.
-					</p>
-				</c:when>
-				<c:otherwise>
-					<c:forEach var="acc" items="${allAccounts}">
-						<div class="account-card">
-							<div class="d-flex justify-content-between align-items-start">
-								<div>
-									<p class="account-type mb-1">${acc.accountType}</p>
-									<p class="account-number mb-0">${acc.accountNumber}</p>
-								</div>
-								<p class="account-balance">
-									<fmt:setLocale value="en_US" />
-									<fmt:formatNumber value="${acc.balance}" type="currency" />
-								</p>
-							</div>
-						</div>
-					</c:forEach>
-				</c:otherwise>
-			</c:choose>
-		</div>
+		<div class="form-section">
+			<c:if test="${not empty errorMessage}">
+				<div class="alert alert-danger">${errorMessage}</div>
+			</c:if>
+			<c:if test="${not empty successMessage}">
+				<div class="alert alert-success">${successMessage}</div>
+			</c:if>
 
-		<div class="dashboard-section">
-			<h3 class="mb-4">Quick Actions</h3>
-			<div class="row g-3">
-				<div class="col-md-4">
-					<div class="action-card">
-						<a href="deposit"> <i class="bi bi-arrow-down-circle"></i>
-							Deposit Money
-						</a>
-					</div>
+			<form action="openAccount" method="post">
+				<div class="mb-4">
+					<label for="type" class="form-label">Select Account Type</label> <select
+						id="type" name="type" class="form-select" required>
+						<option value="">-- Choose an account type --</option>
+						<option value="SAVINGS">Savings Account</option>
+						<option value="CURRENT">Current Account</option>
+					</select>
 				</div>
-				<div class="col-md-4">
-					<div class="action-card">
-						<a href="withdraw"> <i class="bi bi-arrow-up-circle"></i>
-							Withdraw Money
-						</a>
-					</div>
+				<div class="d-grid">
+					<button type="submit" class="btn btn-primary btn-submit">
+						<i class="bi bi-plus-circle me-2"></i>Create Account
+					</button>
 				</div>
-				<div class="col-md-4">
-					<div class="action-card">
-						<a href="transfer"> <i class="bi bi-send"></i> Transfer Money
-						</a>
-					</div>
-				</div>
-			</div>
+			</form>
 		</div>
 	</div>
 
+	<!-- Bootstrap 5 JS Bundle -->
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
