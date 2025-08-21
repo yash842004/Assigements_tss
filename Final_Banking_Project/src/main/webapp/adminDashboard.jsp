@@ -96,9 +96,25 @@ body {
 	margin-bottom: 2rem;
 }
 
+.analytics-section {
+    background-color: var(--content-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-top: 2rem;
+}
+
+.analytics-section h2 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.chart-container {
+    margin-bottom: 2rem;
+}
+
 .dashboard-card {
 	background-color: var(--content-bg);
-	padding: 2rem;
+	border: 1px solid var(--border-color);
 	border-radius: 15px;
 	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 	animation: fadeIn 1s ease-out;
@@ -219,7 +235,6 @@ to {
 </head>
 <body>
 
-	<!-- Sidebar Navigation -->
 	<div class="sidebar">
 		<div>
 			<a href="#" class="logo">AuraBank</a>
@@ -297,10 +312,105 @@ to {
 				</table>
 			</div>
 		</div>
+
+		<!-- Analytics Section -->
+		<div class="analytics-section">
+			<h2>Bank Analytics</h2>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="chart-container">
+						<canvas id="transactionChart"></canvas>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="chart-container">
+						<canvas id="accountTypeChart"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</div>
 
 	<!-- Bootstrap 5 JS Bundle -->
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<!-- Chart.js -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<script>
+		// Sample data - this will be replaced with data from the servlet
+		const transactionData = {
+			labels : [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ],
+			datasets : [ {
+				label : 'Transactions',
+				data : [ 12, 19, 3, 5, 2, 3, 9 ],
+				backgroundColor : 'rgba(108, 99, 255, 0.2)',
+				borderColor : 'rgba(108, 99, 255, 1)',
+				borderWidth : 1
+			} ]
+		};
+
+		const accountTypeData = {
+			labels : [ 'Savings', 'Checking' ],
+			datasets : [ {
+				label : 'Account Types',
+				data : [ 300, 150 ],
+				backgroundColor : [ 'rgba(255, 99, 132, 0.2)',
+						'rgba(54, 162, 235, 0.2)' ],
+				borderColor : [ 'rgba(255, 99, 132, 1)',
+						'rgba(54, 162, 235, 1)' ],
+				borderWidth : 1
+			} ]
+		};
+
+		// Transaction Chart
+		const transactionCtx = document.getElementById('transactionChart')
+				.getContext('2d');
+		new Chart(transactionCtx, {
+			type : 'line',
+			data : transactionData,
+			options : {
+				scales : {
+					y : {
+						beginAtZero : true
+					}
+				}
+			}
+		});
+
+		// Account Type Chart
+		const accountTypeCtx = document.getElementById('accountTypeChart')
+				.getContext('2d');
+		new Chart(accountTypeCtx, {
+			type : 'pie',
+			data : accountTypeData
+		});
+
+		// Fetch and render charts with real data
+		async function fetchAnalyticsData() {
+			try {
+				const response = await fetch('getAnalyticsData');
+				const analytics = await response.json();
+
+				// Update Transaction Chart
+				const transactionChart = Chart.getChart('transactionChart');
+				transactionChart.data.labels = analytics.transactionData.labels;
+				transactionChart.data.datasets[0].data = analytics.transactionData.data;
+				transactionChart.update();
+
+				// Update Account Type Chart
+				const accountTypeChart = Chart.getChart('accountTypeChart');
+				accountTypeChart.data.labels = Object.keys(analytics.accountTypeData);
+				accountTypeChart.data.datasets[0].data = Object.values(analytics.accountTypeData);
+				accountTypeChart.update();
+
+			} catch (error) {
+				console.error('Error fetching analytics data:', error);
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', fetchAnalyticsData);
+	</script>
 </body>
 </html>

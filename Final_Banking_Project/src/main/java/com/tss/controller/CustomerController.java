@@ -126,7 +126,6 @@ public class CustomerController extends HttpServlet {
 		Customer customer = (Customer) session.getAttribute("customer");
 		List<Account> allAccounts = customerService.getAllCustomerAccounts(customer.getCustomerId());
 		
-		// For backward compatibility, keep the first account as the main account
 		Account account = allAccounts.isEmpty() ? null : allAccounts.get(0);
 		
 		request.setAttribute("account", account);

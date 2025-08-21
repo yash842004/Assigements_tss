@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.tss.model.Transaction;
 import com.tss.util.DBConnection;
@@ -65,5 +67,32 @@ public class TransactionDAO {
 	        e.printStackTrace();
 	    }
 	    return transactions; 
+	}
+
+	public List<Transaction> getTransactionsByAccountNumber(String accountNumber) {
+		return null;
+	}
+
+	public Map<String, Object> getTransactionAnalytics() {
+		Map<String, Object> analytics = new HashMap<>();
+		List<String> labels = new ArrayList<>();
+		List<Long> data = new ArrayList<>();
+		String sql = "SELECT DATE(transaction_date) as transaction_day, COUNT(*) as count "
+				+ "FROM transactions WHERE transaction_date >= CURDATE() - INTERVAL 7 DAY "
+				+ "GROUP BY transaction_day ORDER BY transaction_day";
+
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				labels.add(rs.getString("transaction_day"));
+				data.add(rs.getLong("count"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		analytics.put("labels", labels);
+		analytics.put("data", data);
+		return analytics;
 	}
 }

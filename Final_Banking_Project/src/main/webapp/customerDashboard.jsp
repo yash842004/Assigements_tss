@@ -10,14 +10,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AuraBank - Customer Dashboard</title>
 
-<!-- Bootstrap 5 CSS -->
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
 	rel="stylesheet">
-<!-- Bootstrap Icons -->
+
 <link rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<!-- Google Fonts: Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
@@ -45,7 +43,6 @@ body {
 	min-height: 100vh;
 }
 
-/* --- Sidebar --- */
 .sidebar {
 	width: 260px;
 	background-color: var(--content-bg);
@@ -85,7 +82,6 @@ body {
 	margin-top: auto;
 }
 
-/* --- Main Content --- */
 .main-content {
 	flex-grow: 1;
 	padding: 2rem;
@@ -118,7 +114,6 @@ to {
 
 }
 
-/* --- Account Cards --- */
 .account-card {
 	background: linear-gradient(135deg, #2a2a2e, #212124);
 	border: 1px solid var(--border-color);
@@ -151,7 +146,6 @@ to {
 	color: var(--primary-color);
 }
 
-/* --- Action Cards --- */
 .action-card {
 	background-color: #2a2a2e;
 	border: 1px solid var(--border-color);
@@ -188,7 +182,6 @@ to {
 	color: #fff;
 }
 
-/* --- Responsive Design --- */
 @media ( max-width : 992px) {
 	body {
 		flex-direction: column;
@@ -221,7 +214,6 @@ to {
 </head>
 <body>
 
-	<!-- Sidebar Navigation -->
 	<div class="sidebar">
 		<div>
 			<a href="#" class="logo">AuraBank</a>
@@ -244,7 +236,6 @@ to {
 		</div>
 	</div>
 
-	<!-- Main Content -->
 	<div class="main-content">
 		<div class="main-header">
 			<h1>
@@ -252,7 +243,6 @@ to {
 			</h1>
 		</div>
 
-		<!-- Account Summary Section -->
 		<div class="dashboard-section">
 			<h3 class="mb-4">Your Account Summary</h3>
 			<c:choose>
@@ -281,7 +271,6 @@ to {
 			</c:choose>
 		</div>
 
-		<!-- Actions Section -->
 		<div class="dashboard-section">
 			<h3 class="mb-4">Quick Actions</h3>
 			<div class="row g-3">
@@ -309,7 +298,6 @@ to {
 		</div>
 	</div>
 
-	<!-- Bootstrap 5 JS Bundle -->
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

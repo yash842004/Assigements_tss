@@ -3,6 +3,7 @@ package com.tss.controller;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.google.gson.Gson;
 import com.tss.dao.AccountDAO;
 import com.tss.dao.AdminDAO;
 import com.tss.dao.CustomerDAO;
@@ -22,7 +24,7 @@ import com.tss.model.Transaction;
 import com.tss.service.CustomerService;
 
 @WebServlet(urlPatterns = { "/adminLogin", "/adminDashboard", "/approveCustomer", "/rejectCustomer", "/adminLogout",
-		"/viewTransactions", "/activateCustomer", "/deactivateCustomer" })
+		"/viewTransactions", "/activateCustomer", "/deactivateCustomer", "/getAnalyticsData" })
 public class AdminController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final AdminDAO adminDAO;
@@ -79,6 +81,9 @@ public class AdminController extends HttpServlet {
 		case "/viewTransactions":
 			viewCustomerTransactions(request, response);
 			break;
+		case "/getAnalyticsData":
+			getAnalyticsData(request, response);
+			break;
 
 		case "/adminLogout":
 			logoutAdmin(request, response);
@@ -91,26 +96,52 @@ public class AdminController extends HttpServlet {
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
 
-		System.out.println("AdminController: Login attempt for username: " + username);
-
 		Admin admin = adminDAO.validateAdmin(username, password);
 
 		if (admin != null) {
 			HttpSession session = request.getSession();
 			session.setAttribute("admin", admin);
-			System.out.println("AdminController: Admin login successful for user: " + username);
 			response.sendRedirect("adminDashboard");
 		} else {
-			System.out.println("AdminController: Admin login failed for user: " + username);
-			request.setAttribute("errorMessage", "Invalid admin credentials.");
+			request.setAttribute("error", "Invalid username or password");
 			request.getRequestDispatcher("index.jsp").forward(request, response);
+		}
+	}
+
+	private void getAnalyticsData(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+
+		Map<String, Object> transactionData = transactionDAO.getTransactionAnalytics();
+		Map<String, Long> accountTypeData = accountDAO.getAccountTypeDistribution();
+
+		AnalyticsData data = new AnalyticsData(transactionData, accountTypeData);
+
+		String json = new Gson().toJson(data);
+		response.getWriter().write(json);
+	}
+
+	private static class AnalyticsData {
+		private final Map<String, Object> transactionData;
+		private final Map<String, Long> accountTypeData;
+
+		public AnalyticsData(Map<String, Object> transactionData, Map<String, Long> accountTypeData) {
+			this.transactionData = transactionData;
+			this.accountTypeData = accountTypeData;
 		}
 	}
 
 	private void showDashboard(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		List<CustomerAccountView> allCustomers = customerDAO.getAllCustomerAccountDetails();
-		request.setAttribute("customers", allCustomers);
+		List<CustomerAccountView> pendingCustomers = customerService.getPendingCustomers();
+		List<CustomerAccountView> approvedCustomers = customerService.getApprovedCustomers();
+		List<CustomerAccountView> rejectedCustomers = customerService.getRejectedCustomers();
+
+		request.setAttribute("pendingCustomers", pendingCustomers);
+		request.setAttribute("approvedCustomers", approvedCustomers);
+		request.setAttribute("rejectedCustomers", rejectedCustomers);
+
 		request.getRequestDispatcher("/adminDashboard.jsp").forward(request, response);
 	}
 

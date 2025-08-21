@@ -224,7 +224,6 @@
                 <p>Don't have an account? <a href="register.jsp">Register Here</a></p>
             </div>
 
-            <%-- This Java scriptlet will display an error message if one exists --%>
             <%
             String error = (String) request.getAttribute("errorMessage");
             if (error != null) {

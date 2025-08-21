@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.tss.model.Account;
 import com.tss.util.DBConnection;
@@ -167,6 +169,35 @@ public class AccountDAO {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	public List<Account> getAllAccounts() {
+		String sql = "SELECT * FROM accounts";
+		List<Account> accounts = new ArrayList<>();
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+			while (rs.next()) {
+				accounts.add(mapRowToAccount(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+
+	public Map<String, Long> getAccountTypeDistribution() {
+		Map<String, Long> distribution = new HashMap<>();
+		String sql = "SELECT account_type, COUNT(*) as count FROM accounts GROUP BY account_type";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				distribution.put(rs.getString("account_type"), rs.getLong("count"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return distribution;
 	}
 
 	private Account mapRowToAccount(ResultSet rs) throws SQLException {
