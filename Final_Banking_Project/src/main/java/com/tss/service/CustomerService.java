@@ -67,9 +67,7 @@ public class CustomerService {
         return customerDAO.updateCustomerStatus(customerId, STATUS_REJECTED);
     }
 
-    /**
-     * Create an account for an existing customer.
-     */
+   
     public boolean createAccountForCustomer(int customerId, String accountType) {
         if (customerId <= 0 || accountType == null || accountType.trim().isEmpty()) {
             System.out.println("Invalid customerId or accountType");
@@ -78,7 +76,6 @@ public class CustomerService {
 
         String normalizedType = accountType.trim().toUpperCase();
 
-        // Prevent duplicate account type for the same customer
         if (accountDAO.existsAccountForCustomerAndType(customerId, normalizedType)) {
             System.out.println("Customer " + customerId + " already has an account of type " + normalizedType);
             return false;
