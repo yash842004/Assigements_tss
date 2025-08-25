@@ -244,7 +244,7 @@ to {
 						id="type" name="type" class="form-select" required>
 						<option value="">-- Choose an account type --</option>
 						<option value="SAVINGS">Savings Account</option>
-						<option value="CURRENT">Current Account</option>
+						<option value="CHECKING">Checking Account</option>
 					</select>
 				</div>
 				<div class="d-grid">

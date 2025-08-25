@@ -243,6 +243,20 @@ to {
 			</h1>
 		</div>
 
+		<!-- Success and Error Messages -->
+		<c:if test="${not empty successMessage}">
+			<div class="alert alert-success alert-dismissible fade show" role="alert">
+				<i class="bi bi-check-circle me-2"></i>${successMessage}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+		</c:if>
+		<c:if test="${not empty errorMessage}">
+			<div class="alert alert-danger alert-dismissible fade show" role="alert">
+				<i class="bi bi-exclamation-triangle me-2"></i>${errorMessage}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+		</c:if>
+
 		<div class="dashboard-section">
 			<h3 class="mb-4">Your Account Summary</h3>
 			<c:choose>

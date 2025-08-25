@@ -26,6 +26,7 @@ public class AdminDAO {
 					admin = new Admin();
 					admin.setAdminId(rs.getInt("id"));
 					admin.setUsername(rs.getString("username"));
+					admin.setPassword(rs.getString("password"));
 					System.out.println("AdminDAO: Admin validation successful for user: " + username);
 				} else {
 					System.out.println("AdminDAO: No admin found with username: " + username);
@@ -33,6 +34,9 @@ public class AdminDAO {
 			}
 		} catch (SQLException e) {
 			System.err.println("AdminDAO: Database error during admin validation: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.err.println("AdminDAO: Unexpected error during admin validation: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return admin;

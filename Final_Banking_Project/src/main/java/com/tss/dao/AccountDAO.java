@@ -151,21 +151,82 @@ public class AccountDAO {
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			pstmt.setString(1, newAccountType);
 			pstmt.setInt(2, accountId);
+			
+			System.out.println("AccountDAO: Attempting to update account ID " + accountId + " to type: " + newAccountType);
+			
 			int rowsAffected = pstmt.executeUpdate();
-			return rowsAffected > 0;
+			
+			if (rowsAffected > 0) {
+				System.out.println("AccountDAO: Successfully updated account ID " + accountId + " to type: " + newAccountType);
+				return true;
+			} else {
+				System.out.println("AccountDAO: No account found with ID: " + accountId);
+				return false;
+			}
 		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error updating account type for ID " + accountId + ": " + e.getMessage());
+			e.printStackTrace();
+			return false;
+		} catch (Exception e) {
+			System.err.println("AccountDAO: Unexpected error updating account type for ID " + accountId + ": " + e.getMessage());
 			e.printStackTrace();
 			return false;
 		}
 	}
 
 	public boolean deleteAccount(int accountId) {
-		String sql = "DELETE FROM accounts WHERE accountId = ?";
-		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setInt(1, accountId);
-			int rowsAffected = pstmt.executeUpdate();
-			return rowsAffected > 0;
+		try (Connection conn = DBConnection.getConnection()) {
+			conn.setAutoCommit(false); 
+			
+			System.out.println("AccountDAO: Attempting to delete account with ID: " + accountId);
+			
+			Account account = getAccountById(accountId, conn);
+			if (account == null) {
+				System.out.println("AccountDAO: No account found with ID: " + accountId);
+				return false;
+			}
+			
+			String checkTransactionsSql = "SELECT COUNT(*) FROM transactions WHERE accountId = ?";
+			try (PreparedStatement checkStmt = conn.prepareStatement(checkTransactionsSql)) {
+				checkStmt.setInt(1, accountId);
+				try (ResultSet rs = checkStmt.executeQuery()) {
+					if (rs.next()) {
+						int transactionCount = rs.getInt(1);
+						System.out.println("AccountDAO: Found " + transactionCount + " transactions for account ID: " + accountId);
+						
+						if (transactionCount > 0) {
+							String deleteTransactionsSql = "DELETE FROM transactions WHERE accountId = ?";
+							try (PreparedStatement deleteTransStmt = conn.prepareStatement(deleteTransactionsSql)) {
+								deleteTransStmt.setInt(1, accountId);
+								int transDeleted = deleteTransStmt.executeUpdate();
+								System.out.println("AccountDAO: Deleted " + transDeleted + " transactions for account ID: " + accountId);
+							}
+						}
+					}
+				}
+			}
+			
+			String deleteAccountSql = "DELETE FROM accounts WHERE accountId = ?";
+			try (PreparedStatement deleteAccountStmt = conn.prepareStatement(deleteAccountSql)) {
+				deleteAccountStmt.setInt(1, accountId);
+				int rowsAffected = deleteAccountStmt.executeUpdate();
+				
+				if (rowsAffected > 0) {
+					conn.commit(); 
+					System.out.println("AccountDAO: Successfully deleted account with ID: " + accountId);
+					return true;
+				} else {
+					conn.rollback(); 
+					System.out.println("AccountDAO: No account found with ID: " + accountId);
+					return false;
+				}
+			}
 		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error deleting account with ID " + accountId + ": " + e.getMessage());
+			e.printStackTrace();
+			return false;
+		} catch (Exception e) {
+			System.err.println("AccountDAO: Unexpected error deleting account with ID " + accountId + ": " + e.getMessage());
 			e.printStackTrace();
 			return false;
 		}
@@ -198,6 +259,23 @@ public class AccountDAO {
 			e.printStackTrace();
 		}
 		return distribution;
+	}
+	
+	public boolean hasTransactions(int accountId) {
+		String sql = "SELECT COUNT(*) FROM transactions WHERE accountId = ?";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, accountId);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					return rs.getInt(1) > 0;
+				}
+			}
+		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error checking transactions for account ID " + accountId + ": " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	private Account mapRowToAccount(ResultSet rs) throws SQLException {

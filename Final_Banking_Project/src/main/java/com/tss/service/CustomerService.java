@@ -34,7 +34,6 @@ public class CustomerService {
             Account newAccount = new Account();
             newAccount.setCustomerId(customerId);
 
-            // Generate a unique account number (timestamp + random)
             String accountNumber;
             int attempts = 0;
             do {
@@ -56,9 +55,7 @@ public class CustomerService {
         return false;
     }
 
-    /**
-     * Reject a customer
-     */
+ 
     public boolean rejectCustomer(int customerId) {
         if (customerId <= 0) {
             System.out.println("Invalid customerId: " + customerId);
@@ -86,7 +83,6 @@ public class CustomerService {
         newAccount.setAccountType(normalizedType);
         newAccount.setBalance(BigDecimal.ZERO);
 
-        // Generate unique account number
         String accountNumber;
         int attempts = 0;
         do {
@@ -106,20 +102,68 @@ public class CustomerService {
   
     public boolean updateAccountType(int accountId, String newAccountType) {
         if (accountId <= 0 || newAccountType == null || newAccountType.trim().isEmpty()) {
-            System.out.println("Invalid accountId or accountType");
+            System.out.println("CustomerService: Invalid accountId or accountType");
             return false;
         }
+        
         String normalizedType = newAccountType.trim().toUpperCase();
-        return accountDAO.updateAccountType(accountId, normalizedType);
+        
+        System.out.println("CustomerService: Attempting to update account ID " + accountId + " to type: " + normalizedType);
+        
+        Account account = accountDAO.getAccountById(accountId);
+        if (account == null) {
+            System.out.println("CustomerService: Account with ID " + accountId + " not found");
+            return false;
+        }
+        
+        System.out.println("CustomerService: Found account to update - " + account.getAccountType() + " account " + account.getAccountNumber());
+        
+        boolean updated = accountDAO.updateAccountType(accountId, normalizedType);
+        
+        if (updated) {
+            System.out.println("CustomerService: Successfully updated account ID " + accountId + " to type: " + normalizedType);
+        } else {
+            System.out.println("CustomerService: Failed to update account ID " + accountId + " to type: " + normalizedType);
+        }
+        
+        return updated;
     }
 
    
     public boolean deleteAccount(int accountId) {
         if (accountId <= 0) {
-            System.out.println("Invalid accountId: " + accountId);
+            System.out.println("CustomerService: Invalid accountId: " + accountId);
             return false;
         }
-        return accountDAO.deleteAccount(accountId);
+        
+        System.out.println("CustomerService: Attempting to delete account with ID: " + accountId);
+        
+        Account account = accountDAO.getAccountById(accountId);
+        if (account == null) {
+            System.out.println("CustomerService: Account with ID " + accountId + " not found");
+            return false;
+        }
+        
+        System.out.println("CustomerService: Found account to delete - " + account.getAccountType() + " account " + account.getAccountNumber());
+        
+        boolean hasTransactions = accountDAO.hasTransactions(accountId);
+        if (hasTransactions) {
+            System.out.println("CustomerService: Account has transactions, will delete them along with the account");
+        }
+        
+        boolean deleted = accountDAO.deleteAccount(accountId);
+        
+        if (deleted) {
+            if (hasTransactions) {
+                System.out.println("CustomerService: Successfully deleted account with ID " + accountId + " and all associated transactions");
+            } else {
+                System.out.println("CustomerService: Successfully deleted account with ID: " + accountId);
+            }
+        } else {
+            System.out.println("CustomerService: Failed to delete account with ID: " + accountId);
+        }
+        
+        return deleted;
     }
 
   

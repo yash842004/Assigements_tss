@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import com.tss.dao.AccountDAO;
 import com.tss.dao.TransactionDAO;
 import com.tss.model.Account;
-import com.tss.model.Transaction;
 import com.tss.util.DBConnection;
 
 public class AccountService {
@@ -19,51 +18,145 @@ public class AccountService {
 		this.transactionDAO = new TransactionDAO();
 	}
 
-
 	public boolean deposit(int accountId, BigDecimal amount) {
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-			return false; // Cannot deposit zero or negative amount
+			System.out.println("AccountService: Cannot deposit zero or negative amount");
+			return false; 
 		}
-		Account account = accountDAO.getAccountById(accountId);
-		if (account == null) {
+		
+		Connection conn = null;
+		try {
+			conn = DBConnection.getConnection();
+			conn.setAutoCommit(false);
+			
+			Account account = accountDAO.getAccountById(accountId, conn);
+			if (account == null) {
+				System.out.println("AccountService: Account not found for ID: " + accountId);
+				conn.rollback();
+				return false;
+			}
+			
+			System.out.println("AccountService: Processing deposit of $" + amount + " to account " + accountId);
+			System.out.println("AccountService: Current balance: $" + account.getBalance());
+			
+			BigDecimal newBalance = account.getBalance().add(amount);
+			account.setBalance(newBalance);
+			accountDAO.updateBalance(account, conn);
+
+			String description = "Cash Deposit";
+			transactionDAO.addTransaction(accountId, "DEPOSIT", amount, description, conn);
+			
+			conn.commit(); 
+			System.out.println("AccountService: Deposit successful. New balance: $" + newBalance);
+			return true;
+			
+		} catch (SQLException e) {
+			System.err.println("AccountService: Error during deposit: " + e.getMessage());
+			e.printStackTrace();
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
 			return false;
+		} catch (Exception e) {
+			System.err.println("AccountService: Unexpected error during deposit: " + e.getMessage());
+			e.printStackTrace();
+			if (conn != null) {
+				try {
+					conn.rollback(); 
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+			return false;
+		} finally {
+			if (conn != null) {
+				try {
+					conn.setAutoCommit(true);
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		BigDecimal newBalance = account.getBalance().add(amount);
-		accountDAO.updateBalance(account.getAccountId(), newBalance);
-
-		Transaction transaction = new Transaction();
-		transaction.setAccountId(account.getAccountId());
-		transaction.setTransactionType("DEPOSIT");
-		transaction.setAmount(amount);
-		transaction.setDescription("Cash Deposit");
-		transactionDAO.addTransaction(transaction);
-
-		return true;
 	}
-
 
 	public boolean withdraw(int accountId, BigDecimal amount) {
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-			return false; // Cannot withdraw zero or negative amount
+			System.out.println("AccountService: Cannot withdraw zero or negative amount");
+			return false;
 		}
-		Account account = accountDAO.getAccountById(accountId);
-		if (account == null || account.getBalance().compareTo(amount) < 0) {
-			return false; // Insufficient funds
+		
+		Connection conn = null;
+		try {
+			conn = DBConnection.getConnection();
+			conn.setAutoCommit(false); 
+			
+			Account account = accountDAO.getAccountById(accountId, conn);
+			if (account == null) {
+				System.out.println("AccountService: Account not found for ID: " + accountId);
+				conn.rollback();
+				return false;
+			}
+			
+			if (account.getBalance().compareTo(amount) < 0) {
+				System.out.println("AccountService: Insufficient funds. Balance: $" + account.getBalance() + ", Requested: $" + amount);
+				conn.rollback();
+				return false; 
+			}
+			
+			System.out.println("AccountService: Processing withdrawal of $" + amount + " from account " + accountId);
+			System.out.println("AccountService: Current balance: $" + account.getBalance());
+			
+			BigDecimal newBalance = account.getBalance().subtract(amount);
+			account.setBalance(newBalance);
+			accountDAO.updateBalance(account, conn);
+
+			
+			String description = "Cash Withdrawal";
+			transactionDAO.addTransaction(accountId, "WITHDRAWAL", amount, description, conn);
+			
+			conn.commit(); 
+			System.out.println("AccountService: Withdrawal successful. New balance: $" + newBalance);
+			return true;
+			
+		} catch (SQLException e) {
+			System.err.println("AccountService: Error during withdrawal: " + e.getMessage());
+			e.printStackTrace();
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+			return false;
+		} catch (Exception e) {
+			System.err.println("AccountService: Unexpected error during withdrawal: " + e.getMessage());
+			e.printStackTrace();
+			if (conn != null) {
+				try {
+					conn.rollback(); 
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+			return false;
+		} finally {
+			if (conn != null) {
+				try {
+					conn.setAutoCommit(true); 
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		BigDecimal newBalance = account.getBalance().subtract(amount);
-		accountDAO.updateBalance(account.getAccountId(), newBalance);
-
-		Transaction transaction = new Transaction();
-		transaction.setAccountId(account.getAccountId());
-		transaction.setTransactionType("WITHDRAWAL");
-		transaction.setAmount(amount);
-		transaction.setDescription("Cash Withdrawal");
-		transactionDAO.addTransaction(transaction);
-
-		return true;
 	}
 
-	
 	public String transferMoney(int fromAccountId, String toAccountNumber, BigDecimal amount) {
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 			return "Transfer amount must be positive.";
@@ -72,24 +165,32 @@ public class AccountService {
 		Connection conn = null;
 		try {
 			conn = DBConnection.getConnection();
-			conn.setAutoCommit(false); // Start transaction
+			conn.setAutoCommit(false); 
 
 			Account fromAccount = accountDAO.getAccountById(fromAccountId, conn);
 			Account toAccount = accountDAO.getAccountByNumber(toAccountNumber); 
 
 			if (fromAccount == null) {
+				conn.rollback();
 				return "Sender account not found.";
 			}
 			if (toAccount == null) {
+				conn.rollback();
 				return "Recipient account not found.";
 			}
 			if (fromAccount.getAccountId() == toAccount.getAccountId()) {
+				conn.rollback();
 				return "Cannot transfer money to the same account.";
 			}
 
 			if (fromAccount.getBalance().compareTo(amount) < 0) {
+				conn.rollback();
 				return "Insufficient funds for the transfer.";
 			}
+
+			System.out.println("AccountService: Processing transfer of $" + amount + " from account " + fromAccountId + " to " + toAccountNumber);
+			System.out.println("AccountService: From account balance: $" + fromAccount.getBalance());
+			System.out.println("AccountService: To account balance: $" + toAccount.getBalance());
 
 			fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
 			accountDAO.updateBalance(fromAccount, conn);
@@ -104,9 +205,14 @@ public class AccountService {
 			transactionDAO.addTransaction(toAccount.getAccountId(), "TRANSFER_IN", amount, toDesc, conn);
 
 			conn.commit(); 
+			System.out.println("AccountService: Transfer successful");
+			System.out.println("AccountService: From account new balance: $" + fromAccount.getBalance());
+			System.out.println("AccountService: To account new balance: $" + toAccount.getBalance());
 			return "Transfer successful!";
 
 		} catch (SQLException e) {
+			System.err.println("AccountService: Error during transfer: " + e.getMessage());
+			e.printStackTrace();
 			if (conn != null) {
 				try {
 					conn.rollback(); 
@@ -114,8 +220,18 @@ public class AccountService {
 					ex.printStackTrace();
 				}
 			}
-			e.printStackTrace();
 			return "An error occurred during the transfer. The transaction has been rolled back.";
+		} catch (Exception e) {
+			System.err.println("AccountService: Unexpected error during transfer: " + e.getMessage());
+			e.printStackTrace();
+			if (conn != null) {
+				try {
+					conn.rollback(); 
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+			return "An unexpected error occurred during the transfer. The transaction has been rolled back.";
 		} finally {
 			if (conn != null) {
 				try {
@@ -127,5 +243,4 @@ public class AccountService {
 			}
 		}
 	}
-
 }

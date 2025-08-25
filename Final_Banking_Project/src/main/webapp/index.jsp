@@ -184,7 +184,8 @@
 </head>
 <body>
 
-    <div class="login-container">
+
+    <div class="login-container" >
         <!-- Left Panel with Illustration -->
         <div class="illustration-panel">
             <div class="shape shape1"></div>

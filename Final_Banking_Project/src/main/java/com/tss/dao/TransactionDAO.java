@@ -26,7 +26,6 @@ public class TransactionDAO {
 		}
 	}
 
-
 	public void addTransaction(Transaction transaction) {
 		String sql = "INSERT INTO transactions (accountId, transactionType, amount, description) VALUES (?, ?, ?, ?)";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -40,33 +39,38 @@ public class TransactionDAO {
 		}
 	}
 
-
-
-
 	public List<Transaction> getTransactionsByAccountId(int accountId) {
-	    List<Transaction> transactions = new ArrayList<>();
-	    String sql = "SELECT * FROM transactions WHERE accountId = ? ORDER BY transactionDate DESC";
+		List<Transaction> transactions = new ArrayList<>();
+		String sql = "SELECT * FROM transactions WHERE accountId = ? ORDER BY transactionDate DESC";
 
-	    try (Connection conn = DBConnection.getConnection();
-	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-	        pstmt.setInt(1, accountId);
-	        try (ResultSet rs = pstmt.executeQuery()) {
-	            while (rs.next()) {
-	                Transaction transaction = new Transaction();
-	                transaction.setTransactionId(rs.getInt("transactionId"));
-	                transaction.setAccountId(rs.getInt("accountId"));
-	                transaction.setTransactionType(rs.getString("transactionType"));
-	                transaction.setAmount(rs.getBigDecimal("amount"));
-	                transaction.setTransactionDate(rs.getTimestamp("transactionDate"));
-	                transaction.setDescription(rs.getString("description"));
-	                transactions.add(transaction);
-	            }
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-	    return transactions; 
+			pstmt.setInt(1, accountId);
+			System.out.println("TransactionDAO: Fetching transactions for accountId: " + accountId);
+
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					Transaction transaction = new Transaction();
+					transaction.setTransactionId(rs.getInt("transactionId"));
+					transaction.setAccountId(rs.getInt("accountId"));
+					transaction.setTransactionType(rs.getString("transactionType"));
+					transaction.setAmount(rs.getBigDecimal("amount"));
+					transaction.setTransactionDate(rs.getTimestamp("transactionDate"));
+					transaction.setDescription(rs.getString("description"));
+					transactions.add(transaction);
+					System.out.println("TransactionDAO: Found transaction - " + transaction.getTransactionType() + " $"
+							+ transaction.getAmount());
+				}
+			}
+			System.out.println("TransactionDAO: Total transactions found: " + transactions.size());
+		} catch (SQLException e) {
+			System.err.println("TransactionDAO: Database error fetching transactions: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.err.println("TransactionDAO: Unexpected error fetching transactions: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return transactions;
 	}
 
 	public List<Transaction> getTransactionsByAccountNumber(String accountNumber) {

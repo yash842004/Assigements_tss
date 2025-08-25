@@ -354,7 +354,7 @@ to {
 								class="form-select" required>
 								<option value="">-- Select New Type --</option>
 								<option value="SAVINGS">Savings</option>
-								<option value="CURRENT">Current</option>
+								<option value="CHECKING">Checking</option>
 							</select>
 						</div>
 					</div>

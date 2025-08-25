@@ -39,6 +39,8 @@ public class CustomerDAO {
 			pstmt.setString(1, email);
 			pstmt.setString(2, password);
 
+			System.out.println("CustomerDAO: Validating customer with email: " + email);
+
 			try (ResultSet rs = pstmt.executeQuery()) {
 				if (rs.next()) {
 					customer = new Customer();
@@ -49,9 +51,16 @@ public class CustomerDAO {
 					customer.setAddress(rs.getString("address"));
 					customer.setPhone(rs.getString("phone"));
 					customer.setStatus(rs.getString("status"));
+					System.out.println("CustomerDAO: Customer validation successful for: " + email);
+				} else {
+					System.out.println("CustomerDAO: No customer found with email: " + email);
 				}
 			}
 		} catch (SQLException e) {
+			System.err.println("CustomerDAO: Database error during customer validation: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.err.println("CustomerDAO: Unexpected error during customer validation: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return customer;
@@ -146,6 +155,10 @@ public class CustomerDAO {
 				customerDetails.add(view);
 			}
 		} catch (SQLException e) {
+			System.err.println("CustomerDAO: Error fetching customer account details: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.err.println("CustomerDAO: Unexpected error fetching customer account details: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return customerDetails;
