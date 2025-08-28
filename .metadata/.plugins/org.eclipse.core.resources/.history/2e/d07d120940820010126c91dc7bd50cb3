@@ -1,0 +1,39 @@
+package com.tss.jpa.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+import com.tss.jpa.Repositary.StudentRepositary;
+import com.tss.jpa.entity.Student;
+
+@Service
+public class StudentServiceImp implements StudentService{
+	
+	@Autowired
+	public StudentRepositary studentRepo;
+
+	
+
+	@Override
+	public List<Student> getAllStudents() {
+		return studentRepo.findAll();
+	}
+
+	
+
+	@Override
+	public Student saveStudent(Student student) {
+		Optional<Student> student =  studentRepo.findById(id);
+		return studentRepo.save(student);
+	}
+
+	@Override
+	public void deleteStudent(int id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

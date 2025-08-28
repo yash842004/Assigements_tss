@@ -1,0 +1,39 @@
+package com.tss.jpa.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.tss.jpa.Repositary.EmployeeRepository;
+
+public class Employee implements IEmpoyee {
+
+	@Autowired
+	private EmployeeRepository employeeRepo;
+
+	@Override
+	public List<com.tss.jpa.entity.Employee> getAllEmployees() {
+		// TODO Auto-generated method stub
+		return employeeRepo.findAll();
+	}
+
+	@Override
+	public com.tss.jpa.entity.Employee getEmployeeById(int id) {
+		Optional<com.tss.jpa.entity.Employee> employee = employeeRepo.findById(id);
+		return employee.orElse(null);
+	}
+
+	@Override
+	public com.tss.jpa.entity.Employee saveEmployee(com.tss.jpa.entity.Employee employee) {
+		// TODO Auto-generated method stub
+		return employeeRepo.save(employee);
+	}
+
+	@Override
+	public void deleteEmployee(int id) {
+		employeeRepo.deleteById(id);
+
+	}
+
+}

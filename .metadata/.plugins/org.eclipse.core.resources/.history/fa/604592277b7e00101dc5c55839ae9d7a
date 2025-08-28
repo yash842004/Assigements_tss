@@ -1,0 +1,42 @@
+package com.tss.hibernate.dao;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.tss.hibernate.entity.Employee;
+
+import jakarta.persistence.EntityManager;
+
+@Repository
+public class EmployeeDaoImp implements EmployeeDao {
+	
+	
+	@Autowired
+    private EntityManager manager;
+
+	@Override
+	public Employee save(Employee employee) {
+		return  manager.merge(employee);
+	}
+
+	@Override
+	public List<Employee> findAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Employee findById(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void delete(Long id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

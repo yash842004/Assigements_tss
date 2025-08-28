@@ -1,0 +1,11 @@
+package com.tss.hibernate.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.tss.hibernate.entity.Student;
+
+public interface StudentService {
+
+	@Autowired
+	Student addNewStudent(Student student);
+}

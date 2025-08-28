@@ -1,0 +1,14 @@
+package com.tss.jpa.service;
+
+import com.tss.jpa.Repositary.EmployeeRepositary;
+
+public class Employee implements IEmpoyee{
+	
+	public EmployeeRepositary repositary;
+
+	@Override
+	public com.tss.jpa.entity.Employee findByName(String name) {
+		return  repositary.save(employee);;
+	}
+
+}

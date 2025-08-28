@@ -1,0 +1,14 @@
+package com.tss.jpa.service;
+
+import java.util.List;
+
+import com.tss.jpa.entity.Student;
+
+public interface StudentService {
+	
+	 List<Student> getAllStudents();
+	    Student getStudentById(int id);
+	    Student saveStudent(Student student);
+	    void deleteStudent(int id);
+
+}

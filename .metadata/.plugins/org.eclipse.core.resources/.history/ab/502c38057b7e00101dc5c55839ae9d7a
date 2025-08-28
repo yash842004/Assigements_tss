@@ -1,0 +1,5 @@
+package com.tss.hibernate.dao;
+
+public class EmployeeDaoImp {
+
+}

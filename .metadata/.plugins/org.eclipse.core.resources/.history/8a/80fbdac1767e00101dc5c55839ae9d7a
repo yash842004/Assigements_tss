@@ -1,0 +1,24 @@
+package com.tss.hibernate.dao;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.tss.hibernate.entity.Student;
+
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+@Repository
+public class StudentDaoImp implements StudentDao {
+	@Autowired
+	public EntityManager manager;
+
+	@Transactional
+	public Student addNewStudent(Student student) {
+
+		
+		return manager.merge(student);
+	}
+	
+	
+
+}

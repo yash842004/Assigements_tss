@@ -1,0 +1,36 @@
+package com.tss.hibernate.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.tss.hibernate.dao.EmployeeDao;
+import com.tss.hibernate.entity.Employee;
+@Service
+public class EmployeeServiceImp implements EmployeeService {
+	
+	@Autowired
+    private EmployeeDao employeeDao;
+
+	@Override
+	public Employee addOrUpdateEmployee(Employee employee) {
+		return employeeDao.save(employee);
+	}
+
+	@Override
+	public List<Employee> getAllEmployees() {
+		return  employeeDao.findAll();
+	}
+
+	@Override
+	public Employee getEmployeeById(Long id) {
+		return employeeDao.findById(id);
+	}
+
+	@Override
+	public void deleteEmployee(Long id) {
+		 employeeDao.delete(id);
+	}
+
+}

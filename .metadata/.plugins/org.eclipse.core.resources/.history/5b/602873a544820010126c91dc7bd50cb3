@@ -1,0 +1,5 @@
+package com.tss.jpa.Repositary;
+
+public interface EmployeeRepository {
+
+}

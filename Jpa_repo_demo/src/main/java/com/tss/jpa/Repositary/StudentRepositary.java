@@ -1,0 +1,16 @@
+package com.tss.jpa.Repositary;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.tss.jpa.entity.Student;
+
+@Repository
+public interface StudentRepositary extends JpaRepository<Student, Integer> {
+
+	List<Student> findByFirstName(String name);
+	boolean deleteByFirstName(String name);
+	
+}
