@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" >
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -175,22 +175,22 @@
     <!-- Sidebar Navigation -->
     <div class="sidebar">
         <div>
-            <a href="dashboard" class="logo">AuraBank</a>
+            <a href="${pageContext.request.contextPath}/dashboard" class="logo">AuraBank</a>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link" href="dashboard">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/dashboard">
                         <i class="bi bi-grid-1x2-fill"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="passbook">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/passbook">
                         <i class="bi bi-journal-text"></i>
                         <span>Passbook</span>
                     </a>
                 </li>
                  <li class="nav-item">
-                    <a class="nav-link" href="manageAccounts">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/manageAccounts">
                         <i class="bi bi-gear-fill"></i>
                         <span>Manage Accounts</span>
                     </a>
@@ -198,7 +198,7 @@
             </ul>
         </div>
         <div class="logout-link">
-             <a class="nav-link" href="logout">
+             <a class="nav-link" href="${pageContext.request.contextPath}/logout">
                 <i class="bi bi-box-arrow-left"></i>
                 <span>Logout</span>
             </a>
@@ -209,7 +209,7 @@
     <div class="main-content">
         <div class="main-header">
             <h1>Withdraw Funds</h1>
-            <a href="dashboard" class="btn btn-outline-secondary back-link">
+            <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-outline-secondary back-link">
                 <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
             </a>
         </div>
@@ -218,7 +218,7 @@
             <c:if test="${not empty errorMessage}">
                 <div class="alert alert-danger">${errorMessage}</div>
             </c:if>
-            <form action="withdraw" method="post">
+            <form action="${pageContext.request.contextPath}/withdraw" method="post">
                 <div class="mb-4">
                     <label for="accountId" class="form-label">From Account</label>
                     <select id="accountId" name="accountId" class="form-select" required>

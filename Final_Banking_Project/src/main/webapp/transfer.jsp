@@ -18,7 +18,7 @@
 	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- Google Fonts: Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" >
 <link
 	href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
 	rel="stylesheet">
@@ -201,21 +201,21 @@ to {
 	<!-- Sidebar Navigation -->
 	<div class="sidebar">
 		<div>
-			<a href="dashboard" class="logo">AuraBank</a>
+			<a href="${pageContext.request.contextPath}/dashboard" class="logo">AuraBank</a>
 			<ul class="nav flex-column">
-				<li class="nav-item"><a class="nav-link" href="dashboard">
+				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/dashboard">
 						<i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
 				</a></li>
-				<li class="nav-item"><a class="nav-link" href="passbook"> <i
+				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/passbook"> <i
 						class="bi bi-journal-text"></i> <span>Passbook</span>
 				</a></li>
-				<li class="nav-item"><a class="nav-link" href="manageAccounts">
+				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/manageAccounts">
 						<i class="bi bi-gear-fill"></i> <span>Manage Accounts</span>
 				</a></li>
 			</ul>
 		</div>
 		<div class="logout-link">
-			<a class="nav-link" href="logout"> <i
+			<a class="nav-link" href="${pageContext.request.contextPath}/logout"> <i
 				class="bi bi-box-arrow-left"></i> <span>Logout</span>
 			</a>
 		</div>
@@ -225,7 +225,7 @@ to {
 	<div class="main-content">
 		<div class="main-header">
 			<h1>Transfer Funds</h1>
-			<a href="dashboard" class="btn btn-outline-secondary back-link">
+			<a href="${pageContext.request.contextPath}/dashboard" class="btn btn-outline-secondary back-link">
 				<i class="bi bi-arrow-left me-2"></i>Back to Dashboard
 			</a>
 		</div>
@@ -234,7 +234,7 @@ to {
 			<c:if test="${not empty errorMessage}">
 				<div class="alert alert-danger">${errorMessage}</div>
 			</c:if>
-			<form action="transfer" method="post">
+			<form action="${pageContext.request.contextPath}/transfer" method="post">
 				<div class="mb-4">
 					<label for="fromAccountId" class="form-label">From Account</label>
 					<select id="fromAccountId" name="fromAccountId" class="form-select"

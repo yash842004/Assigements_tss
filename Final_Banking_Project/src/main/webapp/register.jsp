@@ -7,14 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AuraBank - Create Account</title>
 
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts: Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -22,15 +17,17 @@
             --dark-bg: #121212;
             --form-bg: #1e1e1e;
             --text-color: #e0e0e0;
-            --muted-color: #888;
-            --border-color: #333;
+            --muted-color: #aaa;
+            --border-color: #444;
+            --accent-color: #ff6584;
+            --success-color: #4caf50;
+            --error-color: #f44336;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
             background-color: var(--dark-bg);
             color: var(--text-color);
             display: flex;
@@ -40,97 +37,84 @@
 
         .register-container {
             display: flex;
+            flex: 1;
             width: 100%;
-            height: 100%;
-            max-width: 1200px;
-            max-height: 800px; /* Increased height for more fields */
+            max-width: 1100px;
+            height: 100vh;              /* full screen height */
             background-color: var(--form-bg);
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            border-radius: 0;           /* no rounding so it fits nicely */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             overflow: hidden;
-            animation: fadeIn 1s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        /* --- Left Panel (Illustration) --- */
+        /* Left Illustration */
         .illustration-panel {
             flex: 1;
             background: linear-gradient(160deg, var(--primary-color), #4a40d1);
-            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            position: relative;
         }
-        
-        .illustration-panel .shape {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 15s infinite ease-in-out;
+        .illustration-panel i {
+            font-size: 8rem;
+            color: rgba(255,255,255,0.85);
+            animation: pulse 2s infinite;
         }
-        .shape1 { width: 200px; height: 200px; top: 10%; left: 15%; animation-delay: 0s; }
-        .shape2 { width: 80px; height: 80px; top: 70%; left: 25%; animation-delay: 3s; }
-        .shape3 { width: 120px; height: 120px; top: 40%; left: 70%; animation-delay: 6s; }
-        .shape4 { width: 50px; height: 50px; top: 20%; left: 80%; animation-delay: 9s; }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(180deg); }
+        @keyframes pulse {
+            0% { transform: scale(1);}
+            50% { transform: scale(1.05);}
+            100% { transform: scale(1);}
         }
 
-        .illustration-panel .main-icon {
-            font-size: 10rem;
-            color: rgba(255, 255, 255, 0.8);
-            z-index: 10;
-            text-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        /* --- Right Panel (Form) --- */
+        /* Right Panel */
         .form-panel {
             flex: 1;
-            padding: 2.5rem; /* Adjusted padding */
+            padding: 2.5rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            overflow-y: auto;
+            overflow-y: auto;   /* only form scrolls if needed */
         }
 
         .form-panel h2 {
+            color: var(--primary-color);
             font-weight: 700;
-            font-size: 2.2rem;
             margin-bottom: 0.5rem;
         }
         .form-panel p {
             color: var(--muted-color);
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .form-group {
-            position: relative;
-            margin-bottom: 1.2rem; /* Adjusted margin */
+            margin-bottom: 1.2rem;
         }
-        
+        .form-label {
+            font-size: 0.9rem;
+            color: var(--muted-color);
+            margin-bottom: 0.3rem;
+        }
+
         .form-control {
             background-color: transparent;
             border: none;
             border-bottom: 2px solid var(--border-color);
             border-radius: 0;
-            padding: 0.5rem 0;
+            padding: 0.6rem 0;
             font-size: 1rem;
             color: var(--text-color);
-            transition: border-color 0.3s ease;
         }
         .form-control:focus {
             box-shadow: none;
             border-color: var(--primary-color);
         }
-        
-        /* --- Button Styling --- */
+
+        .invalid-feedback {
+            font-size: 0.85rem;
+            color: var(--error-color);
+        }
+
         .btn-register {
             border-radius: 8px;
             font-weight: 600;
@@ -141,12 +125,11 @@
             width: 100%;
             margin-top: 1rem;
         }
-        
         .btn-register:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3);
+            background-color: #5a55d9;
         }
-        
+
         .login-link {
             text-align: center;
             margin-top: 1.5rem;
@@ -154,72 +137,94 @@
         .login-link a {
             color: var(--primary-color);
             text-decoration: none;
-            font-weight: 500;
+        }
+        .login-link a:hover {
+            color: var(--accent-color);
         }
 
-        /* --- Responsive Design --- */
+        /* Responsive */
         @media (max-width: 992px) {
-            .illustration-panel {
-                display: none;
-            }
-            .form-panel {
-                padding: 2.5rem;
-            }
-            .register-container {
-                max-height: 100%;
-                height: auto;
-                margin: 1rem;
-            }
+            .illustration-panel { display: none; }
+            .register-container { border-radius: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="register-container">
-        <!-- Left Panel with Illustration -->
-        <div class="illustration-panel">
-            <div class="shape shape1"></div>
-            <div class="shape shape2"></div>
-            <div class="shape shape3"></div>
-            <div class="shape shape4"></div>
-            <i class="bi bi-person-plus-fill main-icon"></i>
-        </div>
-
-        <!-- Right Panel with Form -->
-        <div class="form-panel">
-            <h2>Create Your Account</h2>
-            <p>Join AuraBank and start your premium banking journey.</p>
-            
-            <c:if test="${not empty successMessage}">
-                <div class="alert alert-success text-center">${successMessage}</div>
-            </c:if>
-
-            <form action="register" method="post">
-                <div class="form-group">
-                    <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Full Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="address" name="address" placeholder="Address" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-register">Register</button>
-            </form>
-
-            <div class="login-link">
-                <p>Already have an account? <a href="index.jsp">Login Here</a></p>
-            </div>
-        </div>
+<div class="register-container">
+    <!-- Left Panel -->
+    <div class="illustration-panel">
+        <i class="bi bi-person-plus-fill"></i>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Right Panel -->
+    <div class="form-panel">
+        <h2>Create Your Account</h2>
+        <p>Join AuraBank and start your premium banking journey.</p>
+
+        <c:if test="${not empty successMessage}">
+            <div class="alert alert-success text-center">${successMessage}</div>
+        </c:if>
+
+        <form id="registrationForm" action="${pageContext.request.contextPath}/register" method="post" novalidate>
+            <div class="form-group">
+                <label for="fullName" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="fullName" name="fullName" required>
+                <div class="invalid-feedback">Please enter your full name.</div>
+            </div>
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <div class="invalid-feedback">Please enter a valid email address.</div>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required minlength="8">
+                <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+            </div>
+            <div class="form-group">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" id="address" name="address" required>
+                <div class="invalid-feedback">Please enter your address.</div>
+            </div>
+            <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" name="phone" required pattern="[0-9]{10,15}">
+                <div class="invalid-feedback">Please enter a valid phone number (10-15 digits).</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-register">Register</button>
+        </form>
+
+        <div class="login-link">
+            <p>Already have an account? <a href="index.jsp">Login Here</a></p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Bootstrap Validation
+    (function () {
+        'use strict'
+        var form = document.querySelector('#registrationForm');
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })()
+</script>
+
+<c:if test="${not empty successMessage}">
+    <script>
+        window.onload = function () {
+            alert("${successMessage}");
+        }
+    </script>
+</c:if>
+
 </body>
 </html>

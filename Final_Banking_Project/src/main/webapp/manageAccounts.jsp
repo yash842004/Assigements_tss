@@ -19,7 +19,7 @@
 	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- Google Fonts: Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" >
 <link
 	href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
 	rel="stylesheet">
@@ -237,22 +237,22 @@ to {
 	<!-- Sidebar Navigation -->
 	<div class="sidebar">
 		<div>
-			<a href="dashboard" class="logo">AuraBank</a>
+			<a href="${pageContext.request.contextPath}/dashboard" class="logo">AuraBank</a>
 			<ul class="nav flex-column">
-				<li class="nav-item"><a class="nav-link" href="dashboard">
+				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/dashboard">
 						<i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
 				</a></li>
-				<li class="nav-item"><a class="nav-link" href="passbook"> <i
+				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/passbook"> <i
 						class="bi bi-journal-text"></i> <span>Passbook</span>
 				</a></li>
 				<li class="nav-item"><a class="nav-link active"
-					href="manageAccounts"> <i class="bi bi-gear-fill"></i> <span>Manage
+					href="${pageContext.request.contextPath}/manageAccounts"> <i class="bi bi-gear-fill"></i> <span>Manage
 							Accounts</span>
 				</a></li>
 			</ul>
 		</div>
 		<div class="logout-link">
-			<a class="nav-link" href="logout"> <i
+			<a class="nav-link" href="${pageContext.request.contextPath}/logout"> <i
 				class="bi bi-box-arrow-left"></i> <span>Logout</span>
 			</a>
 		</div>
@@ -262,7 +262,7 @@ to {
 	<div class="main-content">
 		<div class="main-header">
 			<h1>Manage Your Accounts</h1>
-			<a href="dashboard" class="btn btn-outline-secondary back-link">
+			<a href="${pageContext.request.contextPath}/dashboard" class="btn btn-outline-secondary back-link">
 				<i class="bi bi-arrow-left me-2"></i>Back to Dashboard
 			</a>
 		</div>
@@ -280,9 +280,9 @@ to {
 					<div class="no-accounts">
 						<h3>No Accounts Found</h3>
 						<p class="text-muted">You don't have any accounts yet.</p>
-						<a href="openAccount" class="btn btn-primary mt-3"> <i
-							class="bi bi-plus-circle me-2"></i>Open Your First Account
-						</a>
+						<a href="${pageContext.request.contextPath}/openAccount" class="btn btn-primary mt-3"> <i
+						class="bi bi-plus-circle me-2"></i>Open Your First Account
+					</a>
 					</div>
 				</c:when>
 				<c:otherwise>
@@ -327,7 +327,7 @@ to {
 			</c:choose>
 
 			<div class="text-center mt-4">
-				<a href="openAccount" class="btn btn-primary"> <i
+				<a href="${pageContext.request.contextPath}/openAccount" class="btn btn-primary"> <i
 					class="bi bi-plus-circle me-2"></i>Open New Account
 				</a>
 			</div>
@@ -345,7 +345,7 @@ to {
 					<button type="button" class="btn-close" data-bs-dismiss="modal"
 						aria-label="Close"></button>
 				</div>
-				<form id="changeTypeForm" action="updateAccountType" method="post">
+				<form id="changeTypeForm" action="${pageContext.request.contextPath}/updateAccountType" method="post">
 					<div class="modal-body">
 						<input type="hidden" id="changeAccountId" name="accountId">
 						<div class="mb-3">
@@ -379,7 +379,7 @@ to {
 					<button type="button" class="btn-close" data-bs-dismiss="modal"
 						aria-label="Close"></button>
 				</div>
-				<form id="deleteForm" action="deleteAccount" method="post">
+				<form id="deleteForm" action="${pageContext.request.contextPath}/deleteAccount" method="post">
 					<div class="modal-body">
 						<input type="hidden" id="deleteAccountId" name="accountId">
 						<p>

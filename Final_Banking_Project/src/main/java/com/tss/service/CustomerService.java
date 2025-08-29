@@ -6,6 +6,7 @@ import java.util.List;
 import com.tss.dao.AccountDAO;
 import com.tss.dao.CustomerDAO;
 import com.tss.model.Account;
+import com.tss.model.CustomerAccountView;
 
 public class CustomerService {
 
@@ -165,6 +166,12 @@ public class CustomerService {
         
         return deleted;
     }
+    
+    public CustomerAccountView getCustomerByAccountNumber(String accountNumber) {
+        CustomerDAO customerDAO = new CustomerDAO();
+        return customerDAO.findByAccountNumber(accountNumber);
+    }
+
 
   
     public List<Account> getAllCustomerAccounts(int customerId) {

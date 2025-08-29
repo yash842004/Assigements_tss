@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,22 @@ public class TransactionDAO {
 			pstmt.executeUpdate();
 		}
 	}
+	
+	
+	public void saveTransaction(int accountId, String type, BigDecimal amount, String description) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                 "INSERT INTO transactions (account_id, type, amount, description, timestamp) VALUES (?, ?, ?, ?, ?)")) {
+            ps.setInt(1, accountId);
+            ps.setString(2, type);
+            ps.setBigDecimal(3, amount);
+            ps.setString(4, description);
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(LocalDateTime.now()));
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 	public void addTransaction(Transaction transaction) {
 		String sql = "INSERT INTO transactions (accountId, transactionType, amount, description) VALUES (?, ?, ?, ?)";
@@ -81,8 +98,8 @@ public class TransactionDAO {
 		Map<String, Object> analytics = new HashMap<>();
 		List<String> labels = new ArrayList<>();
 		List<Long> data = new ArrayList<>();
-		String sql = "SELECT DATE(transaction_date) as transaction_day, COUNT(*) as count "
-				+ "FROM transactions WHERE transaction_date >= CURDATE() - INTERVAL 7 DAY "
+		String sql = "SELECT DATE(transactionDate) as transaction_day, COUNT(*) as count "
+				+ "FROM transactions WHERE transactionDate >= CURDATE() - INTERVAL 7 DAY "
 				+ "GROUP BY transaction_day ORDER BY transaction_day";
 
 		try (Connection conn = DBConnection.getConnection();
@@ -93,10 +110,67 @@ public class TransactionDAO {
 				data.add(rs.getLong("count"));
 			}
 		} catch (SQLException e) {
+			System.err.println("TransactionDAO: Error getting transaction analytics: " + e.getMessage());
 			e.printStackTrace();
 		}
 		analytics.put("labels", labels);
 		analytics.put("data", data);
 		return analytics;
+	}
+
+	public long getTotalTransactions() {
+		String sql = "SELECT COUNT(*) FROM transactions";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+			if (rs.next()) {
+				return rs.getLong(1);
+			}
+		} catch (SQLException e) {
+			System.err.println("TransactionDAO: Error getting total transactions: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	public Map<String, Long> getTransactionTypesDistribution() {
+		Map<String, Long> distribution = new HashMap<>();
+		String sql = "SELECT transactionType, COUNT(*) as count FROM transactions GROUP BY transactionType";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				distribution.put(rs.getString("transactionType"), rs.getLong("count"));
+			}
+		} catch (SQLException e) {
+			System.err.println("TransactionDAO: Error getting transaction types distribution: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return distribution;
+	}
+
+	public List<Transaction> getRecentTransactions(int limit) {
+		List<Transaction> transactions = new ArrayList<>();
+		String sql = "SELECT * FROM transactions ORDER BY transactionDate DESC LIMIT ?";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, limit);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					Transaction transaction = new Transaction();
+					transaction.setTransactionId(rs.getInt("transactionId"));
+					transaction.setAccountId(rs.getInt("accountId"));
+					transaction.setTransactionType(rs.getString("transactionType"));
+					transaction.setAmount(rs.getBigDecimal("amount"));
+					transaction.setTransactionDate(rs.getTimestamp("transactionDate"));
+					transaction.setDescription(rs.getString("description"));
+					transactions.add(transaction);
+				}
+			}
+		} catch (SQLException e) {
+			System.err.println("TransactionDAO: Error getting recent transactions: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return transactions;
 	}
 }

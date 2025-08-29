@@ -3,6 +3,7 @@ package com.tss.controller;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -22,7 +23,7 @@ import com.tss.model.CustomerAccountView;
 import com.tss.model.Transaction;
 import com.tss.service.CustomerService;
 
-@WebServlet(urlPatterns = { "/adminLogin", "/adminDashboard", "/approveCustomer", "/rejectCustomer", "/adminLogout",
+@WebServlet(urlPatterns = { "/adminLogin", "/adminDashboard", "/adminAnalytics", "/approveCustomer", "/rejectCustomer", "/adminLogout",
 		"/viewTransactions", "/activateCustomer", "/deactivateCustomer" })
 public class AdminController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -54,6 +55,8 @@ public class AdminController extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String action = request.getServletPath();
+		
+	     
 		HttpSession session = request.getSession(false);
 
 		if (!"/adminLogin".equals(action) && (session == null || session.getAttribute("admin") == null)) {
@@ -64,6 +67,9 @@ public class AdminController extends HttpServlet {
 		switch (action) {
 		case "/adminDashboard":
 			showDashboard(request, response);
+			break;
+		case "/adminAnalytics":
+			showAnalytics(request, response);
 			break;
 		case "/approveCustomer":
 			approveCustomer(request, response);
@@ -116,23 +122,76 @@ public class AdminController extends HttpServlet {
 			request.getRequestDispatcher("index.jsp").forward(request, response);
 		}
 	}
-
+	
 	private void showDashboard(HttpServletRequest request, HttpServletResponse response)
+	        throws ServletException, IOException {
+	    try {
+	        String accountNumber = request.getParameter("accountNumber");
+	        List<CustomerAccountView> customers;
+
+	        if (accountNumber != null && !accountNumber.trim().isEmpty()) {
+	            // Search for specific account
+	            CustomerAccountView customer = customerDAO.findByAccountNumber(accountNumber.trim());
+	            if (customer != null) {
+	                customers = Collections.singletonList(customer);
+	            } else {
+	                customers = Collections.emptyList();
+	                request.setAttribute("errorMessage", "No customer found with Account No: " + accountNumber);
+	            }
+	        } else {
+	            // Load all customers
+	            customers = customerDAO.getAllCustomerAccountDetails();
+	        }
+
+	        if (customers == null) {
+	            customers = Collections.emptyList();
+	        }
+
+	        request.setAttribute("customers", customers);
+	        request.getRequestDispatcher("/adminDashboard.jsp").forward(request, response);
+
+	    } catch (Exception e) {
+	        System.err.println("AdminController: Error loading dashboard: " + e.getMessage());
+	        e.printStackTrace();
+	        request.setAttribute("errorMessage", "An error occurred while loading the dashboard.");
+	        request.getRequestDispatcher("/adminDashboard.jsp").forward(request, response);
+	    }
+	}
+
+
+	private void showAnalytics(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
-			List<CustomerAccountView> allCustomers = customerDAO.getAllCustomerAccountDetails();
+			// Get analytics data
+			long totalCustomers = customerDAO.getTotalCustomers();
+			long totalAccounts = accountDAO.getTotalAccounts();
+			long totalTransactions = transactionDAO.getTotalTransactions();
+			java.math.BigDecimal totalBalance = accountDAO.getTotalBalance();
+			java.math.BigDecimal averageBalance = accountDAO.getAverageBalance();
+			Map<String, Object> transactionAnalytics = transactionDAO.getTransactionAnalytics();
+			Map<String, Long> transactionTypes = transactionDAO.getTransactionTypesDistribution();
+			Map<String, Long> accountTypes = accountDAO.getAccountTypeDistribution();
+			Map<String, Long> customerStatus = customerDAO.getCustomerStatusDistribution();
+			List<Transaction> recentTransactions = transactionDAO.getRecentTransactions(10);
 
-			if (allCustomers == null) {
-				allCustomers = Collections.emptyList();
-			}
+			// Set attributes for JSP
+			request.setAttribute("totalCustomers", totalCustomers);
+			request.setAttribute("totalAccounts", totalAccounts);
+			request.setAttribute("totalTransactions", totalTransactions);
+			request.setAttribute("totalBalance", totalBalance);
+			request.setAttribute("averageBalance", averageBalance);
+			request.setAttribute("transactionAnalytics", transactionAnalytics);
+			request.setAttribute("transactionTypes", transactionTypes);
+			request.setAttribute("accountTypes", accountTypes);
+			request.setAttribute("customerStatus", customerStatus);
+			request.setAttribute("recentTransactions", recentTransactions);
 
-			request.setAttribute("customers", allCustomers);
-			request.getRequestDispatcher("/adminDashboard.jsp").forward(request, response);
+			request.getRequestDispatcher("/adminAnalytics.jsp").forward(request, response);
 		} catch (Exception e) {
-			System.err.println("AdminController: Error loading dashboard: " + e.getMessage());
+			System.err.println("AdminController: Error loading analytics: " + e.getMessage());
 			e.printStackTrace();
-			request.setAttribute("errorMessage", "An error occurred while loading the dashboard.");
-			request.getRequestDispatcher("/adminDashboard.jsp").forward(request, response);
+			request.setAttribute("errorMessage", "An error occurred while loading analytics.");
+			request.getRequestDispatcher("/adminAnalytics.jsp").forward(request, response);
 		}
 	}
 

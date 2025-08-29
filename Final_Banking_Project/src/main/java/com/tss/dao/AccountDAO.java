@@ -248,14 +248,15 @@ public class AccountDAO {
 
 	public Map<String, Long> getAccountTypeDistribution() {
 		Map<String, Long> distribution = new HashMap<>();
-		String sql = "SELECT account_type, COUNT(*) as count FROM accounts GROUP BY account_type";
+		String sql = "SELECT accountType, COUNT(*) as count FROM accounts GROUP BY accountType";
 		try (Connection conn = DBConnection.getConnection();
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
-				distribution.put(rs.getString("account_type"), rs.getLong("count"));
+				distribution.put(rs.getString("accountType"), rs.getLong("count"));
 			}
 		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error getting account type distribution: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return distribution;
@@ -288,5 +289,82 @@ public class AccountDAO {
 		account.setCreatedDate(rs.getTimestamp("createdDate"));
 		return account;
 	}
+
+	public long getTotalAccounts() {
+		String sql = "SELECT COUNT(*) FROM accounts";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+			if (rs.next()) {
+				return rs.getLong(1);
+			}
+		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error getting total accounts: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	public java.math.BigDecimal getTotalBalance() {
+		String sql = "SELECT COALESCE(SUM(balance), 0) FROM accounts";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+			if (rs.next()) {
+				return rs.getBigDecimal(1);
+			}
+		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error getting total balance: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return java.math.BigDecimal.ZERO;
+	}
+
+	public java.math.BigDecimal getAverageBalance() {
+		String sql = "SELECT COALESCE(AVG(balance), 0) FROM accounts";
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+			if (rs.next()) {
+				return rs.getBigDecimal(1);
+			}
+		} catch (SQLException e) {
+			System.err.println("AccountDAO: Error getting average balance: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return java.math.BigDecimal.ZERO;
+	}
+	
+	
+//	 public Account getAccountByNumber(String accountNumber) {
+//	        Account account = null;
+//	        try (Connection conn = DBConnection.getConnection();
+//	             PreparedStatement ps = conn.prepareStatement("SELECT * FROM accounts WHERE account_number = ?")) {
+//
+//	            ps.setString(1, accountNumber);
+//	            try (ResultSet rs = ps.executeQuery()) {
+//	                if (rs.next()) {
+//	                    account = new Account();
+//	                    account.setAccountId(rs.getInt("id"));
+//	                    account.setAccountNumber(rs.getString("account_number"));
+//	                    account.setBalance(rs.getBigDecimal("balance"));
+//	                }
+//	            }
+//	        } catch (Exception e) {
+//	            e.printStackTrace();
+//	        }
+//	        return account;
+//	    }
+
+//	    public void updateBalance(int accountId, BigDecimal newBalance) {
+//	        try (Connection conn = DBConnection.getConnection();
+//	             PreparedStatement ps = conn.prepareStatement("UPDATE accounts SET balance = ? WHERE id = ?")) {
+//	            ps.setBigDecimal(1, newBalance);
+//	            ps.setInt(2, accountId);
+//	            ps.executeUpdate();
+//	        } catch (Exception e) {
+//	            e.printStackTrace();
+//	        }
+//	    }
 
 }

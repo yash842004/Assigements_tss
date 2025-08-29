@@ -7,13 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AuraBank - Secure Login</title>
 
-    <!-- Bootstrap 5 CSS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
+   
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts: Poppins -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" >
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -56,7 +56,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* --- Left Panel (Illustration) --- */
+        
         .illustration-panel {
             flex: 1;
             background: linear-gradient(160deg, var(--primary-color), #4a40d1);
@@ -90,7 +90,7 @@
             text-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        /* --- Right Panel (Form) --- */
+   
         .form-panel {
             flex: 1;
             padding: 4rem;
@@ -139,7 +139,7 @@
         }
         .form-select option { background-color: var(--form-bg); }
 
-        /* --- Button Styling --- */
+        
         .btn-login {
             border-radius: 8px;
             font-weight: 600;
@@ -166,7 +166,6 @@
             font-weight: 500;
         }
 
-        /* --- Responsive Design --- */
         @media (max-width: 992px) {
             .illustration-panel {
                 display: none;
@@ -184,9 +183,24 @@
 </head>
 <body>
 
+<%-- ✅ Success Popup after Registration --%>
+<%
+    HttpSession sess = request.getSession(false);
+    String successMessage = null;
+    if (sess != null) {
+        successMessage = (String) sess.getAttribute("successMessage");
+        if (successMessage != null) {
+            sess.removeAttribute("successMessage"); // clear it so it shows only once
+        }
+    }
+%>
+<% if (successMessage != null) { %>
+    <script>
+        alert("<%= successMessage %>");
+    </script>
+<% } %>
 
     <div class="login-container" >
-        <!-- Left Panel with Illustration -->
         <div class="illustration-panel">
             <div class="shape shape1"></div>
             <div class="shape shape2"></div>
@@ -195,12 +209,11 @@
             <i class="bi bi-shield-lock-fill main-icon"></i>
         </div>
 
-        <!-- Right Panel with Form -->
         <div class="form-panel">
             <h2>Welcome Back!</h2>
             <p id="form-subtitle">Login as a Customer to access your account.</p>
 
-            <form id="loginForm" method="post" action="login">
+            <form id="loginForm" name="role" method="post" action="${pageContext.request.contextPath}/login">
                 <div class="form-group">
                     <select id="roleSelect" class="form-select" required>
                         <option value="customer" selected>Login as Customer</option>
@@ -236,7 +249,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -247,17 +259,16 @@
             const usernameField = document.getElementById("usernameField");
             const registerLink = document.getElementById("registerLink");
 
-            // --- Role Switcher Logic ---
             roleSelect.addEventListener("change", function() {
                 if (this.value === "admin") {
                     formSubtitle.textContent = "Admin Portal: Please enter your credentials.";
-                    loginForm.action = "adminLogin";
+                    loginForm.action = "${pageContext.request.contextPath}/adminLogin";
                     usernameField.name = "username";
                     usernameField.placeholder = "Admin Username";
                     registerLink.style.opacity = "0";
                 } else {
                     formSubtitle.textContent = "Login as a Customer to access your account.";
-                    loginForm.action = "login";
+                    loginForm.action = "${pageContext.request.contextPath}/login";
                     usernameField.name = "email";
                     usernameField.placeholder = "Email Address";
                     registerLink.style.opacity = "1";

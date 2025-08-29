@@ -67,6 +67,9 @@ public class TransactionController extends HttpServlet {
 		}
 
 		switch (action) {
+		case "/dashboard":
+			showDashboard(request, response);
+			break;
 		case "/passbook":
 			showPassbook(request, response);
 			break;
@@ -82,26 +85,38 @@ public class TransactionController extends HttpServlet {
 		}
 	}
 
+	private void showDashboard(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		Customer customer = (Customer) session.getAttribute("customer");
+
+		List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
+		if (accounts == null)
+			accounts = Collections.emptyList();
+
+		request.setAttribute("allAccounts", accounts);
+		request.getRequestDispatcher("/customerDashboard.jsp").forward(request, response);
+	}
+
 	private void handleDeposit(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 		try {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
-			
+
 			String amountStr = request.getParameter("amount");
 			String accountIdStr = request.getParameter("accountId");
-			
-			
-			if (amountStr == null || amountStr.trim().isEmpty() || 
-				accountIdStr == null || accountIdStr.trim().isEmpty()) {
+
+			if (amountStr == null || amountStr.trim().isEmpty() || accountIdStr == null
+					|| accountIdStr.trim().isEmpty()) {
 				request.setAttribute("errorMessage", "Please enter both account and amount.");
 				showDepositForm(request, response);
 				return;
 			}
-			
+
 			BigDecimal amount;
 			int accountId;
-			
+
 			try {
 				amount = new BigDecimal(amountStr);
 				accountId = Integer.parseInt(accountIdStr);
@@ -110,15 +125,13 @@ public class TransactionController extends HttpServlet {
 				showDepositForm(request, response);
 				return;
 			}
-			
-			
+
 			if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 				request.setAttribute("errorMessage", "Deposit amount must be greater than zero.");
 				showDepositForm(request, response);
 				return;
 			}
 
-			
 			if (amount.compareTo(new BigDecimal("1000000")) > 0) {
 				request.setAttribute("errorMessage", "Deposit amount cannot exceed $1,000,000.");
 				showDepositForm(request, response);
@@ -131,13 +144,13 @@ public class TransactionController extends HttpServlet {
 				showDepositForm(request, response);
 				return;
 			}
-			
-			
+
 			boolean success = accountService.deposit(accountId, amount);
 
 			if (success) {
 				System.out.println("TransactionController: Deposit successful");
-				request.setAttribute("successMessage", "Deposit of $" + amount + " successful! Your account has been updated.");
+				request.setAttribute("successMessage",
+						"Deposit of $" + amount + " successful! Your account has been updated.");
 				response.sendRedirect("dashboard");
 			} else {
 				request.setAttribute("errorMessage", "Deposit failed. Please try again or contact support.");
@@ -156,21 +169,20 @@ public class TransactionController extends HttpServlet {
 		try {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
-			
+
 			String amountStr = request.getParameter("amount");
 			String accountIdStr = request.getParameter("accountId");
-			
-			
-			if (amountStr == null || amountStr.trim().isEmpty() || 
-				accountIdStr == null || accountIdStr.trim().isEmpty()) {
+
+			if (amountStr == null || amountStr.trim().isEmpty() || accountIdStr == null
+					|| accountIdStr.trim().isEmpty()) {
 				request.setAttribute("errorMessage", "Please enter both account and amount.");
 				showWithdrawForm(request, response);
 				return;
 			}
-			
+
 			BigDecimal amount;
 			int accountId;
-			
+
 			try {
 				amount = new BigDecimal(amountStr);
 				accountId = Integer.parseInt(accountIdStr);
@@ -179,15 +191,13 @@ public class TransactionController extends HttpServlet {
 				showWithdrawForm(request, response);
 				return;
 			}
-			
-		
+
 			if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 				request.setAttribute("errorMessage", "Withdrawal amount must be greater than zero.");
 				showWithdrawForm(request, response);
 				return;
 			}
 
-			
 			if (amount.compareTo(new BigDecimal("50000")) > 0) {
 				request.setAttribute("errorMessage", "Withdrawal amount cannot exceed $50,000 per transaction.");
 				showWithdrawForm(request, response);
@@ -200,18 +210,18 @@ public class TransactionController extends HttpServlet {
 				showWithdrawForm(request, response);
 				return;
 			}
-			
-			
+
 			if (account.getBalance().compareTo(amount) < 0) {
 				request.setAttribute("errorMessage", "Insufficient funds. Available balance: $" + account.getBalance());
 				showWithdrawForm(request, response);
 				return;
 			}
-						
+
 			boolean success = accountService.withdraw(accountId, amount);
 
 			if (success) {
-				request.setAttribute("successMessage", "Withdrawal of $" + amount + " successful! Your account has been updated.");
+				request.setAttribute("successMessage",
+						"Withdrawal of $" + amount + " successful! Your account has been updated.");
 				response.sendRedirect("dashboard");
 			} else {
 				System.out.println("TransactionController: Withdrawal failed");
@@ -230,23 +240,21 @@ public class TransactionController extends HttpServlet {
 		try {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
-			
+
 			String toAccountNumber = request.getParameter("toAccountNumber");
 			String amountStr = request.getParameter("amount");
 			String fromAccountIdStr = request.getParameter("fromAccountId");
-			
-			
-			if (toAccountNumber == null || toAccountNumber.trim().isEmpty() || 
-				amountStr == null || amountStr.trim().isEmpty() || 
-				fromAccountIdStr == null || fromAccountIdStr.trim().isEmpty()) {
+
+			if (toAccountNumber == null || toAccountNumber.trim().isEmpty() || amountStr == null
+					|| amountStr.trim().isEmpty() || fromAccountIdStr == null || fromAccountIdStr.trim().isEmpty()) {
 				request.setAttribute("errorMessage", "Please fill in all fields.");
 				showTransferForm(request, response);
 				return;
 			}
-			
+
 			BigDecimal amount;
 			int fromAccountId;
-			
+
 			try {
 				amount = new BigDecimal(amountStr);
 				fromAccountId = Integer.parseInt(fromAccountIdStr);
@@ -255,15 +263,13 @@ public class TransactionController extends HttpServlet {
 				showTransferForm(request, response);
 				return;
 			}
-			
-			
+
 			if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 				request.setAttribute("errorMessage", "Transfer amount must be greater than zero.");
 				showTransferForm(request, response);
 				return;
 			}
 
-			
 			if (amount.compareTo(new BigDecimal("100000")) > 0) {
 				request.setAttribute("errorMessage", "Transfer amount cannot exceed $100,000 per transaction.");
 				showTransferForm(request, response);
@@ -276,34 +282,32 @@ public class TransactionController extends HttpServlet {
 				showTransferForm(request, response);
 				return;
 			}
-			
-			
+
 			if (fromAccount.getBalance().compareTo(amount) < 0) {
-				request.setAttribute("errorMessage", "Insufficient funds in source account. Available balance: $" + fromAccount.getBalance());
+				request.setAttribute("errorMessage",
+						"Insufficient funds in source account. Available balance: $" + fromAccount.getBalance());
 				showTransferForm(request, response);
 				return;
 			}
-			
-		
+
 			Account toAccount = accountDAO.getAccountByNumber(toAccountNumber.trim());
 			if (toAccount == null) {
 				request.setAttribute("errorMessage", "Destination account not found. Please check the account number.");
 				showTransferForm(request, response);
 				return;
 			}
-			
-			
+
 			if (fromAccount.getAccountId() == toAccount.getAccountId()) {
 				request.setAttribute("errorMessage", "Cannot transfer money to the same account.");
 				showTransferForm(request, response);
 				return;
 			}
-			
-			
+
 			String message = accountService.transferMoney(fromAccountId, toAccountNumber.trim(), amount);
 
 			if ("Transfer successful!".equals(message)) {
-				request.setAttribute("successMessage", "Transfer of $" + amount + " to account " + toAccountNumber + " successful!");
+				request.setAttribute("successMessage",
+						"Transfer of $" + amount + " to account " + toAccountNumber + " successful!");
 				response.sendRedirect("dashboard");
 			} else {
 				request.setAttribute("errorMessage", message);
@@ -314,6 +318,7 @@ public class TransactionController extends HttpServlet {
 			request.setAttribute("errorMessage", "An error occurred during transfer. Please try again.");
 			showTransferForm(request, response);
 		}
+		
 	}
 
 	private void showPassbook(HttpServletRequest request, HttpServletResponse response)
@@ -322,13 +327,12 @@ public class TransactionController extends HttpServlet {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
 
-			
 			List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
-			
+
 			if (accounts == null) {
 				accounts = Collections.emptyList();
 			}
-			
+
 			if (accounts.isEmpty()) {
 				request.setAttribute("transactions", Collections.emptyList());
 				request.setAttribute("accounts", accounts);
@@ -337,14 +341,13 @@ public class TransactionController extends HttpServlet {
 				return;
 			}
 
-			
 			String accountIdParam = request.getParameter("accountId");
 			int selectedAccountId;
-			
+
 			if (accountIdParam != null && !accountIdParam.trim().isEmpty()) {
 				try {
 					selectedAccountId = Integer.parseInt(accountIdParam);
-					
+
 					boolean accountBelongsToCustomer = false;
 					for (Account account : accounts) {
 						if (account.getAccountId() == selectedAccountId) {
@@ -366,11 +369,10 @@ public class TransactionController extends HttpServlet {
 			if (transactions == null) {
 				transactions = Collections.emptyList();
 			}
-			
+
 			request.setAttribute("transactions", transactions);
 			request.setAttribute("accounts", accounts);
 			request.setAttribute("selectedAccountId", selectedAccountId);
-			
 
 			request.getRequestDispatcher("/passbook.jsp").forward(request, response);
 		} catch (Exception e) {
@@ -386,17 +388,17 @@ public class TransactionController extends HttpServlet {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
 			List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
-			
+
 			if (accounts == null) {
 				accounts = Collections.emptyList();
 			}
-			
+
 			if (accounts.isEmpty()) {
 				request.setAttribute("errorMessage", "No accounts found. Please open an account first.");
 				response.sendRedirect("dashboard");
 				return;
 			}
-			
+
 			request.setAttribute("accounts", accounts);
 			request.getRequestDispatcher("/deposit.jsp").forward(request, response);
 		} catch (Exception e) {
@@ -412,17 +414,17 @@ public class TransactionController extends HttpServlet {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
 			List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
-			
+
 			if (accounts == null) {
 				accounts = Collections.emptyList();
 			}
-			
+
 			if (accounts.isEmpty()) {
 				request.setAttribute("errorMessage", "No accounts found. Please open an account first.");
 				response.sendRedirect("dashboard");
 				return;
 			}
-			
+
 			request.setAttribute("accounts", accounts);
 			request.getRequestDispatcher("/withdraw.jsp").forward(request, response);
 		} catch (Exception e) {
@@ -438,17 +440,17 @@ public class TransactionController extends HttpServlet {
 			HttpSession session = request.getSession();
 			Customer customer = (Customer) session.getAttribute("customer");
 			List<Account> accounts = accountDAO.getAccountsByCustomerIdAll(customer.getCustomerId());
-			
+
 			if (accounts == null) {
 				accounts = Collections.emptyList();
 			}
-			
+
 			if (accounts.isEmpty()) {
 				request.setAttribute("errorMessage", "No accounts found. Please open an account first.");
 				response.sendRedirect("dashboard");
 				return;
 			}
-			
+
 			request.setAttribute("accounts", accounts);
 			request.getRequestDispatcher("/transfer.jsp").forward(request, response);
 		} catch (Exception e) {
