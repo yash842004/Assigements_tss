@@ -1,5 +1,0 @@
-package com.tss.hibernate.controller;
-
-public class EmployeeController {
-
-}

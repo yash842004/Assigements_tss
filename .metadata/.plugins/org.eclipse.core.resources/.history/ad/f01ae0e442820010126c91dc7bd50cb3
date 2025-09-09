@@ -1,9 +1,0 @@
-package com.tss.jpa.service;
-
-import com.tss.jpa.entity.Employee;
-
-public interface IEmpoyee {
-	
-	Employee findByName(String name);
-
-}

@@ -1,5 +1,0 @@
-package com.tss.hibernate.service;
-
-public class EmployeeServiceImp implements EmployeeService {
-
-}

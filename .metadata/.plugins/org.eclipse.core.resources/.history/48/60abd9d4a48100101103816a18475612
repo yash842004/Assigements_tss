@@ -1,7 +1,0 @@
-package com.tss.jpa.Repositary;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface StudentRepositary extends JpaRepository<Student, INTEGER> {
-
-}

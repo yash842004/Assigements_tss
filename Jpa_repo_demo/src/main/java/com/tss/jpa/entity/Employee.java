@@ -1,8 +1,22 @@
 package com.tss.jpa.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Entity
+@Data
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "employeesjpa")
 public class Employee {
 
@@ -22,16 +36,8 @@ public class Employee {
 	@Column
 	private String email;
 
-	public Employee() {
-	}
 
-	public Employee(int employeeId, String name, String department, double salary, String email) {
-		this.employeeId = employeeId;
-		this.name = name;
-		this.department = department;
-		this.salary = salary;
-		this.email = email;
-	}
+
 
 	// Getters & Setters
 	public int getEmployeeId() {
@@ -73,4 +79,9 @@ public class Employee {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+	
+	
+	  @OneToOne(cascade = CascadeType.ALL)
+	  @JoinColumn(name = "account_id")
+	  private SalaryAccount salaryAccount;
 }

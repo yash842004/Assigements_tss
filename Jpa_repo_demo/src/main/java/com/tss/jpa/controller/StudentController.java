@@ -1,6 +1,7 @@
 package com.tss.jpa.controller;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,23 +14,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tss.jpa.Repositary.StudentRepositary;
+import com.tss.jpa.dto.StudentRequestDto;
+import com.tss.jpa.dto.StudentResponseDto;
+import com.tss.jpa.dto.StudentResponsePage;
+import com.tss.jpa.entity.Address;
 import com.tss.jpa.entity.Student;
 import com.tss.jpa.service.StudentService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/studentsjpa")
 public class StudentController {
 
 	@Autowired
+	public StudentRepositary studentRepo;
+
+	@Autowired
 	public StudentService studentService;
 
 	@PostMapping("/add")
-	public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-		return ResponseEntity.ok().header("author", "yash").body(studentService.saveStudent(student));
+	public ResponseEntity<StudentResponseDto> createStudent(@Valid @RequestBody StudentRequestDto student) {
+		return ResponseEntity.ok().header("author", "yash").body(studentService.addNewStudent(student));
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<List<Student>> getAllStudents() {
+	public ResponseEntity<List<StudentResponseDto>> getAllStudents() {
 		return ResponseEntity.ok(studentService.getAllStudents());
 	}
 
@@ -37,20 +48,6 @@ public class StudentController {
 	public ResponseEntity<Student> getStudentById(@PathVariable int id) {
 		Student student = studentService.getStudentById(id);
 		return student != null ? ResponseEntity.ok(student) : ResponseEntity.notFound().build();
-	}
-
-	@PutMapping("/{id}")
-	public ResponseEntity<Student> updateStudent(@PathVariable int id, @RequestBody Student studentDetails) {
-		Student student = studentService.getStudentById(id);
-		if (student != null) {
-			student.setRollNumber(studentDetails.getRollNumber());
-			student.setFirstName(studentDetails.getFirstName());
-			student.setLastName(studentDetails.getLastName());
-			student.setEmail(studentDetails.getEmail());
-			student.setAge(studentDetails.getAge());
-			return ResponseEntity.ok(studentService.saveStudent(student));
-		}
-		return ResponseEntity.notFound().build();
 	}
 
 	@DeleteMapping("/{id}")
@@ -63,12 +60,28 @@ public class StudentController {
 		return ResponseEntity.notFound().build();
 	}
 
-	@GetMapping("/student")
-	public List<Student> readAllStudent(@RequestParam(required = false) String name) {
-		if (name == null)
-			return studentService.getAllStudents();
+	@GetMapping("/page")
+	public StudentResponsePage getStudent(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "2") int size) {
+		return studentService.getStudents(page, size);
+	}
 
-		return studentService.readByName(name);
+	@GetMapping("/{id}/address")
+	public ResponseEntity<Address> getAddress(@PathVariable Integer id) {
+		return ResponseEntity.ok(studentService.getAddressByStudentId(id));
+	}
+
+	@PutMapping("/{id}/address")
+	public ResponseEntity<Address> updateAddress(@PathVariable Integer id, @RequestBody Address address) {
+		return ResponseEntity.ok(studentService.updateStudentAddress(id, address));
+	}
+	
+	
+	@PutMapping("/studnets/{studentId}/courses") // param courseId 
+	public ResponseEntity<StudentResponseDto> assignCourse(@PathVariable int studentId, @RequestParam long courseId){
+		
+		
+		return ResponseEntity.ok(studentService.assignCourse(studentId, courseId));
 	}
 
 }

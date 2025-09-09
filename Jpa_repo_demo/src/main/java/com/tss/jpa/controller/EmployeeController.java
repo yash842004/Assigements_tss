@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tss.jpa.entity.Employee;
 import com.tss.jpa.service.EmployeeService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/employeesjpa")
 public class EmployeeController {
@@ -27,7 +29,6 @@ public class EmployeeController {
 	public Employee createEmployee(@RequestBody Employee employee) {
 		return employeeService.saveEmployee(employee);
 	}
-	
 
 	@GetMapping("/all")
 	public List<Employee> getAllEmployees() {
@@ -41,16 +42,8 @@ public class EmployeeController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Employee> updateEmployee(@PathVariable int id, @RequestBody Employee employeeDetails) {
-		Employee employee = employeeService.getEmployeeById(id);
-		if (employee != null) {
-			employee.setName(employeeDetails.getName());
-			employee.setDepartment(employeeDetails.getDepartment());
-			employee.setSalary(employeeDetails.getSalary());
-			employee.setEmail(employeeDetails.getEmail());
-			return ResponseEntity.ok(employeeService.saveEmployee(employee));
-		}
-		return ResponseEntity.notFound().build();
+	public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody Employee employee) {
+		return ResponseEntity.ok(employeeService.updateEmployee(id, employee));
 	}
 
 	@DeleteMapping("/{id}")
@@ -59,6 +52,15 @@ public class EmployeeController {
 		if (employee != null) {
 			employeeService.deleteEmployee(id);
 			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.notFound().build();
+	}
+
+	@GetMapping("/{id}/salaryAccount")
+	public ResponseEntity<?> getSalaryAccountByEmployeeId(@PathVariable int id) {
+		Employee employee = employeeService.getEmployeeById(id);
+		if (employee != null && employee.getSalaryAccount() != null) {
+			return ResponseEntity.ok(employee.getSalaryAccount());
 		}
 		return ResponseEntity.notFound().build();
 	}
