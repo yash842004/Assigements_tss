@@ -90,6 +90,19 @@
     <version>0.12.5</version>
     <scope>runtime</scope>
 </dependency>
+
+<!-- Spring Boot Async Support -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+
+<!-- Bouncy Castle for RSA key generation (optional, for key generation utilities) -->
+<dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcprov-jdk15on</artifactId>
+    <version>1.70</version>
+</dependency>
 	</dependencies>
 
 	<build>

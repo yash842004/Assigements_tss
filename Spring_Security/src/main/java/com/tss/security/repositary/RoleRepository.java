@@ -9,4 +9,6 @@ import com.tss.security.entity.Role;
 public interface RoleRepository extends JpaRepository<Role, Integer> {
 
 	Optional<Role> findByRolename(String rolename);
+	
+	boolean existsByRolename(String rolename);
 }

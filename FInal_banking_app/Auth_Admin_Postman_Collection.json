@@ -1,0 +1,323 @@
+{
+    "info": {
+        "name": "Banking App - Auth & Admin Collection",
+        "description": "Complete collection for AuthController and AdminController endpoints",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "description": "Base URL for the banking application - using HTTP (not HTTPS)"
+        },
+        {
+            "key": "jwt_token",
+            "value": ""
+        },
+        {
+            "key": "refresh_token",
+            "value": ""
+        },
+        {
+            "key": "user_id",
+            "value": ""
+        }
+    ],
+    "item": [
+        {
+            "name": "🔐 Authentication",
+            "item": [
+                {
+                    "name": "Customer Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"customer@example.com\",\n    \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/customer/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "customer", "login"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    if (response.success && response.data) {",
+                                    "        pm.environment.set('jwt_token', response.data.token);",
+                                    "        pm.environment.set('refresh_token', response.data.refreshToken);",
+                                    "        pm.environment.set('user_id', response.data.userId);",
+                                    "        console.log('Customer login successful - Token saved');",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Admin Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@bank.com\",\n    \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/admin/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "admin", "login"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    if (response.success && response.data) {",
+                                    "        pm.environment.set('jwt_token', response.data.token);",
+                                    "        pm.environment.set('refresh_token', response.data.refreshToken);",
+                                    "        pm.environment.set('user_id', response.data.userId);",
+                                    "        console.log('Admin login successful - Token saved');",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Refresh-Token",
+                                "value": "{{refresh_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/refresh",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "refresh"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    if (response.success && response.data) {",
+                                    "        pm.environment.set('jwt_token', response.data.token);",
+                                    "        pm.environment.set('refresh_token', response.data.refreshToken);",
+                                    "        console.log('Token refreshed successfully');",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/logout",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "logout"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    pm.environment.set('jwt_token', '');",
+                                    "    pm.environment.set('refresh_token', '');",
+                                    "    pm.environment.set('user_id', '');",
+                                    "    console.log('Logout successful - Tokens cleared');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "👑 Admin Management",
+            "item": [
+                {
+                    "name": "Create New Admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"John Doe\",\n    \"email\": \"john.admin@example.com\",\n    \"password\": \"securePassword123\",\n    \"roles\": [\"ADMIN\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Admin by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Admins (Paginated)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin?page=0&size=10&sort=createdAt,desc",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Role to Admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/2/roles/add/SUPER_ADMIN",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "2", "roles", "add", "SUPER_ADMIN"]
+                        }
+                    }
+                },
+                {
+                    "name": "Remove Role from Admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/2/roles/remove/ADMIN",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "2", "roles", "remove", "ADMIN"]
+                        }
+                    }
+                },
+                {
+                    "name": "Activate Admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/2/activate",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "2", "activate"]
+                        }
+                    }
+                },
+                {
+                    "name": "Deactivate Admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{jwt_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/2/deactivate",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "2", "deactivate"]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

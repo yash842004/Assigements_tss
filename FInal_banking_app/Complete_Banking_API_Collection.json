@@ -1,0 +1,357 @@
+{
+  "info": {
+    "name": "Final Banking App - Complete API Collection",
+    "description": "Complete API collection for Final Banking Application with all endpoints organized by functional modules",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "customerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "accountId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "transactionId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 1. Authentication Module",
+      "description": "Authentication and authorization endpoints",
+      "item": [
+        {
+          "name": "Customer Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/customer/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "customer", "login"]
+            },
+            "description": "Login endpoint for customers to get JWT token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('customerToken', response.data.token);",
+                  "    pm.environment.set('refreshToken', response.data.refreshToken);",
+                  "    console.log('Customer token saved:', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bank.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admin", "login"]
+            },
+            "description": "Login endpoint for admin users"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('adminToken', response.data.token);",
+                  "    console.log('Admin token saved:', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Refresh-Token",
+                "value": "{{refreshToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Refresh JWT token using refresh token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout and invalidate token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 2. Customer Management Module",
+      "description": "Customer registration, profile management, and operations",
+      "item": [
+        {
+          "name": "📝 Registration & Profile",
+          "item": [
+            {
+              "name": "Register Customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phoneNumber\": \"1234567890\",\n  \"address\": \"123 Main St, City, State, 12345\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"password\": \"securePassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers", "register"]
+                },
+                "description": "Register a new customer account"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    pm.environment.set('customerId', response.data.id);",
+                      "    console.log('Customer ID saved:', response.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Customer by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers", "{{customerId}}"]
+                },
+                "description": "Get customer details by ID"
+              }
+            },
+            {
+              "name": "Update Customer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"email\": \"john.smith@example.com\",\n  \"phoneNumber\": \"9876543210\",\n  \"address\": \"456 New Street, City, State, 54321\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers", "{{customerId}}"]
+                },
+                "description": "Update customer profile information"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔒 Security Operations",
+          "item": [
+            {
+              "name": "Change Password",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"oldPassword123\",\n  \"newPassword\": \"newSecurePassword456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers/{{customerId}}/change-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers", "{{customerId}}", "change-password"]
+                },
+                "description": "Change customer password"
+              }
+            }
+          ]
+        },
+        {
+          "name": "👨‍💼 Admin Operations",
+          "item": [
+            {
+              "name": "Get All Customers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers?page=0&size=10&sort=id,asc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "id,asc"
+                    }
+                  ]
+                },
+                "description": "Get all customers with pagination (Admin only)"
+              }
+            },
+            {
+              "name": "Activate Customer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers/{{customerId}}/activate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers", "{{customerId}}", "activate"]
+                },
+                "description": "Activate customer account (Admin only)"
+              }
+            },
+            {
+              "name": "Deactivate Customer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/customers/{{customerId}}/deactivate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "customers", "{{customerId}}", "deactivate"]
+                },
+                "description": "Deactivate customer account (Admin only)"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

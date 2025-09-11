@@ -1,0 +1,699 @@
+{
+  "info": {
+    "name": "Final Banking App - Complete API Collection",
+    "description": "Complete API collection for Final Banking Application with all endpoints organized by functional modules",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "customerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "accountId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 1. Authentication Module",
+      "item": [
+        {
+          "name": "Customer Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/customer/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "customer", "login"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "if (pm.response.code === 200) {",
+                "    const response = pm.response.json();",
+                "    pm.environment.set('customerToken', response.data.token);",
+                "    pm.environment.set('refreshToken', response.data.refreshToken);",
+                "}"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bank.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admin", "login"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "if (pm.response.code === 200) {",
+                "    const response = pm.response.json();",
+                "    pm.environment.set('adminToken', response.data.token);",
+                "}"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Refresh-Token", "value": "{{refreshToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 2. Customer Management Module",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phoneNumber\": \"1234567890\",\n  \"address\": \"123 Main St, City, State, 12345\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"password\": \"securePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"email\": \"john.smith@example.com\",\n  \"phoneNumber\": \"9876543210\",\n  \"address\": \"456 New Street, City, State, 54321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"oldPassword123\",\n  \"newPassword\": \"newSecurePassword456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}", "change-password"]
+            }
+          }
+        },
+        {
+          "name": "Get All Customers (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers?page=0&size=10&sort=id,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"},
+                {"key": "sort", "value": "id,asc"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate Customer (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}", "activate"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate Customer (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}", "deactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏦 3. Account Management Module",
+      "item": [
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": {{customerId}},\n  \"accountType\": \"SAVINGS\",\n  \"initialDeposit\": 1000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Account by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Accounts by Customer",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/customer/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "customer", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Balance",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{accountId}}/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Summary",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{accountId}}/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Close Account",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{accountId}}/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}", "close"]
+            }
+          }
+        },
+        {
+          "name": "Reopen Account",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{accountId}}/reopen",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "{{accountId}}", "reopen"]
+            }
+          }
+        },
+        {
+          "name": "Get All Accounts (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts?page=0&size=10&sort=id,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"},
+                {"key": "sort", "value": "id,asc"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 4. Transaction Management Module",
+      "item": [
+        {
+          "name": "Deposit Money",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/deposit?accountId={{accountId}}&amount=500.00&description=Salary deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "deposit"],
+              "query": [
+                {"key": "accountId", "value": "{{accountId}}"},
+                {"key": "amount", "value": "500.00"},
+                {"key": "description", "value": "Salary deposit"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Withdraw Money",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/withdraw?accountId={{accountId}}&amount=100.00&description=ATM withdrawal",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "withdraw"],
+              "query": [
+                {"key": "accountId", "value": "{{accountId}}"},
+                {"key": "amount", "value": "100.00"},
+                {"key": "description", "value": "ATM withdrawal"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Transfer Money",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": {{accountId}},\n  \"toAccountId\": 2,\n  \"amount\": 250.00,\n  \"description\": \"Transfer to friend\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "Process Generic Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": {{accountId}},\n  \"transactionType\": \"DEPOSIT\",\n  \"amount\": 300.00,\n  \"description\": \"Cash deposit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/account/{{accountId}}?page=0&size=10&sort=transactionDate,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "account", "{{accountId}}"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"},
+                {"key": "sort", "value": "transactionDate,desc"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Customer Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{customerToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/customer/{{customerId}}?page=0&size=10&sort=transactionDate,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "customer", "{{customerId}}"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"},
+                {"key": "sort", "value": "transactionDate,desc"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💼 5. Admin Management Module",
+      "item": [
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"email\": \"admin.user@bank.com\",\n  \"password\": \"adminPassword123\",\n  \"roles\": [\"CUSTOMER_MANAGER\", \"ACCOUNT_MANAGER\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin"]
+            }
+          }
+        },
+        {
+          "name": "Get Admin by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get All Admins",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin?page=0&size=10&sort=id,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"},
+                {"key": "sort", "value": "id,asc"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Role to Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/1/roles/add/TRANSACTION_MANAGER",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "1", "roles", "add", "TRANSACTION_MANAGER"]
+            }
+          }
+        },
+        {
+          "name": "Remove Role from Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/1/roles/remove/CUSTOMER_MANAGER",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "1", "roles", "remove", "CUSTOMER_MANAGER"]
+            }
+          }
+        },
+        {
+          "name": "Activate Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/1/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "1", "activate"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/1/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "1", "deactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 6. Reports & Analytics Module",
+      "item": [
+        {
+          "name": "Customer Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/customers?fromDate=2024-01-01&toDate=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "customers"],
+              "query": [
+                {"key": "fromDate", "value": "2024-01-01"},
+                {"key": "toDate", "value": "2024-12-31"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Account Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/accounts?fromDate=2024-01-01&toDate=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "accounts"],
+              "query": [
+                {"key": "fromDate", "value": "2024-01-01"},
+                {"key": "toDate", "value": "2024-12-31"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Transaction Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/transactions?fromDate=2024-01-01&toDate=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "transactions"],
+              "query": [
+                {"key": "fromDate", "value": "2024-01-01"},
+                {"key": "toDate", "value": "2024-12-31"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Financial Summary",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/financial-summary?fromDate=2024-01-01&toDate=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "financial-summary"],
+              "query": [
+                {"key": "fromDate", "value": "2024-01-01"},
+                {"key": "toDate", "value": "2024-12-31"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Daily Transaction Volume",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/transaction-volume?fromDate=2024-01-01&toDate=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "transaction-volume"],
+              "query": [
+                {"key": "fromDate", "value": "2024-01-01"},
+                {"key": "toDate", "value": "2024-12-31"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top Customers by Balance",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/top-customers?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "top-customers"],
+              "query": [{"key": "limit", "value": "10"}]
+            }
+          }
+        },
+        {
+          "name": "Most Active Accounts",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/active-accounts?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "active-accounts"],
+              "query": [{"key": "limit", "value": "10"}]
+            }
+          }
+        },
+        {
+          "name": "Largest Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/largest-transactions?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "largest-transactions"],
+              "query": [{"key": "limit", "value": "10"}]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

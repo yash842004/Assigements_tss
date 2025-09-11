@@ -1,0 +1,467 @@
+{
+  "info": {
+    "name": "Banking App - Step by Step Testing",
+    "description": "Complete step-by-step API testing for Banking Application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "customerToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken", 
+      "value": ""
+    },
+    {
+      "key": "customerId",
+      "value": "1"
+    },
+    {
+      "key": "accountId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Customer Registration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"1234567890\",\n  \"address\": \"123 Main Street, New York, NY 10001\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"password\": \"SecurePassword123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/customers/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "customers", "register"]
+        }
+      }
+    },
+    {
+      "name": "02. Customer Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/customer/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "customer", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.success && response.data.accessToken) {",
+              "        pm.environment.set('customerToken', response.data.accessToken);",
+              "        pm.environment.set('customerId', response.data.userId);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Create Savings Account",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerId\": {{customerId}},\n  \"accountType\": \"SAVINGS\",\n  \"initialDeposit\": 5000.00\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "accounts"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.success && response.data.accountId) {",
+              "        pm.environment.set('accountId', response.data.accountId);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Create Current Account",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerId\": {{customerId}},\n  \"accountType\": \"CURRENT\",\n  \"initialDeposit\": 2000.00\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "accounts"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.success && response.data.accountId) {",
+              "        pm.environment.set('secondAccountId', response.data.accountId);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Check Account Balance",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/{{accountId}}/balance",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "accounts", "{{accountId}}", "balance"]
+        }
+      }
+    },
+    {
+      "name": "06. Deposit Money",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/transactions/deposit?accountId={{accountId}}&amount=1500.00&description=Salary deposit",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "transactions", "deposit"],
+          "query": [
+            {
+              "key": "accountId",
+              "value": "{{accountId}}"
+            },
+            {
+              "key": "amount",
+              "value": "1500.00"
+            },
+            {
+              "key": "description",
+              "value": "Salary deposit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "07. Withdraw Money",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/transactions/withdraw?accountId={{accountId}}&amount=500.00&description=ATM withdrawal",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "transactions", "withdraw"],
+          "query": [
+            {
+              "key": "accountId",
+              "value": "{{accountId}}"
+            },
+            {
+              "key": "amount",
+              "value": "500.00"
+            },
+            {
+              "key": "description",
+              "value": "ATM withdrawal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "08. Transfer Money",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromAccountId\": {{accountId}},\n  \"toAccountId\": {{secondAccountId}},\n  \"amount\": 1000.00,\n  \"description\": \"Transfer to current account\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/transactions/transfer",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "transactions", "transfer"]
+        }
+      }
+    },
+    {
+      "name": "09. View Transaction History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/transactions/account/{{accountId}}?page=0&size=10&sort=transactionDate,desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "transactions", "account", "{{accountId}}"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size", 
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "transactionDate,desc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "10. Admin Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@bank.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.success && response.data.accessToken) {",
+              "        pm.environment.set('adminToken', response.data.accessToken);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. View All Customers (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/customers?page=0&size=10&sort=id,asc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "customers"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "id,asc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "12. Generate Financial Report (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/reports/financial-summary?fromDate=2025-09-01&toDate=2025-09-30",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "reports", "financial-summary"],
+          "query": [
+            {
+              "key": "fromDate",
+              "value": "2025-09-01"
+            },
+            {
+              "key": "toDate",
+              "value": "2025-09-30"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "13. Test Insufficient Funds (Error)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/transactions/withdraw?accountId={{accountId}}&amount=50000.00&description=Large withdrawal test",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "transactions", "withdraw"],
+          "query": [
+            {
+              "key": "accountId",
+              "value": "{{accountId}}"
+            },
+            {
+              "key": "amount",
+              "value": "50000.00"
+            },
+            {
+              "key": "description",
+              "value": "Large withdrawal test"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "14. Account Summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/{{accountId}}/summary",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "accounts", "{{accountId}}", "summary"]
+        }
+      }
+    },
+    {
+      "name": "15. Register Second Customer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"phone\": \"9876543210\",\n  \"address\": \"456 Oak Avenue, Los Angeles, CA 90001\",\n  \"dateOfBirth\": \"1985-12-20\",\n  \"password\": \"JaneSecure456!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/customers/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "customers", "register"]
+        }
+      }
+    }
+  ]
+}
