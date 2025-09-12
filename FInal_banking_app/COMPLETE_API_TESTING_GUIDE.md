@@ -321,41 +321,25 @@ Authorization: Bearer {{customerToken}}
 
 ### Step 15: Make a Deposit
 **Method:** POST  
-**URL:** `{{baseURL}}/api/transactions/deposit`
+**URL:** `{{baseURL}}/api/transactions/deposit?accountId={{accountId}}&amount=500.00&description=Initial deposit`
 
 **Headers:**
 ```
-Content-Type: application/json
 Authorization: Bearer {{customerToken}}
 ```
 
-**Body (JSON):**
-```json
-{
-    "accountId": {{accountId}},
-    "amount": 500.00,
-    "description": "Initial deposit"
-}
-```
+**Note:** This endpoint uses query parameters, not JSON body.
 
 ### Step 16: Make a Withdrawal
 **Method:** POST  
-**URL:** `{{baseURL}}/api/transactions/withdraw`
+**URL:** `{{baseURL}}/api/transactions/withdraw?accountId={{accountId}}&amount=100.00&description=ATM withdrawal`
 
 **Headers:**
 ```
-Content-Type: application/json
 Authorization: Bearer {{customerToken}}
 ```
 
-**Body (JSON):**
-```json
-{
-    "accountId": {{accountId}},
-    "amount": 100.00,
-    "description": "ATM withdrawal"
-}
-```
+**Note:** This endpoint uses query parameters, not JSON body.
 
 ### Step 17: Transfer Money
 **Method:** POST  
@@ -401,10 +385,10 @@ Authorization: Bearer {{customerToken}}
 **Body (JSON):**
 ```json
 {
-    "customerId": {{customerId}},
     "accountId": {{accountId}},
     "loanType": "PERSONAL",
     "principalAmount": 10000.00,
+    "interestRate": 8.5,
     "termMonths": 24,
     "purpose": "Home renovation"
 }
@@ -654,6 +638,23 @@ Authorization: Bearer invalid_token_here
    -- Connect to your database and run:
    UPDATE admins SET password_hash = '$2a$10$...' WHERE email = 'admin@bank.com';
    ```
+
+7. **Loan Application Failed**
+   - **Issue**: 500 Internal Server Error when applying for loan
+   - **Solution**: Ensure request body includes all required fields:
+     - `accountId` (not customerId)
+     - `loanType` (e.g., "PERSONAL", "HOME", "AUTO")
+     - `principalAmount` (minimum $1,000)
+     - `interestRate` (between 0.01 and 30)
+     - `termMonths` (between 6 and 360 months)
+     - `purpose` (optional)
+
+6. **Transaction Operations Not Working**
+   - **Issue**: Deposits/Withdrawals not showing in transaction history
+   - **Solution**: Ensure you're using query parameters, not JSON body for deposit/withdraw endpoints
+   - **Correct Format**: 
+     - Deposit: `/api/transactions/deposit?accountId=1&amount=100.00&description=test`
+     - Withdraw: `/api/transactions/withdraw?accountId=1&amount=100.00&description=test`
 
 ### Environment Variable Check:
 Before testing, ensure all environment variables are set:
