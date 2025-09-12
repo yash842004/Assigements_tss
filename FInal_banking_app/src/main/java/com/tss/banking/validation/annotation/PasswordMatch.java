@@ -27,13 +27,9 @@ public @interface PasswordMatch {
     
     Class<? extends Payload>[] payload() default {};
     
-    /**
-     * Field name for password
-     */
+   
     String password() default "password";
     
-    /**
-     * Field name for confirm password
-     */
+ 
     String confirmPassword() default "confirmPassword";
 }
