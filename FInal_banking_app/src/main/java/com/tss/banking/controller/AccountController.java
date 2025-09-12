@@ -20,6 +20,9 @@ import com.tss.banking.dto.response.AccountResponseDTO;
 import com.tss.banking.dto.response.AccountSummaryResponseDTO;
 import com.tss.banking.dto.response.ApiResponseDTO;
 import com.tss.banking.service.AccountService;
+import com.tss.banking.util.AccessControlUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller for account management operations
@@ -30,6 +33,9 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+    
+    @Autowired
+    private AccessControlUtil accessControlUtil;
 
     /**
      * Create new account
@@ -49,10 +55,17 @@ public class AccountController {
      * Get account by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<AccountResponseDTO>> getAccountById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDTO<AccountResponseDTO>> getAccountById(@PathVariable Long id, HttpServletRequest request) {
         try {
+            // Get account owner ID and validate access
+            Long accountOwnerId = accountService.getAccountOwnerId(id);
+            accessControlUtil.validateAccountAccess(request, accountOwnerId);
+            
             AccountResponseDTO account = accountService.getAccountById(id);
             return ResponseEntity.ok(ApiResponseDTO.success("Account retrieved successfully", account));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to retrieve account: " + e.getMessage()));
@@ -63,10 +76,16 @@ public class AccountController {
      * Get all accounts for a customer
      */
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponseDTO<List<AccountResponseDTO>>> getAccountsByCustomerId(@PathVariable Long customerId) {
+    public ResponseEntity<ApiResponseDTO<List<AccountResponseDTO>>> getAccountsByCustomerId(@PathVariable Long customerId, HttpServletRequest request) {
         try {
+            // Validate access: customers can only access their own accounts
+            accessControlUtil.validateCustomerAccess(request, customerId);
+            
             List<AccountResponseDTO> accounts = accountService.getAccountsByCustomerId(customerId);
             return ResponseEntity.ok(ApiResponseDTO.success("Accounts retrieved successfully", accounts));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to retrieve accounts: " + e.getMessage()));
@@ -77,10 +96,17 @@ public class AccountController {
      * Get account balance
      */
     @GetMapping("/{id}/balance")
-    public ResponseEntity<ApiResponseDTO<BigDecimal>> getAccountBalance(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDTO<BigDecimal>> getAccountBalance(@PathVariable Long id, HttpServletRequest request) {
         try {
+            // Get account owner ID and validate access
+            Long accountOwnerId = accountService.getAccountOwnerId(id);
+            accessControlUtil.validateAccountAccess(request, accountOwnerId);
+            
             BigDecimal balance = accountService.getAccountBalance(id);
             return ResponseEntity.ok(ApiResponseDTO.success("Balance retrieved successfully", balance));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to retrieve balance: " + e.getMessage()));
@@ -91,10 +117,17 @@ public class AccountController {
      * Get account summary
      */
     @GetMapping("/{id}/summary")
-    public ResponseEntity<ApiResponseDTO<AccountSummaryResponseDTO>> getAccountSummary(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDTO<AccountSummaryResponseDTO>> getAccountSummary(@PathVariable Long id, HttpServletRequest request) {
         try {
+            // Get account owner ID and validate access
+            Long accountOwnerId = accountService.getAccountOwnerId(id);
+            accessControlUtil.validateAccountAccess(request, accountOwnerId);
+            
             AccountSummaryResponseDTO summary = accountService.getAccountSummary(id);
             return ResponseEntity.ok(ApiResponseDTO.success("Account summary retrieved successfully", summary));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to retrieve account summary: " + e.getMessage()));
@@ -105,10 +138,16 @@ public class AccountController {
      * Get all accounts (admin only)
      */
     @GetMapping
-    public ResponseEntity<ApiResponseDTO<Page<AccountResponseDTO>>> getAllAccounts(Pageable pageable) {
+    public ResponseEntity<ApiResponseDTO<Page<AccountResponseDTO>>> getAllAccounts(Pageable pageable, HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminOperationAccess(request, "VIEW_ACCOUNTS");
+            
             Page<AccountResponseDTO> accounts = accountService.getAllAccounts(pageable);
             return ResponseEntity.ok(ApiResponseDTO.success("Accounts retrieved successfully", accounts));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to retrieve accounts: " + e.getMessage()));
@@ -119,10 +158,17 @@ public class AccountController {
      * Close account
      */
     @PutMapping("/{id}/close")
-    public ResponseEntity<ApiResponseDTO<String>> closeAccount(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDTO<String>> closeAccount(@PathVariable Long id, HttpServletRequest request) {
         try {
+            // Get account owner ID and validate access (admin or account owner)
+            Long accountOwnerId = accountService.getAccountOwnerId(id);
+            accessControlUtil.validateAccountAccess(request, accountOwnerId);
+            
             accountService.closeAccount(id);
             return ResponseEntity.ok(ApiResponseDTO.success("Account closed successfully", "OK"));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to close account: " + e.getMessage()));
@@ -133,10 +179,17 @@ public class AccountController {
      * Reopen account
      */
     @PutMapping("/{id}/reopen")
-    public ResponseEntity<ApiResponseDTO<AccountResponseDTO>> reopenAccount(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDTO<AccountResponseDTO>> reopenAccount(@PathVariable Long id, HttpServletRequest request) {
         try {
+            // Get account owner ID and validate access (admin or account owner)
+            Long accountOwnerId = accountService.getAccountOwnerId(id);
+            accessControlUtil.validateAccountAccess(request, accountOwnerId);
+            
             AccountResponseDTO account = accountService.reopenAccount(id);
             return ResponseEntity.ok(ApiResponseDTO.success("Account reopened successfully", account));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponseDTO.error("Access denied: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to reopen account: " + e.getMessage()));

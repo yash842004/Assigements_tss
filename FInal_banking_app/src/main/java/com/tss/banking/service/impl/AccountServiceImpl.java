@@ -1,27 +1,12 @@
 package com.tss.banking.service.impl;
 
-import com.tss.banking.dto.request.AccountCreationRequestDTO;
-import com.tss.banking.dto.request.AccountLookupRequestDTO;
-import com.tss.banking.dto.response.AccountResponseDTO;
-import com.tss.banking.dto.response.AccountSummaryResponseDTO;
-import com.tss.banking.dto.response.PagedResponseDTO;
-import com.tss.banking.entity.Account;
-import com.tss.banking.entity.Customer;
-import com.tss.banking.entity.eums.AccountStatus;
-import com.tss.banking.entity.eums.AccountType;
-import com.tss.banking.entity.eums.CustomerStatus;
-import com.tss.banking.exception.AccountInactiveException;
-import com.tss.banking.exception.AccountNotFoundException;
-import com.tss.banking.exception.BusinessRuleViolationException;
-import com.tss.banking.exception.CustomerNotFoundException;
-import com.tss.banking.exception.DuplicateResourceException;
-import com.tss.banking.exception.ValidationException;
-import com.tss.banking.repository.AccountRepository;
-import com.tss.banking.repository.CustomerRepository;
-import com.tss.banking.service.AccountService;
-import com.tss.banking.validation.groups.CreateGroup;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,14 +14,34 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tss.banking.dto.request.AccountCreationRequestDTO;
+import com.tss.banking.dto.request.AccountLookupRequestDTO;
+import com.tss.banking.dto.response.AccountResponseDTO;
+import com.tss.banking.dto.response.AccountSummaryResponseDTO;
+import com.tss.banking.dto.response.PagedResponseDTO;
+import com.tss.banking.dto.response.TransactionResponseDTO;
+import com.tss.banking.entity.Account;
+import com.tss.banking.entity.Customer;
+import com.tss.banking.entity.Transaction;
+import com.tss.banking.entity.eums.AccountStatus;
+import com.tss.banking.entity.eums.AccountType;
+import com.tss.banking.entity.eums.CustomerStatus;
+import com.tss.banking.entity.eums.TransactionType;
+import com.tss.banking.exception.AccountInactiveException;
+import com.tss.banking.exception.AccountNotFoundException;
+import com.tss.banking.exception.BusinessRuleViolationException;
+import com.tss.banking.exception.CustomerNotFoundException;
+import com.tss.banking.exception.ValidationException;
+import com.tss.banking.repository.AccountRepository;
+import com.tss.banking.repository.CustomerRepository;
+import com.tss.banking.repository.TransactionRepository;
+import com.tss.banking.service.AccountService;
+import com.tss.banking.validation.groups.CreateGroup;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +51,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
+    private final TransactionRepository transactionRepository;
     private final Validator validator;
     private final Random random = new Random();
 
@@ -62,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
 
         // Validate customer status
         if (customer.getStatus() != CustomerStatus.ACTIVE) {
-            throw new BusinessRuleViolationException("Cannot create account for inactive customer");
+            throw new BusinessRuleViolationException("Cannot create account for customer. Customer must be approved by admin first.");
         }
 
         // Check business rules for account creation
@@ -113,12 +119,33 @@ public class AccountServiceImpl implements AccountService {
     public List<AccountResponseDTO> getAccountsByCustomerId(Long customerId) {
         log.debug("Fetching accounts for customer ID: {}", customerId);
         
+        // Debug: Check total accounts in database
+        long totalAccounts = accountRepository.countAllAccounts();
+        log.debug("Total accounts in database: {}", totalAccounts);
+        
         // Verify customer exists
         if (!customerRepository.existsById(customerId)) {
+            log.warn("Customer not found with ID: {}", customerId);
             throw new CustomerNotFoundException("Customer not found with ID: " + customerId);
         }
-
-        List<Account> accounts = accountRepository.findByCustomerId(customerId);
+        
+        log.debug("Customer exists, fetching accounts...");
+        
+        // Debug: Try to fetch all accounts first
+        List<Account> allAccounts = accountRepository.findAllAccountsWithCustomer();
+        log.debug("All accounts with customers: {}", allAccounts.stream()
+            .map(a -> "AccountID:" + a.getId() + ",CustomerID:" + a.getCustomer().getId())
+            .collect(Collectors.toList()));
+        
+        List<Account> accounts = accountRepository.findAccountsByCustomerId(customerId);
+        log.debug("Found {} accounts for customer ID: {}", accounts.size(), customerId);
+        
+        if (accounts.isEmpty()) {
+            log.warn("No accounts found for customer ID: {}", customerId);
+        } else {
+            log.debug("Account IDs: {}", accounts.stream().map(Account::getId).collect(Collectors.toList()));
+        }
+        
         return accounts.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
@@ -274,31 +301,63 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional(readOnly = true)
-    public AccountSummaryResponseDTO getAccountSummary(Long customerId) {
-        log.debug("Generating account summary for customer ID: {}", customerId);
+    public AccountSummaryResponseDTO getAccountSummary(Long accountId) {
+        log.debug("Generating account summary for account ID: {}", accountId);
         
-        // Verify customer exists
-        if (!customerRepository.existsById(customerId)) {
-            throw new CustomerNotFoundException("Customer not found with ID: " + customerId);
-        }
-
-        List<Account> accounts = accountRepository.findByCustomerId(customerId);
+        Account account = findAccountById(accountId);
         
-        long totalAccounts = accounts.size();
-        long activeAccounts = accounts.stream()
-                .mapToLong(account -> account.getStatus() == AccountStatus.ACTIVE ? 1 : 0)
+        // Get all transactions for this account (first 100 for summary calculation)
+        Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "transactionDate"));
+        Page<Transaction> transactionPage = transactionRepository.findByAccountIdOrderByTransactionDateDesc(accountId, pageable);
+        List<Transaction> transactions = transactionPage.getContent();
+        
+        // Calculate transaction statistics
+        BigDecimal totalDeposits = transactions.stream()
+                .filter(t -> t.getTransactionType() == TransactionType.DEPOSIT)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+        BigDecimal totalWithdrawals = transactions.stream()
+                .filter(t -> t.getTransactionType() == TransactionType.WITHDRAWAL)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+        BigDecimal totalTransferIn = transactions.stream()
+                .filter(t -> t.getTransactionType() == TransactionType.TRANSFER_IN)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+        BigDecimal totalTransferOut = transactions.stream()
+                .filter(t -> t.getTransactionType() == TransactionType.TRANSFER_OUT)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Get recent transactions (last 5)
+        List<TransactionResponseDTO> recentTransactions = transactions.stream()
+                .limit(5)
+                .map(this::mapTransactionToDTO)
+                .collect(Collectors.toList());
+        
+        // Get customer accounts count
+        List<Account> customerAccounts = accountRepository.findAccountsByCustomerId(account.getCustomer().getId());
+        long totalAccounts = customerAccounts.size();
+        long activeAccounts = customerAccounts.stream()
+                .mapToLong(acc -> acc.getStatus() == AccountStatus.ACTIVE ? 1 : 0)
                 .sum();
         
-        BigDecimal totalBalance = accounts.stream()
-                .filter(account -> account.getStatus() == AccountStatus.ACTIVE)
-                .map(Account::getBalance)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
         return AccountSummaryResponseDTO.builder()
-                .customerId(customerId)
+                .customerId(account.getCustomer().getId())
+                .account(mapToResponseDTO(account))
+                .totalDeposits(totalDeposits)
+                .totalWithdrawals(totalWithdrawals)
+                .totalTransferIn(totalTransferIn)
+                .totalTransferOut(totalTransferOut)
                 .totalAccounts(totalAccounts)
                 .activeAccounts(activeAccounts)
-                .totalBalance(totalBalance)
+                .totalBalance(account.getBalance())
+                .transactionCount(transactions.size())
                 .lastUpdated(LocalDateTime.now())
+                .recentTransactions(recentTransactions)
                 .build();
     }
 
@@ -416,6 +475,13 @@ public class AccountServiceImpl implements AccountService {
     public boolean accountBelongsToCustomer(Long accountId, Long customerId) {
         Account account = findAccountById(accountId);
         return account.getCustomer().getId().equals(customerId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Long getAccountOwnerId(Long accountId) {
+        Account account = findAccountById(accountId);
+        return account.getCustomer().getId();
     }
 
     @Override
@@ -543,6 +609,27 @@ public class AccountServiceImpl implements AccountService {
                 .customerName(account.getCustomer().getFirstName() + " " + account.getCustomer().getLastName())
                 .createdDate(account.getCreatedDate())
                 .lastUpdated(account.getLastUpdated())
+                .build();
+    }
+
+    /**
+     * Maps Transaction entity to TransactionResponseDTO
+     */
+    private TransactionResponseDTO mapTransactionToDTO(Transaction transaction) {
+        return TransactionResponseDTO.builder()
+                .id(transaction.getId())
+                .transactionId(transaction.getId())
+                .accountId(transaction.getAccount().getId())
+                .accountNumber(transaction.getAccount().getAccountNumber())
+                .transactionType(transaction.getTransactionType())
+                .amount(transaction.getAmount())
+                .description(transaction.getDescription())
+                .transactionDate(transaction.getTransactionDate())
+                .timestamp(transaction.getTransactionDate())
+                .balanceAfterTransaction(transaction.getBalanceAfter() != null ? 
+                    transaction.getBalanceAfter() : transaction.getAccount().getBalance())
+                .referenceId(transaction.getReferenceId() != null ? 
+                    transaction.getReferenceId() : "TXN" + transaction.getId())
                 .build();
     }
 

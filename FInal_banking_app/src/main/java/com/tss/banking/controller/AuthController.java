@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tss.banking.dto.request.CustomerRegistrationRequestDTO;
 import com.tss.banking.dto.request.LoginRequestDTO;
 import com.tss.banking.dto.response.ApiResponseDTO;
 import com.tss.banking.dto.response.AuthResponseDTO;
+import com.tss.banking.dto.response.CustomerResponseDTO;
 import com.tss.banking.service.AuthService;
+import com.tss.banking.service.CustomerService;
 
 /**
  * Controller for authentication and authorization operations
@@ -22,6 +25,23 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private CustomerService customerService;
+
+    /**
+     * Customer registration endpoint
+     */
+    @PostMapping("/customer/register")
+    public ResponseEntity<ApiResponseDTO<CustomerResponseDTO>> registerCustomer(@RequestBody CustomerRegistrationRequestDTO registrationRequest) {
+        try {
+            CustomerResponseDTO customer = customerService.registerCustomer(registrationRequest);
+            return ResponseEntity.ok(ApiResponseDTO.success("Customer registered successfully", customer));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Registration failed: " + e.getMessage()));
+        }
+    }
 
     /**
      * Customer login endpoint

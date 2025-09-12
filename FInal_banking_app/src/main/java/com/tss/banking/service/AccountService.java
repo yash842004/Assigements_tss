@@ -128,6 +128,13 @@ public interface AccountService {
     boolean accountBelongsToCustomer(Long accountId, Long customerId);
     
     /**
+     * Get account owner (customer) ID
+     * @param accountId Account ID
+     * @return Customer ID who owns the account
+     */
+    Long getAccountOwnerId(Long accountId);
+    
+    /**
      * Check if account is active
      * @param accountId Account ID
      * @return true if active, false otherwise

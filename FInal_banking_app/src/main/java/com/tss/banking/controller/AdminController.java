@@ -17,6 +17,10 @@ import com.tss.banking.dto.response.AdminResponseDTO;
 import com.tss.banking.dto.response.ApiResponseDTO;
 import com.tss.banking.entity.eums.AdminRole;
 import com.tss.banking.service.AdminService;
+import com.tss.banking.service.CustomerService;
+import com.tss.banking.util.AccessControlUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -28,6 +32,12 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private CustomerService customerService;
+
+    @Autowired
+    private AccessControlUtil accessControlUtil;
 
     /**
      * Create new admin (super admin only)
@@ -124,6 +134,82 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Deactivation failed: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Get customers pending approval
+     */
+    @GetMapping("/customers/pending")
+    public ResponseEntity<ApiResponseDTO<java.util.List<com.tss.banking.dto.response.CustomerResponseDTO>>> getCustomersPendingApproval() {
+        try {
+            java.util.List<com.tss.banking.dto.response.CustomerResponseDTO> customers = customerService.getCustomersPendingApproval();
+            return ResponseEntity.ok(ApiResponseDTO.success("Pending customers retrieved successfully", customers));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to retrieve pending customers: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Get customers pending approval with pagination
+     */
+    @GetMapping("/customers/pending/paginated")
+    public ResponseEntity<ApiResponseDTO<Page<com.tss.banking.dto.response.CustomerResponseDTO>>> getCustomersPendingApprovalPaginated(Pageable pageable) {
+        try {
+            Page<com.tss.banking.dto.response.CustomerResponseDTO> customers = customerService.getCustomersPendingApproval(pageable);
+            return ResponseEntity.ok(ApiResponseDTO.success("Pending customers retrieved successfully", customers));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to retrieve pending customers: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Approve customer registration
+     */
+    @PutMapping("/customers/{customerId}/approve")
+    public ResponseEntity<ApiResponseDTO<com.tss.banking.dto.response.CustomerResponseDTO>> approveCustomer(
+            @PathVariable Long customerId,
+            @RequestBody com.tss.banking.dto.request.CustomerApprovalRequestDTO request,
+            HttpServletRequest httpRequest) {
+        try {
+            // Extract admin ID from JWT token
+            Long adminId = accessControlUtil.getCurrentUserId(httpRequest);
+            if (adminId == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponseDTO.error("Admin ID not found in token"));
+            }
+            
+            com.tss.banking.dto.response.CustomerResponseDTO customer = customerService.approveCustomer(customerId, adminId, request);
+            return ResponseEntity.ok(ApiResponseDTO.success("Customer approved successfully", customer));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to approve customer: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Reject customer registration
+     */
+    @PutMapping("/customers/{customerId}/reject")
+    public ResponseEntity<ApiResponseDTO<com.tss.banking.dto.response.CustomerResponseDTO>> rejectCustomer(
+            @PathVariable Long customerId,
+            @RequestBody com.tss.banking.dto.request.CustomerRejectionRequestDTO request,
+            HttpServletRequest httpRequest) {
+        try {
+            // Extract admin ID from JWT token
+            Long adminId = accessControlUtil.getCurrentUserId(httpRequest);
+            if (adminId == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponseDTO.error("Admin ID not found in token"));
+            }
+            
+            com.tss.banking.dto.response.CustomerResponseDTO customer = customerService.rejectCustomer(customerId, adminId, request);
+            return ResponseEntity.ok(ApiResponseDTO.success("Customer rejected successfully", customer));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to reject customer: " + e.getMessage()));
         }
     }
 }

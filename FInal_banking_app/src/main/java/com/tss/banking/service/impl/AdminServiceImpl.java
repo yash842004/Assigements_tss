@@ -34,10 +34,10 @@ public class AdminServiceImpl implements AdminService {
 	private AdminRepository adminRepository;
 
 	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
 	private Validator validator;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public AdminResponseDTO createAdmin(AdminCreateRequestDTO adminCreateRequest) {
@@ -55,7 +55,7 @@ public class AdminServiceImpl implements AdminService {
 		// Create admin entity
 		Admin admin = Admin.builder().firstName(adminCreateRequest.getFirstName())
 				.lastName(adminCreateRequest.getLastName()).email(adminCreateRequest.getEmail())
-				.passwordHash(passwordEncoder.encode(adminCreateRequest.getPassword()))
+				.passwordHash(adminCreateRequest.getPassword())
 				.roles(adminCreateRequest.getRoles()).active(true).createdDate(LocalDateTime.now()).build();
 
 		Admin savedAdmin = adminRepository.save(admin);
@@ -179,7 +179,7 @@ public class AdminServiceImpl implements AdminService {
 
 		if (adminOpt.isPresent()) {
 			Admin admin = adminOpt.get();
-			if (admin.isActive() && passwordEncoder.matches(password, admin.getPasswordHash())) {
+			if (admin.isActive() && password.equals(admin.getPasswordHash())) {
 				return Optional.of(admin);
 			}
 		}
@@ -223,11 +223,11 @@ public class AdminServiceImpl implements AdminService {
 		log.info("Changing password for admin ID: {}", adminId);
 		Admin admin = findAdminById(adminId);
 
-		if (!passwordEncoder.matches(currentPassword, admin.getPasswordHash())) {
+		if (!currentPassword.equals(admin.getPasswordHash())) {
 			throw new ValidationException("Current password is incorrect");
 		}
 
-		admin.setPasswordHash(passwordEncoder.encode(newPassword));
+		admin.setPasswordHash(newPassword);
 		admin.setLastUpdated(LocalDateTime.now());
 		adminRepository.save(admin);
 		log.info("Password changed successfully for admin ID: {}", adminId);
@@ -237,7 +237,7 @@ public class AdminServiceImpl implements AdminService {
 	public void resetAdminPassword(Long adminId, String newPassword) {
 		log.info("Resetting password for admin ID: {} (super admin operation)", adminId);
 		Admin admin = findAdminById(adminId);
-		admin.setPasswordHash(passwordEncoder.encode(newPassword));
+		admin.setPasswordHash(newPassword);
 		admin.setLastUpdated(LocalDateTime.now());
 		adminRepository.save(admin);
 		log.info("Password reset successfully for admin ID: {}", adminId);

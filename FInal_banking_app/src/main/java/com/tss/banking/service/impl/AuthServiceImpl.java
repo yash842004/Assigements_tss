@@ -15,6 +15,7 @@ import com.tss.banking.service.AuthService;
 import com.tss.banking.service.CustomerService;
 import com.tss.banking.util.JwtUtil;
 
+
 /**
  * Implementation of AuthService for authentication and authorization
  */
@@ -128,7 +129,9 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public String generateAdminToken(Admin admin) {
-		return jwtUtil.generateToken(admin.getEmail(), admin.getId(), "ADMIN");
+		// Get the primary admin role (assuming an admin has at least one role)
+		String adminRole = admin.getRoles().isEmpty() ? "ADMIN" : admin.getRoles().iterator().next().name();
+		return jwtUtil.generateToken(admin.getEmail(), admin.getId(), "ADMIN", adminRole);
 	}
 
 	@Override

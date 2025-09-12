@@ -1,10 +1,13 @@
 package com.tss.banking.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.tss.banking.dto.request.CustomerApprovalRequestDTO;
+import com.tss.banking.dto.request.CustomerRejectionRequestDTO;
 import com.tss.banking.dto.request.CustomerRegistrationRequestDTO;
 import com.tss.banking.dto.request.CustomerUpdateRequestDTO;
 import com.tss.banking.dto.request.PasswordChangeRequestDTO;
@@ -153,4 +156,32 @@ public interface CustomerService {
      * @param customerId Customer ID
      */
     void deleteCustomer(Long customerId);
+    
+    /**
+     * Get customers pending approval (Admin only)
+     */
+    List<CustomerResponseDTO> getCustomersPendingApproval();
+    
+    /**
+     * Get customers pending approval with pagination (Admin only)
+     */
+    Page<CustomerResponseDTO> getCustomersPendingApproval(Pageable pageable);
+    
+    /**
+     * Approve a customer registration (Admin only)
+     */
+    CustomerResponseDTO approveCustomer(Long customerId, Long adminId, CustomerApprovalRequestDTO request);
+    
+    /**
+     * Reject a customer registration (Admin only)
+     */
+    CustomerResponseDTO rejectCustomer(Long customerId, Long adminId, CustomerRejectionRequestDTO request);
+    
+    /**
+     * Fix customer password encoding - migrate plain text to encoded passwords  
+     * This method is for data migration purposes only
+     * @param email Customer email
+     * @param plainPassword Plain text password to encode
+     */
+    void fixCustomerPasswordEncoding(String email, String plainPassword);
 }

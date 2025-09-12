@@ -8,5 +8,6 @@ public enum AccountStatus {
     INACTIVE,
     FROZEN,
     CLOSED,
-    SUSPENDED
+    SUSPENDED,
+    PENDING_APPROVAL
 }

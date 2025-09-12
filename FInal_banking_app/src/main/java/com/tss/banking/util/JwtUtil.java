@@ -55,6 +55,13 @@ public class JwtUtil {
     }
     
     /**
+     * Extract admin role from token (for admin users)
+     */
+    public String extractAdminRole(String token) {
+        return extractClaim(token, claims -> claims.get("adminRole", String.class));
+    }
+    
+    /**
      * Extract expiration date from token
      */
     public Date extractExpiration(String token) {
@@ -102,12 +109,39 @@ public class JwtUtil {
     }
     
     /**
+     * Generate token for admin with role
+     */
+    public String generateToken(String username, Long userId, String userType, String adminRole) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("userType", userType);
+        if (adminRole != null) {
+            claims.put("adminRole", adminRole);
+        }
+        return createToken(claims, username, expiration);
+    }
+    
+    /**
      * Generate refresh token
      */
     public String generateRefreshToken(String username, Long userId, String userType) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("userType", userType);
+        claims.put("tokenType", "REFRESH");
+        return createToken(claims, username, refreshExpiration);
+    }
+    
+    /**
+     * Generate refresh token for admin with role
+     */
+    public String generateRefreshToken(String username, Long userId, String userType, String adminRole) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("userType", userType);
+        if (adminRole != null) {
+            claims.put("adminRole", adminRole);
+        }
         claims.put("tokenType", "REFRESH");
         return createToken(claims, username, refreshExpiration);
     }

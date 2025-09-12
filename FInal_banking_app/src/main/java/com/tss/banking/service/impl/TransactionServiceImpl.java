@@ -10,14 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tss.banking.dto.request.TransactionRequestDTO;
 import com.tss.banking.dto.request.TransactionSearchRequestDTO;
 import com.tss.banking.dto.request.TransferRequestDTO;
 import com.tss.banking.dto.response.TransactionResponseDTO;
-import com.tss.banking.dto.response.TransactionSummary;
 import com.tss.banking.dto.response.TransferResponseDTO;
 import com.tss.banking.entity.Account;
 import com.tss.banking.entity.Transaction;
@@ -28,7 +27,6 @@ import com.tss.banking.exception.AccountNotFoundException;
 import com.tss.banking.exception.InsufficientBalanceException;
 import com.tss.banking.exception.InvalidTransactionAmountException;
 import com.tss.banking.exception.TransactionNotFoundException;
-import com.tss.banking.exception.BusinessRuleViolationException;
 import com.tss.banking.repository.AccountRepository;
 import com.tss.banking.repository.TransactionRepository;
 import com.tss.banking.service.AccountService;
@@ -72,6 +70,10 @@ public class TransactionServiceImpl implements TransactionService {
 			return processDeposit(account, transaction);
 		case WITHDRAWAL:
 			return processWithdrawal(account, transaction);
+		case LOAN_DISBURSEMENT:
+			return processLoanDisbursement(account, transaction);
+		case LOAN_PAYMENT:
+			return processLoanPayment(account, transaction);
 		default:
 			throw new IllegalArgumentException(
 					"Unsupported transaction type: " + transactionRequest.getTransactionType());
@@ -107,8 +109,18 @@ public class TransactionServiceImpl implements TransactionService {
 				.build();
 
 		// Update balances
-		fromAccount.setBalance(fromAccount.getBalance().subtract(transferRequest.getAmount()));
-		toAccount.setBalance(toAccount.getBalance().add(transferRequest.getAmount()));
+		BigDecimal fromNewBalance = fromAccount.getBalance().subtract(transferRequest.getAmount());
+		BigDecimal toNewBalance = toAccount.getBalance().add(transferRequest.getAmount());
+		
+		fromAccount.setBalance(fromNewBalance);
+		toAccount.setBalance(toNewBalance);
+
+		// Set balance after transaction and reference IDs
+		debitTransaction.setBalanceAfter(fromNewBalance);
+		debitTransaction.setReferenceId("TXN" + System.currentTimeMillis() + String.format("%03d", fromAccount.getId().intValue() % 1000));
+		
+		creditTransaction.setBalanceAfter(toNewBalance);
+		creditTransaction.setReferenceId("TXN" + (System.currentTimeMillis() + 1) + String.format("%03d", toAccount.getId().intValue() % 1000));
 
 		// Save transactions and accounts
 		accountRepository.save(fromAccount);
@@ -118,11 +130,24 @@ public class TransactionServiceImpl implements TransactionService {
 
 		log.info("Transfer completed successfully");
 
-		return TransferResponseDTO.builder().fromAccountId(fromAccount.getId()).toAccountId(toAccount.getId())
-				.amount(transferRequest.getAmount()).description(transferRequest.getDescription())
-				.timestamp(debitTransaction.getTransactionDate()).debitTransactionId(debitTransaction.getId())
-				.creditTransactionId(creditTransaction.getId()).fromAccountBalance(fromAccount.getBalance())
-				.toAccountBalance(toAccount.getBalance()).build();
+		// Generate transfer ID
+		String transferId = "TRF" + System.currentTimeMillis() + String.format("%03d", fromAccount.getId().intValue() % 1000);
+
+		return TransferResponseDTO.builder()
+				.transferId(transferId)
+				.fromAccountId(fromAccount.getId())
+				.fromAccountNumber(fromAccount.getAccountNumber())
+				.toAccountId(toAccount.getId())
+				.toAccountNumber(toAccount.getAccountNumber())
+				.amount(transferRequest.getAmount())
+				.description(transferRequest.getDescription())
+				.timestamp(debitTransaction.getTransactionDate())
+				.debitTransactionId(debitTransaction.getId())
+				.creditTransactionId(creditTransaction.getId())
+				.fromAccountBalance(fromAccount.getBalance())
+				.toAccountBalance(toAccount.getBalance())
+				.status("SUCCESS")
+				.build();
 	}
 
 	@Override
@@ -375,7 +400,13 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	private TransactionResponseDTO processDeposit(Account account, Transaction transaction) {
-		account.setBalance(account.getBalance().add(transaction.getAmount()));
+		BigDecimal newBalance = account.getBalance().add(transaction.getAmount());
+		account.setBalance(newBalance);
+		
+		// Set balance after transaction and reference ID
+		transaction.setBalanceAfter(newBalance);
+		transaction.setReferenceId("TXN" + System.currentTimeMillis() + String.format("%03d", account.getId().intValue() % 1000));
+		
 		accountRepository.save(account);
 		Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -390,11 +421,55 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new InsufficientBalanceException("Insufficient balance for withdrawal");
 		}
 
-		account.setBalance(account.getBalance().subtract(transaction.getAmount()));
+		BigDecimal newBalance = account.getBalance().subtract(transaction.getAmount());
+		account.setBalance(newBalance);
+		
+		// Set balance after transaction and reference ID
+		transaction.setBalanceAfter(newBalance);
+		transaction.setReferenceId("TXN" + System.currentTimeMillis() + String.format("%03d", account.getId().intValue() % 1000));
+		
 		accountRepository.save(account);
 		Transaction savedTransaction = transactionRepository.save(transaction);
 
 		log.info("Withdrawal processed successfully for account: {}, amount: {}", account.getId(),
+				transaction.getAmount());
+
+		return mapToResponseDTO(savedTransaction);
+	}
+
+	private TransactionResponseDTO processLoanDisbursement(Account account, Transaction transaction) {
+		BigDecimal newBalance = account.getBalance().add(transaction.getAmount());
+		account.setBalance(newBalance);
+		
+		// Set balance after transaction and reference ID
+		transaction.setBalanceAfter(newBalance);
+		transaction.setReferenceId("LN" + System.currentTimeMillis() + String.format("%03d", account.getId().intValue() % 1000));
+		
+		accountRepository.save(account);
+		Transaction savedTransaction = transactionRepository.save(transaction);
+
+		log.info("Loan disbursement processed successfully for account: {}, amount: {}", account.getId(),
+				transaction.getAmount());
+
+		return mapToResponseDTO(savedTransaction);
+	}
+
+	private TransactionResponseDTO processLoanPayment(Account account, Transaction transaction) {
+		if (account.getBalance().compareTo(transaction.getAmount()) < 0) {
+			throw new InsufficientBalanceException("Insufficient balance for loan payment");
+		}
+
+		BigDecimal newBalance = account.getBalance().subtract(transaction.getAmount());
+		account.setBalance(newBalance);
+		
+		// Set balance after transaction and reference ID
+		transaction.setBalanceAfter(newBalance);
+		transaction.setReferenceId("LP" + System.currentTimeMillis() + String.format("%03d", account.getId().intValue() % 1000));
+		
+		accountRepository.save(account);
+		Transaction savedTransaction = transactionRepository.save(transaction);
+
+		log.info("Loan payment processed successfully for account: {}, amount: {}", account.getId(),
 				transaction.getAmount());
 
 		return mapToResponseDTO(savedTransaction);
@@ -410,16 +485,40 @@ public class TransactionServiceImpl implements TransactionService {
 			return TransactionType.TRANSFER_OUT;
 		case TRANSFER_OUT:
 			return TransactionType.TRANSFER_IN;
+		case LOAN_DISBURSEMENT:
+			return TransactionType.WITHDRAWAL;
+		case LOAN_PAYMENT:
+			return TransactionType.DEPOSIT;
 		default:
 			throw new IllegalArgumentException("Cannot reverse transaction type: " + originalType);
 		}
 	}
 
 	private TransactionResponseDTO mapToResponseDTO(Transaction transaction) {
-		return TransactionResponseDTO.builder().transactionId(transaction.getId())
-				.accountId(transaction.getAccount().getId()).accountNumber(transaction.getAccount().getAccountNumber())
-				.transactionType(transaction.getTransactionType()).amount(transaction.getAmount())
-				.description(transaction.getDescription()).transactionDate(transaction.getTransactionDate())
-				.balanceAfterTransaction(transaction.getAccount().getBalance()).build();
+		// Use the entity's referenceId if it exists, otherwise generate one
+		String referenceId = transaction.getReferenceId();
+		if (referenceId == null || referenceId.isEmpty()) {
+			referenceId = "TXN" + transaction.getId() + String.format("%06d", System.currentTimeMillis() % 1000000);
+		}
+		
+		// Use the entity's balanceAfter if it exists, otherwise use current account balance
+		BigDecimal balanceAfter = transaction.getBalanceAfter();
+		if (balanceAfter == null) {
+			balanceAfter = transaction.getAccount().getBalance();
+		}
+		
+		return TransactionResponseDTO.builder()
+				.id(transaction.getId())
+				.transactionId(transaction.getId())
+				.accountId(transaction.getAccount().getId())
+				.accountNumber(transaction.getAccount().getAccountNumber())
+				.transactionType(transaction.getTransactionType())
+				.amount(transaction.getAmount())
+				.description(transaction.getDescription())
+				.transactionDate(transaction.getTransactionDate())
+				.timestamp(transaction.getTransactionDate())
+				.balanceAfterTransaction(balanceAfter)
+				.referenceId(referenceId)
+				.build();
 	}
 }

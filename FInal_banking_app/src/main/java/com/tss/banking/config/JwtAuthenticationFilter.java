@@ -54,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // Extract user details from token
                     Long userId = jwtUtil.extractUserId(token);
                     String userType = jwtUtil.extractUserType(token);
+                    String adminRole = jwtUtil.extractAdminRole(token); // Extract admin role if present
                     
                     // Create authentication object
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -72,6 +73,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     request.setAttribute("userId", userId);
                     request.setAttribute("userType", userType);
                     request.setAttribute("userEmail", username);
+                    if (adminRole != null) {
+                        request.setAttribute("adminRole", adminRole);
+                    }
                 }
             } catch (Exception e) {
                 logger.warn("JWT token validation failed: " + e.getMessage());

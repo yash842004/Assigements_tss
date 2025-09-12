@@ -24,6 +24,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     // Find accounts by customer ID
     List<Account> findByCustomerId(Long customerId);
     
+    // Alternative method using relationship
+    @Query("SELECT a FROM Account a WHERE a.customer.id = :customerId")
+    List<Account> findAccountsByCustomerId(@Param("customerId") Long customerId);
+    
     // Find accounts by type
     Page<Account> findByAccountType(AccountType accountType, Pageable pageable);
     
@@ -48,4 +52,12 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByStatus(AccountStatus status);
     
     Page<Account> findByBalanceGreaterThanEqual(java.math.BigDecimal minBalance, Pageable pageable);
+
+    // Debug method to count all accounts
+    @Query("SELECT COUNT(a) FROM Account a")
+    long countAllAccounts();
+    
+    // Debug method to find all accounts with customer info
+    @Query("SELECT a FROM Account a JOIN FETCH a.customer")
+    List<Account> findAllAccountsWithCustomer();
 }

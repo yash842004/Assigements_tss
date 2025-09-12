@@ -1,20 +1,10 @@
 package com.tss.banking.service.impl;
 
-import com.tss.banking.dto.request.CustomerRegistrationRequestDTO;
-import com.tss.banking.dto.request.CustomerUpdateRequestDTO;
-import com.tss.banking.dto.request.LoginRequestDTO;
-import com.tss.banking.dto.request.PasswordChangeRequestDTO;
-import com.tss.banking.dto.response.CustomerResponseDTO;
-import com.tss.banking.dto.response.PagedResponseDTO;
-import com.tss.banking.entity.Customer;
-import com.tss.banking.entity.eums.CustomerStatus;
-import com.tss.banking.exception.CustomerNotFoundException;
-import com.tss.banking.exception.DuplicateResourceException;
-import com.tss.banking.exception.ValidationException;
-import com.tss.banking.repository.CustomerRepository;
-import com.tss.banking.service.CustomerService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +13,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.tss.banking.dto.request.CustomerApprovalRequestDTO;
+import com.tss.banking.dto.request.CustomerRegistrationRequestDTO;
+import com.tss.banking.dto.request.CustomerRejectionRequestDTO;
+import com.tss.banking.dto.request.CustomerUpdateRequestDTO;
+import com.tss.banking.dto.request.PasswordChangeRequestDTO;
+import com.tss.banking.dto.response.CustomerResponseDTO;
+import com.tss.banking.dto.response.PagedResponseDTO;
+import com.tss.banking.entity.Customer;
+import com.tss.banking.entity.eums.CustomerStatus;
+import com.tss.banking.exception.BusinessRuleViolationException;
+import com.tss.banking.exception.CustomerNotFoundException;
+import com.tss.banking.exception.DuplicateResourceException;
+import com.tss.banking.exception.ValidationException;
+import com.tss.banking.repository.CustomerRepository;
+import com.tss.banking.service.CustomerService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +66,8 @@ public class CustomerServiceImpl implements CustomerService {
                 .email(request.getEmail())
                 .phoneNumber(request.getPhone())
                 .address(request.getAddress())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .status(CustomerStatus.ACTIVE)
+                .passwordHash(request.getPassword())
+                .status(CustomerStatus.PENDING_APPROVAL)
                 .emailVerified(false)
                 .phoneVerified(false)
                 .registrationDate(LocalDateTime.now())
@@ -151,33 +154,8 @@ public class CustomerServiceImpl implements CustomerService {
         return mapToResponseDTO(updatedCustomer);
     }
 
-    @Transactional(readOnly = true)
-    public boolean validateCustomerLogin(LoginRequestDTO request) {
-        log.debug("Validating login for email: {}", request.getEmail());
-        Customer customer = customerRepository.findByEmail(request.getEmail())
-                .orElse(null);
-        
-        if (customer == null) {
-            return false;
-        }
-
-        return passwordEncoder.matches(request.getPassword(), customer.getPasswordHash()) &&
-               customer.getStatus() == CustomerStatus.ACTIVE;
-    }
-
-    public void changePassword(Long customerId, String currentPassword, String newPassword) {
-        log.info("Changing password for customer ID: {}", customerId);
-        Customer customer = findCustomerById(customerId);
-
-        if (!passwordEncoder.matches(currentPassword, customer.getPasswordHash())) {
-            throw new ValidationException("Current password is incorrect");
-        }
-
-        customer.setPasswordHash(passwordEncoder.encode(newPassword));
-        customer.setLastUpdated(LocalDateTime.now());
-        customerRepository.save(customer);
-        log.info("Password changed successfully for customer ID: {}", customerId);
-    }
+    // Removed deprecated validateCustomerLogin method - use validateCustomerCredentials instead
+    // Removed duplicate changePassword method - use the one with PasswordChangeRequestDTO
 
     public void verifyEmail(Long customerId) {
         log.info("Verifying email for customer ID: {}", customerId);
@@ -273,6 +251,87 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.existsByPhoneNumber(phoneNumber);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponseDTO> getCustomersPendingApproval() {
+        log.debug("Fetching customers pending approval");
+        List<Customer> customers = customerRepository.findByStatus(CustomerStatus.PENDING_APPROVAL);
+        return customers.stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CustomerResponseDTO> getCustomersPendingApproval(Pageable pageable) {
+        log.debug("Fetching customers pending approval with pagination");
+        Page<Customer> customerPage = customerRepository.findByStatusOrderByRegistrationDateAsc(CustomerStatus.PENDING_APPROVAL, pageable);
+        return customerPage.map(this::mapToResponseDTO);
+    }
+
+    @Override
+    public CustomerResponseDTO approveCustomer(Long customerId, Long adminId, CustomerApprovalRequestDTO request) {
+        log.info("Approving customer with ID: {} by admin ID: {}", customerId, adminId);
+        
+        Customer customer = findCustomerById(customerId);
+        
+        // Validate customer status
+        if (customer.getStatus() != CustomerStatus.PENDING_APPROVAL) {
+            throw new BusinessRuleViolationException("Only customers pending approval can be approved");
+        }
+        
+        // Activate customer
+        customer.setStatus(CustomerStatus.ACTIVE);
+        customer.setLastUpdated(LocalDateTime.now());
+        
+        Customer savedCustomer = customerRepository.save(customer);
+        log.info("Customer approved successfully with ID: {}", customerId);
+        
+        return mapToResponseDTO(savedCustomer);
+    }
+
+    @Override
+    public CustomerResponseDTO rejectCustomer(Long customerId, Long adminId, CustomerRejectionRequestDTO request) {
+        log.info("Rejecting customer with ID: {} by admin ID: {}", customerId, adminId);
+        
+        Customer customer = findCustomerById(customerId);
+        
+        // Validate customer status
+        if (customer.getStatus() != CustomerStatus.PENDING_APPROVAL) {
+            throw new BusinessRuleViolationException("Only customers pending approval can be rejected");
+        }
+        
+        // Reject customer
+        customer.setStatus(CustomerStatus.SUSPENDED);
+        customer.setLastUpdated(LocalDateTime.now());
+        
+        Customer savedCustomer = customerRepository.save(customer);
+        log.info("Customer rejected successfully with ID: {}", customerId);
+        
+        return mapToResponseDTO(savedCustomer);
+    }
+
+    /**
+     * Fix customer password encoding - migrate plain text to encoded passwords
+     * This method is for data migration purposes only
+     */
+    @Override
+    public void fixCustomerPasswordEncoding(String email, String plainPassword) {
+        log.info("Fixing password encoding for customer: {}", email);
+        Optional<Customer> customerOpt = customerRepository.findByEmail(email);
+        
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            // Store password as plain text
+            customer.setPasswordHash(plainPassword);
+            customer.setLastUpdated(LocalDateTime.now());
+            customerRepository.save(customer);
+            log.info("Password updated to plain text for customer: {}", email);
+        } else {
+            log.warn("Customer not found with email: {}", email);
+        }
+    }
+
     // Helper methods
     private Customer findCustomerById(Long customerId) {
         return customerRepository.findById(customerId)
@@ -334,11 +393,13 @@ public class CustomerServiceImpl implements CustomerService {
 		log.info("Changing password for customer ID: {}", customerId);
 		Customer customer = findCustomerById(customerId);
 
-		if (!passwordEncoder.matches(passwordChangeRequest.getCurrentPassword(), customer.getPasswordHash())) {
+		// Validate current password using simple comparison
+		if (!passwordChangeRequest.getCurrentPassword().equals(customer.getPasswordHash())) {
 			throw new ValidationException("Current password is incorrect");
 		}
 
-		customer.setPasswordHash(passwordEncoder.encode(passwordChangeRequest.getNewPassword()));
+		// Store the new password as plain text
+		customer.setPasswordHash(passwordChangeRequest.getNewPassword());
 		customer.setLastUpdated(LocalDateTime.now());
 		customerRepository.save(customer);
 		log.info("Password changed successfully for customer ID: {}", customerId);
@@ -396,7 +457,7 @@ public class CustomerServiceImpl implements CustomerService {
 		
 		if (customerOpt.isPresent()) {
 			Customer customer = customerOpt.get();
-			if (passwordEncoder.matches(password, customer.getPasswordHash()) && 
+			if (password.equals(customer.getPasswordHash()) && 
 				customer.getStatus() == CustomerStatus.ACTIVE) {
 				return customerOpt;
 			}

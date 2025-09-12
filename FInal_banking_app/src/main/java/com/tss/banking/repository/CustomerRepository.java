@@ -24,6 +24,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
     Page<Customer> findByStatus(CustomerStatus status, Pageable pageable);
     
+    Page<Customer> findByStatusOrderByRegistrationDateAsc(CustomerStatus status, Pageable pageable);
+    
     long countByStatus(CustomerStatus status);
     
     @Query("SELECT c FROM Customer c WHERE " +
