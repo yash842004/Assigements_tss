@@ -7,8 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.tss.banking.dto.request.CustomerApprovalRequestDTO;
-import com.tss.banking.dto.request.CustomerRejectionRequestDTO;
 import com.tss.banking.dto.request.CustomerRegistrationRequestDTO;
+import com.tss.banking.dto.request.CustomerRejectionRequestDTO;
 import com.tss.banking.dto.request.CustomerUpdateRequestDTO;
 import com.tss.banking.dto.request.PasswordChangeRequestDTO;
 import com.tss.banking.dto.response.CustomerResponseDTO;
@@ -184,4 +184,24 @@ public interface CustomerService {
      * @param plainPassword Plain text password to encode
      */
     void fixCustomerPasswordEncoding(String email, String plainPassword);
+    
+    /**
+     * Verify customer email
+     * @param customerId Customer ID
+     * @return Updated customer response
+     */
+    CustomerResponseDTO verifyEmail(Long customerId);
+    
+    /**
+     * Verify customer phone
+     * @param customerId Customer ID
+     * @return Updated customer response
+     */
+    CustomerResponseDTO verifyPhone(Long customerId);
+    
+    /**
+     * Fix verification status for existing active customers
+     * Sets emailVerified and phoneVerified to true for all ACTIVE customers who have false verification status
+     */
+    void fixExistingCustomerVerificationStatus();
 }

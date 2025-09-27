@@ -32,14 +32,15 @@ public class SimpleDataLoader implements CommandLineRunner {
     }
 
     private void createFreshAdminUsers() {
-        
+        // Update existing admins with properly encoded passwords if they have plain text passwords
+        updateExistingAdminPasswordsIfNeeded();
         
         if (!adminRepository.existsByEmail("admin@bank.com")) {
             Admin superAdmin = Admin.builder()
                     .firstName("Super")
                     .lastName("Admin")
                     .email("admin@bank.com")
-                    .passwordHash("admin123")
+                    .passwordHash(passwordEncoder.encode("admin123"))
                     .roles(Set.of(AdminRole.SUPER_ADMIN, AdminRole.ADMIN))
                     .active(true)
                     .build();
@@ -55,7 +56,7 @@ public class SimpleDataLoader implements CommandLineRunner {
                     .firstName("Regular")
                     .lastName("Admin")
                     .email("user@bank.com")
-                    .passwordHash("user123")
+                    .passwordHash(passwordEncoder.encode("user123"))
                     .roles(Set.of(AdminRole.ADMIN))
                     .active(true)
                     .build();
@@ -78,6 +79,28 @@ public class SimpleDataLoader implements CommandLineRunner {
         log.info("");
         log.info(" Login URL: http://localhost:8080/api/auth/admin/login");
         
+    }
+
+    private void updateExistingAdminPasswordsIfNeeded() {
+        log.info("Checking and updating existing admin passwords if needed...");
+        
+        // Update super admin if exists and has plain text password
+        adminRepository.findByEmail("admin@bank.com").ifPresent(admin -> {
+            if ("admin123".equals(admin.getPasswordHash()) || !admin.getPasswordHash().startsWith("$2a$")) {
+                admin.setPasswordHash(passwordEncoder.encode("admin123"));
+                adminRepository.save(admin);
+                log.info("Updated Super Admin password encoding");
+            }
+        });
+        
+        // Update regular admin if exists and has plain text password
+        adminRepository.findByEmail("user@bank.com").ifPresent(admin -> {
+            if ("user123".equals(admin.getPasswordHash()) || !admin.getPasswordHash().startsWith("$2a$")) {
+                admin.setPasswordHash(passwordEncoder.encode("user123"));
+                adminRepository.save(admin);
+                log.info("Updated Regular Admin password encoding");
+            }
+        });
     }
 }
 

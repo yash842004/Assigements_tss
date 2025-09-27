@@ -27,13 +27,6 @@ public interface AuthService {
     AuthResponseDTO authenticateAdmin(LoginRequestDTO loginRequest);
     
     /**
-     * Refresh authentication token
-     * @param refreshToken Refresh token
-     * @return New authentication response
-     */
-    AuthResponseDTO refreshToken(String refreshToken);
-    
-    /**
      * Logout user (invalidate token)
      * @param token JWT token to invalidate
      */
@@ -97,25 +90,18 @@ public interface AuthService {
     String generateRefreshToken(Long userId, String userType);
     
     /**
+     * Refresh access token using refresh token
+     * @param refreshToken Refresh token
+     * @return New authentication response with access token
+     */
+    AuthResponseDTO refreshToken(String refreshToken);
+    
+    /**
      * Validate refresh token
      * @param refreshToken Refresh token
      * @return true if valid, false otherwise
      */
     boolean validateRefreshToken(String refreshToken);
-    
-    /**
-     * Get user ID from refresh token
-     * @param refreshToken Refresh token
-     * @return User ID
-     */
-    Long getUserIdFromRefreshToken(String refreshToken);
-    
-    /**
-     * Get user type from refresh token
-     * @param refreshToken Refresh token
-     * @return User type
-     */
-    String getUserTypeFromRefreshToken(String refreshToken);
     
     /**
      * Check if user is currently logged in

@@ -3,6 +3,7 @@ package com.tss.banking.dto.response;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.tss.banking.entity.eums.CustomerStatus;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomerResponseDTO {
     
     private Long id;
@@ -26,9 +28,9 @@ public class CustomerResponseDTO {
     private String phoneNumber;
     private String address;
     private LocalDate dateOfBirth;
+    private Boolean emailVerified;
+    private Boolean phoneVerified;
     private CustomerStatus status;
-    private boolean emailVerified;
-    private boolean phoneVerified;
     private LocalDateTime registrationDate;
     private LocalDateTime lastUpdated;
 }

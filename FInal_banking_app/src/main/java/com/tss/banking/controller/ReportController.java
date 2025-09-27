@@ -18,6 +18,9 @@ import com.tss.banking.dto.response.ApiResponseDTO;
 import com.tss.banking.dto.response.CustomerResponseDTO;
 import com.tss.banking.dto.response.TransactionResponseDTO;
 import com.tss.banking.service.ReportService;
+import com.tss.banking.util.AccessControlUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller for reporting and analytics operations
@@ -29,14 +32,21 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
+    @Autowired
+    private AccessControlUtil accessControlUtil;
+
     /**
-     * Generate customer report
+     * Generate customer report (Admin only)
      */
     @GetMapping("/customers")
     public ResponseEntity<ApiResponseDTO<ReportService.CustomerReport>> getCustomerReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             ReportService.CustomerReport report = reportService.generateCustomerReport(fromDate, toDate);
             return ResponseEntity.ok(ApiResponseDTO.success("Customer report generated successfully", report));
         } catch (Exception e) {
@@ -46,13 +56,17 @@ public class ReportController {
     }
 
     /**
-     * Generate account report
+     * Generate account report (Admin only)
      */
     @GetMapping("/accounts")
     public ResponseEntity<ApiResponseDTO<ReportService.AccountReport>> getAccountReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             ReportService.AccountReport report = reportService.generateAccountReport(fromDate, toDate);
             return ResponseEntity.ok(ApiResponseDTO.success("Account report generated successfully", report));
         } catch (Exception e) {
@@ -62,13 +76,17 @@ public class ReportController {
     }
 
     /**
-     * Generate transaction report
+     * Generate transaction report (Admin only)
      */
     @GetMapping("/transactions")
     public ResponseEntity<ApiResponseDTO<ReportService.TransactionReport>> getTransactionReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             ReportService.TransactionReport report = reportService.generateTransactionReport(fromDate, toDate);
             return ResponseEntity.ok(ApiResponseDTO.success("Transaction report generated successfully", report));
         } catch (Exception e) {
@@ -78,13 +96,17 @@ public class ReportController {
     }
 
     /**
-     * Generate financial summary report
+     * Generate financial summary report (Admin only)
      */
     @GetMapping("/financial-summary")
     public ResponseEntity<ApiResponseDTO<ReportService.FinancialSummary>> getFinancialSummary(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             ReportService.FinancialSummary summary = reportService.generateFinancialSummary(fromDate, toDate);
             return ResponseEntity.ok(ApiResponseDTO.success("Financial summary generated successfully", summary));
         } catch (Exception e) {
@@ -94,13 +116,17 @@ public class ReportController {
     }
 
     /**
-     * Get daily transaction volume
+     * Get daily transaction volume (Admin only)
      */
     @GetMapping("/transaction-volume")
     public ResponseEntity<ApiResponseDTO<Map<LocalDate, BigDecimal>>> getDailyTransactionVolume(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             Map<LocalDate, BigDecimal> volume = reportService.getDailyTransactionVolume(fromDate, toDate);
             return ResponseEntity.ok(ApiResponseDTO.success("Transaction volume data retrieved successfully", volume));
         } catch (Exception e) {
@@ -110,12 +136,16 @@ public class ReportController {
     }
 
     /**
-     * Get top customers by balance
+     * Get top customers by balance (Admin only)
      */
     @GetMapping("/top-customers")
     public ResponseEntity<ApiResponseDTO<List<CustomerResponseDTO>>> getTopCustomersByBalance(
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "10") int limit,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             List<CustomerResponseDTO> customers = reportService.getTopCustomersByBalance(limit);
             return ResponseEntity.ok(ApiResponseDTO.success("Top customers retrieved successfully", customers));
         } catch (Exception e) {
@@ -125,12 +155,16 @@ public class ReportController {
     }
 
     /**
-     * Get most active accounts
+     * Get most active accounts (Admin only)
      */
     @GetMapping("/active-accounts")
     public ResponseEntity<ApiResponseDTO<List<AccountResponseDTO>>> getMostActiveAccounts(
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "10") int limit,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             List<AccountResponseDTO> accounts = reportService.getMostActiveAccounts(limit);
             return ResponseEntity.ok(ApiResponseDTO.success("Most active accounts retrieved successfully", accounts));
         } catch (Exception e) {
@@ -140,12 +174,16 @@ public class ReportController {
     }
 
     /**
-     * Get largest transactions
+     * Get largest transactions (Admin only)
      */
     @GetMapping("/largest-transactions")
     public ResponseEntity<ApiResponseDTO<List<TransactionResponseDTO>>> getLargestTransactions(
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "10") int limit,
+            HttpServletRequest request) {
         try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(request);
+            
             List<TransactionResponseDTO> transactions = reportService.getLargestTransactions(limit);
             return ResponseEntity.ok(ApiResponseDTO.success("Largest transactions retrieved successfully", transactions));
         } catch (Exception e) {

@@ -60,4 +60,11 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     // Debug method to find all accounts with customer info
     @Query("SELECT a FROM Account a JOIN FETCH a.customer")
     List<Account> findAllAccountsWithCustomer();
+
+    // Report queries
+    @Query(value = "SELECT a.* FROM accounts a " +
+           "LEFT JOIN transactions t ON a.id = t.account_id " +
+           "GROUP BY a.id " +
+           "ORDER BY COUNT(t.id) DESC", nativeQuery = true)
+    List<Account> findMostActiveAccounts(Pageable pageable);
 }

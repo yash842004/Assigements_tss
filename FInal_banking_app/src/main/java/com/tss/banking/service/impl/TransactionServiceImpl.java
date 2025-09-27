@@ -29,7 +29,7 @@ import com.tss.banking.exception.InvalidTransactionAmountException;
 import com.tss.banking.exception.TransactionNotFoundException;
 import com.tss.banking.repository.AccountRepository;
 import com.tss.banking.repository.TransactionRepository;
-import com.tss.banking.service.AccountService;
+import com.tss.banking.service.EmailService;
 import com.tss.banking.service.TransactionService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class TransactionServiceImpl implements TransactionService {
 	private AccountRepository accountRepository;
 
 	@Autowired
-	private AccountService accountService;
+	private EmailService emailService;
 
 	private static final BigDecimal MIN_TRANSACTION_AMOUNT = new BigDecimal("0.01");
 	private static final BigDecimal MAX_TRANSACTION_AMOUNT = new BigDecimal("1000000.00");
@@ -109,6 +109,8 @@ public class TransactionServiceImpl implements TransactionService {
 				.build();
 
 		// Update balances
+		BigDecimal fromPreviousBalance = fromAccount.getBalance();
+		BigDecimal toPreviousBalance = toAccount.getBalance();
 		BigDecimal fromNewBalance = fromAccount.getBalance().subtract(transferRequest.getAmount());
 		BigDecimal toNewBalance = toAccount.getBalance().add(transferRequest.getAmount());
 		
@@ -127,6 +129,29 @@ public class TransactionServiceImpl implements TransactionService {
 		accountRepository.save(toAccount);
 		transactionRepository.save(debitTransaction);
 		transactionRepository.save(creditTransaction);
+
+		// Send email notifications for both accounts
+		// Debit notification to sender
+		emailService.sendTransactionNotification(debitTransaction, fromAccount);
+		emailService.sendBalanceUpdateNotification(
+			fromAccount.getCustomer().getEmail(),
+			fromAccount.getAccountNumber(),
+			fromPreviousBalance,
+			fromNewBalance,
+			transferRequest.getAmount(),
+			"DEBIT"
+		);
+
+		// Credit notification to receiver
+		emailService.sendTransactionNotification(creditTransaction, toAccount);
+		emailService.sendBalanceUpdateNotification(
+			toAccount.getCustomer().getEmail(),
+			toAccount.getAccountNumber(),
+			toPreviousBalance,
+			toNewBalance,
+			transferRequest.getAmount(),
+			"CREDIT"
+		);
 
 		log.info("Transfer completed successfully");
 
@@ -400,6 +425,7 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	private TransactionResponseDTO processDeposit(Account account, Transaction transaction) {
+		BigDecimal previousBalance = account.getBalance();
 		BigDecimal newBalance = account.getBalance().add(transaction.getAmount());
 		account.setBalance(newBalance);
 		
@@ -409,6 +435,17 @@ public class TransactionServiceImpl implements TransactionService {
 		
 		accountRepository.save(account);
 		Transaction savedTransaction = transactionRepository.save(transaction);
+
+		// Send email notification for credit (deposit)
+		emailService.sendTransactionNotification(savedTransaction, account);
+		emailService.sendBalanceUpdateNotification(
+			account.getCustomer().getEmail(),
+			account.getAccountNumber(),
+			previousBalance,
+			newBalance,
+			transaction.getAmount(),
+			"CREDIT"
+		);
 
 		log.info("Deposit processed successfully for account: {}, amount: {}", account.getId(),
 				transaction.getAmount());
@@ -421,6 +458,7 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new InsufficientBalanceException("Insufficient balance for withdrawal");
 		}
 
+		BigDecimal previousBalance = account.getBalance();
 		BigDecimal newBalance = account.getBalance().subtract(transaction.getAmount());
 		account.setBalance(newBalance);
 		
@@ -431,6 +469,17 @@ public class TransactionServiceImpl implements TransactionService {
 		accountRepository.save(account);
 		Transaction savedTransaction = transactionRepository.save(transaction);
 
+		// Send email notification for debit (withdrawal)
+		emailService.sendTransactionNotification(savedTransaction, account);
+		emailService.sendBalanceUpdateNotification(
+			account.getCustomer().getEmail(),
+			account.getAccountNumber(),
+			previousBalance,
+			newBalance,
+			transaction.getAmount(),
+			"DEBIT"
+		);
+
 		log.info("Withdrawal processed successfully for account: {}, amount: {}", account.getId(),
 				transaction.getAmount());
 
@@ -438,6 +487,7 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	private TransactionResponseDTO processLoanDisbursement(Account account, Transaction transaction) {
+		BigDecimal previousBalance = account.getBalance();
 		BigDecimal newBalance = account.getBalance().add(transaction.getAmount());
 		account.setBalance(newBalance);
 		
@@ -447,6 +497,17 @@ public class TransactionServiceImpl implements TransactionService {
 		
 		accountRepository.save(account);
 		Transaction savedTransaction = transactionRepository.save(transaction);
+
+		// Send email notification for loan disbursement (credit)
+		emailService.sendTransactionNotification(savedTransaction, account);
+		emailService.sendBalanceUpdateNotification(
+			account.getCustomer().getEmail(),
+			account.getAccountNumber(),
+			previousBalance,
+			newBalance,
+			transaction.getAmount(),
+			"CREDIT"
+		);
 
 		log.info("Loan disbursement processed successfully for account: {}, amount: {}", account.getId(),
 				transaction.getAmount());
@@ -459,6 +520,7 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new InsufficientBalanceException("Insufficient balance for loan payment");
 		}
 
+		BigDecimal previousBalance = account.getBalance();
 		BigDecimal newBalance = account.getBalance().subtract(transaction.getAmount());
 		account.setBalance(newBalance);
 		
@@ -468,6 +530,17 @@ public class TransactionServiceImpl implements TransactionService {
 		
 		accountRepository.save(account);
 		Transaction savedTransaction = transactionRepository.save(transaction);
+
+		// Send email notification for loan payment (debit)
+		emailService.sendTransactionNotification(savedTransaction, account);
+		emailService.sendBalanceUpdateNotification(
+			account.getCustomer().getEmail(),
+			account.getAccountNumber(),
+			previousBalance,
+			newBalance,
+			transaction.getAmount(),
+			"DEBIT"
+		);
 
 		log.info("Loan payment processed successfully for account: {}, amount: {}", account.getId(),
 				transaction.getAmount());

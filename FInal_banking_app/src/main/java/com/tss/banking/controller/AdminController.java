@@ -68,11 +68,16 @@ public class AdminController {
     }
 
     /**
-     * Get all admins
+     * Get all admins (Super Admin only)
      */
     @GetMapping
-    public ResponseEntity<ApiResponseDTO<Page<AdminResponseDTO>>> getAllAdmins(Pageable pageable) {
+    public ResponseEntity<ApiResponseDTO<Page<AdminResponseDTO>>> getAllAdmins(
+            Pageable pageable, 
+            HttpServletRequest request) {
         try {
+            // Validate super admin access
+            accessControlUtil.validateSuperAdminAccess(request);
+            
             Page<AdminResponseDTO> admins = adminService.getAllAdmins(pageable);
             return ResponseEntity.ok(ApiResponseDTO.success("Admins retrieved successfully", admins));
         } catch (Exception e) {
@@ -210,6 +215,51 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Failed to reject customer: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Verify customer email
+     */
+    @PutMapping("/customers/{customerId}/verify-email")
+    public ResponseEntity<ApiResponseDTO<com.tss.banking.dto.response.CustomerResponseDTO>> verifyCustomerEmail(
+            @PathVariable Long customerId) {
+        try {
+            com.tss.banking.dto.response.CustomerResponseDTO customer = customerService.verifyEmail(customerId);
+            return ResponseEntity.ok(ApiResponseDTO.success("Customer email verified successfully", customer));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to verify customer email: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Verify customer phone
+     */
+    @PutMapping("/customers/{customerId}/verify-phone")
+    public ResponseEntity<ApiResponseDTO<com.tss.banking.dto.response.CustomerResponseDTO>> verifyCustomerPhone(
+            @PathVariable Long customerId) {
+        try {
+            com.tss.banking.dto.response.CustomerResponseDTO customer = customerService.verifyPhone(customerId);
+            return ResponseEntity.ok(ApiResponseDTO.success("Customer phone verified successfully", customer));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to verify customer phone: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Fix verification status for all existing active customers
+     * This sets emailVerified and phoneVerified to true for all ACTIVE customers
+     */
+    @PostMapping("/customers/fix-verification-status")
+    public ResponseEntity<ApiResponseDTO<String>> fixCustomerVerificationStatus() {
+        try {
+            customerService.fixExistingCustomerVerificationStatus();
+            return ResponseEntity.ok(ApiResponseDTO.success("Customer verification status fixed successfully", "OK"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to fix customer verification status: " + e.getMessage()));
         }
     }
 }

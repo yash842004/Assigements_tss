@@ -46,6 +46,13 @@ public class LoanResponseDTO {
     private Long accountId;
     private String accountNumber;
     
+    // Late payment tracking
+    private Integer missedPayments;
+    private BigDecimal lateFeeAmount;
+    private BigDecimal totalLateFees;
+    private Boolean isOverdue;
+    private Integer overdueDays;
+    
     // Admin information (for approved loans)
     private Long approvedBy;
     private String approvedByName;

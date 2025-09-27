@@ -42,6 +42,14 @@ public class AuthResponseDTO {
         this.token = token;
     }
     
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+    
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+    
     public String getTokenType() {
         return tokenType;
     }
@@ -88,14 +96,6 @@ public class AuthResponseDTO {
     
     public void setExpiresAt(LocalDateTime expiresAt) {
         this.expiresAt = expiresAt;
-    }
-    
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-    
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
     
     // Builder pattern

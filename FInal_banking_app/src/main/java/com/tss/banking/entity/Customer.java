@@ -21,12 +21,12 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Data
 @Builder
-@NoArgsConstructor
+@RequiredArgsConstructor
 @AllArgsConstructor
 @Table(name = "customers")
 public class Customer {
@@ -55,18 +55,18 @@ public class Customer {
 	@Column(name = "password_hash", nullable = false, length = 255)
 	private String passwordHash;
 
+	@Column(name = "email_verified", nullable = false)
+	@Builder.Default
+	private Boolean emailVerified = false;
+
+	@Column(name = "phone_verified", nullable = false)
+	@Builder.Default
+	private Boolean phoneVerified = false;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	@Builder.Default
 	private CustomerStatus status = CustomerStatus.ACTIVE;
-
-	@Column(name = "email_verified", nullable = false)
-	@Builder.Default
-	private boolean emailVerified = false;
-
-	@Column(name = "phone_verified", nullable = false)
-	@Builder.Default
-	private boolean phoneVerified = false;
 
 	@Column(name = "registration_date", nullable = false)
 	private LocalDateTime registrationDate;

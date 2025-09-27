@@ -237,6 +237,15 @@ public class AccessControlUtil {
     }
 
     /**
+     * Validate super admin access and throw exception if unauthorized
+     */
+    public void validateSuperAdminAccess(HttpServletRequest request) {
+        if (!isSuperAdmin(request)) {
+            throw new SecurityException("Access denied: Super Admin privileges required");
+        }
+    }
+
+    /**
      * Check if user has authenticated properly
      */
     public boolean isAuthenticated() {

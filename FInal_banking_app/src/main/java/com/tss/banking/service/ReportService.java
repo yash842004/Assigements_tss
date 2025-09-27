@@ -135,7 +135,6 @@ public interface ReportService {
      */
     class CustomerReport {
         private long totalCustomers;
-        private long newCustomers;
         private long activeCustomers;
         private long inactiveCustomers;
         private long suspendedCustomers;
@@ -146,9 +145,6 @@ public interface ReportService {
         
         public long getTotalCustomers() { return totalCustomers; }
         public void setTotalCustomers(long totalCustomers) { this.totalCustomers = totalCustomers; }
-        
-        public long getNewCustomers() { return newCustomers; }
-        public void setNewCustomers(long newCustomers) { this.newCustomers = newCustomers; }
         
         public long getActiveCustomers() { return activeCustomers; }
         public void setActiveCustomers(long activeCustomers) { this.activeCustomers = activeCustomers; }
@@ -168,20 +164,15 @@ public interface ReportService {
      */
     class AccountReport {
         private long totalAccounts;
-        private long newAccounts;
         private BigDecimal totalBalance;
         private BigDecimal averageBalance;
         private Map<AccountType, Long> accountsByType;
-        private Map<LocalDate, Long> dailyAccountCreations;
         
         // Constructors, getters, setters
         public AccountReport() {}
         
         public long getTotalAccounts() { return totalAccounts; }
         public void setTotalAccounts(long totalAccounts) { this.totalAccounts = totalAccounts; }
-        
-        public long getNewAccounts() { return newAccounts; }
-        public void setNewAccounts(long newAccounts) { this.newAccounts = newAccounts; }
         
         public BigDecimal getTotalBalance() { return totalBalance; }
         public void setTotalBalance(BigDecimal totalBalance) { this.totalBalance = totalBalance; }
@@ -191,9 +182,6 @@ public interface ReportService {
         
         public Map<AccountType, Long> getAccountsByType() { return accountsByType; }
         public void setAccountsByType(Map<AccountType, Long> accountsByType) { this.accountsByType = accountsByType; }
-        
-        public Map<LocalDate, Long> getDailyAccountCreations() { return dailyAccountCreations; }
-        public void setDailyAccountCreations(Map<LocalDate, Long> dailyAccountCreations) { this.dailyAccountCreations = dailyAccountCreations; }
     }
     
     /**

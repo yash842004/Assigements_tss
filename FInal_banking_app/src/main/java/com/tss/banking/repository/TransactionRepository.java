@@ -54,4 +54,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     BigDecimal sumDailyTransactions(@Param("accountId") Long accountId, 
                                    @Param("startDate") LocalDateTime startDate, 
                                    @Param("endDate") LocalDateTime endDate);
+    
+    // Find transactions by date range (all transactions)
+    List<Transaction> findByTransactionDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    // Report queries
+    @Query(value = "SELECT * FROM transactions ORDER BY amount DESC", nativeQuery = true)
+    List<Transaction> findTopTransactionsByAmount(Pageable pageable);
 }

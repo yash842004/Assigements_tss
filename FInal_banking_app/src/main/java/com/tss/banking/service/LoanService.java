@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.tss.banking.dto.request.EMIPaymentRequestDTO;
+import com.tss.banking.dto.request.EMIPaymentRequestDTO;
 import com.tss.banking.dto.request.LoanApplicationRequestDTO;
 import com.tss.banking.dto.request.LoanApprovalRequestDTO;
 import com.tss.banking.dto.request.LoanPaymentRequestDTO;
@@ -130,4 +132,29 @@ public interface LoanService {
      * Get loan applicant (customer) ID
      */
     Long getLoanApplicantId(Long loanId);
+    
+    /**
+     * Process EMI payment
+     */
+    TransactionResponseDTO processEMIPayment(EMIPaymentRequestDTO request);
+    
+    /**
+     * Auto-deduct EMI from account
+     */
+    void processAutomaticEMIDeduction(Long loanId);
+    
+    /**
+     * Process overdue loans and apply late fees
+     */
+    void processOverdueLoans();
+    
+    /**
+     * Get overdue loans
+     */
+    List<LoanResponseDTO> getOverdueLoans();
+    
+    /**
+     * Calculate late fee for overdue loan
+     */
+    BigDecimal calculateLateFee(Long loanId);
 }

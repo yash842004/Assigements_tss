@@ -68,8 +68,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .address(request.getAddress())
                 .passwordHash(request.getPassword())
                 .status(CustomerStatus.PENDING_APPROVAL)
-                .emailVerified(false)
-                .phoneVerified(false)
                 .registrationDate(LocalDateTime.now())
                 .lastUpdated(LocalDateTime.now())
                 .build();
@@ -114,12 +112,10 @@ public class CustomerServiceImpl implements CustomerService {
         
         if (request.getEmail() != null) {
             customer.setEmail(request.getEmail());
-            customer.setEmailVerified(false); // Reset verification on email change
         }
         
         if (request.getPhone() != null) {
             customer.setPhoneNumber(request.getPhone());
-            customer.setPhoneVerified(false); // Reset verification on phone change
         }
         
         if (request.getAddress() != null) {
@@ -156,24 +152,6 @@ public class CustomerServiceImpl implements CustomerService {
 
     // Removed deprecated validateCustomerLogin method - use validateCustomerCredentials instead
     // Removed duplicate changePassword method - use the one with PasswordChangeRequestDTO
-
-    public void verifyEmail(Long customerId) {
-        log.info("Verifying email for customer ID: {}", customerId);
-        Customer customer = findCustomerById(customerId);
-        customer.setEmailVerified(true);
-        customer.setLastUpdated(LocalDateTime.now());
-        customerRepository.save(customer);
-        log.info("Email verified successfully for customer ID: {}", customerId);
-    }
-
-    public void verifyPhone(Long customerId) {
-        log.info("Verifying phone for customer ID: {}", customerId);
-        Customer customer = findCustomerById(customerId);
-        customer.setPhoneVerified(true);
-        customer.setLastUpdated(LocalDateTime.now());
-        customerRepository.save(customer);
-        log.info("Phone verified successfully for customer ID: {}", customerId);
-    }
 
     @Transactional(readOnly = true)
     public PagedResponseDTO<CustomerResponseDTO> getAllCustomers(int page, int size, String sortBy, String sortDirection) {
@@ -280,8 +258,10 @@ public class CustomerServiceImpl implements CustomerService {
             throw new BusinessRuleViolationException("Only customers pending approval can be approved");
         }
         
-        // Activate customer
+        // Activate customer and verify their contact information
         customer.setStatus(CustomerStatus.ACTIVE);
+        customer.setEmailVerified(true);  // Admin approval implies email verification
+        customer.setPhoneVerified(true);  // Admin approval implies phone verification
         customer.setLastUpdated(LocalDateTime.now());
         
         Customer savedCustomer = customerRepository.save(customer);
@@ -347,9 +327,9 @@ public class CustomerServiceImpl implements CustomerService {
                 .phoneNumber(customer.getPhoneNumber())
                 .address(customer.getAddress())
                 .dateOfBirth(customer.getDateOfBirth())
+                .emailVerified(customer.getEmailVerified())
+                .phoneVerified(customer.getPhoneVerified())
                 .status(customer.getStatus())
-                .emailVerified(customer.isEmailVerified())
-                .phoneVerified(customer.isPhoneVerified())
                 .registrationDate(customer.getRegistrationDate())
                 .lastUpdated(customer.getLastUpdated())
                 .build();
@@ -486,5 +466,53 @@ public class CustomerServiceImpl implements CustomerService {
 		
 		// For hard delete, use: customerRepository.delete(customer);
 		log.info("Customer deleted successfully with ID: {}", customerId);
+	}
+
+	@Override
+	public CustomerResponseDTO verifyEmail(Long customerId) {
+		log.info("Verifying email for customer ID: {}", customerId);
+		Customer customer = findCustomerById(customerId);
+		
+		customer.setEmailVerified(true);
+		customer.setLastUpdated(LocalDateTime.now());
+		
+		Customer savedCustomer = customerRepository.save(customer);
+		log.info("Email verified successfully for customer ID: {}", customerId);
+		
+		return mapToResponseDTO(savedCustomer);
+	}
+
+	@Override
+	public CustomerResponseDTO verifyPhone(Long customerId) {
+		log.info("Verifying phone for customer ID: {}", customerId);
+		Customer customer = findCustomerById(customerId);
+		
+		customer.setPhoneVerified(true);
+		customer.setLastUpdated(LocalDateTime.now());
+		
+		Customer savedCustomer = customerRepository.save(customer);
+		log.info("Phone verified successfully for customer ID: {}", customerId);
+		
+		return mapToResponseDTO(savedCustomer);
+	}
+
+	@Override
+	public void fixExistingCustomerVerificationStatus() {
+		log.info("Fixing verification status for existing active customers");
+		
+		// Find all active customers with unverified email or phone
+		List<Customer> customersToFix = customerRepository.findByStatusAndUnverifiedContact(CustomerStatus.ACTIVE);
+		
+		for (Customer customer : customersToFix) {
+			if (!customer.getEmailVerified() || !customer.getPhoneVerified()) {
+				log.info("Fixing verification status for customer ID: {} ({})", customer.getId(), customer.getEmail());
+				customer.setEmailVerified(true);
+				customer.setPhoneVerified(true);
+				customer.setLastUpdated(LocalDateTime.now());
+				customerRepository.save(customer);
+			}
+		}
+		
+		log.info("Fixed verification status for {} customers", customersToFix.size());
 	}
 }

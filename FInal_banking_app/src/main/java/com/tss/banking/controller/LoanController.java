@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tss.banking.dto.request.EMIPaymentRequestDTO;
 import com.tss.banking.dto.request.LoanApplicationRequestDTO;
 import com.tss.banking.dto.request.LoanApprovalRequestDTO;
 import com.tss.banking.dto.request.LoanPaymentRequestDTO;
@@ -199,6 +200,63 @@ public class LoanController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponseDTO.error("Loan payment failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Process EMI payment
+     */
+    @PostMapping("/emi-payment")
+    public ResponseEntity<ApiResponseDTO<TransactionResponseDTO>> processEMIPayment(
+            @Valid @RequestBody EMIPaymentRequestDTO request,
+            HttpServletRequest httpRequest) {
+        try {
+            // Validate access to the loan
+            Long applicantId = loanService.getLoanApplicantId(request.getLoanId());
+            accessControlUtil.validateCustomerAccess(httpRequest, applicantId);
+            
+            TransactionResponseDTO transaction = loanService.processEMIPayment(request);
+            return ResponseEntity.ok(ApiResponseDTO.success("EMI payment processed successfully", transaction));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("EMI payment failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Get overdue loans (Admin only)
+     */
+    @GetMapping("/overdue")
+    public ResponseEntity<ApiResponseDTO<List<LoanResponseDTO>>> getOverdueLoans(
+            HttpServletRequest httpRequest) {
+        try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(httpRequest);
+            
+            List<LoanResponseDTO> overdueLoans = loanService.getOverdueLoans();
+            return ResponseEntity.ok(ApiResponseDTO.success("Overdue loans retrieved successfully", overdueLoans));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to retrieve overdue loans: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Process automatic EMI deduction for a specific loan (Admin only)
+     */
+    @PostMapping("/{loanId}/auto-emi")
+    public ResponseEntity<ApiResponseDTO<String>> processAutoEMI(
+            @PathVariable Long loanId,
+            HttpServletRequest httpRequest) {
+        try {
+            // Validate admin access
+            accessControlUtil.validateAdminAccess(httpRequest);
+            
+            loanService.processAutomaticEMIDeduction(loanId);
+            return ResponseEntity.ok(ApiResponseDTO.success("Automatic EMI deduction processed successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDTO.error("Failed to process automatic EMI: " + e.getMessage()));
         }
     }
 }

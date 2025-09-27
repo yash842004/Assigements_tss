@@ -179,9 +179,16 @@ public class AdminServiceImpl implements AdminService {
 
 		if (adminOpt.isPresent()) {
 			Admin admin = adminOpt.get();
-			if (admin.isActive() && password.equals(admin.getPasswordHash())) {
+			// Check if admin is active and password matches using password encoder
+			if (admin.isActive() && passwordEncoder.matches(password, admin.getPasswordHash())) {
+				log.debug("Admin credentials validated successfully for email: {}", email);
 				return Optional.of(admin);
+			} else {
+				log.debug("Admin credentials validation failed for email: {} - Active: {}, Password match: {}", 
+						email, admin.isActive(), passwordEncoder.matches(password, admin.getPasswordHash()));
 			}
+		} else {
+			log.debug("Admin not found with email: {}", email);
 		}
 
 		return Optional.empty();

@@ -58,4 +58,10 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     
     @Query("SELECT l FROM Loan l WHERE l.status = 'PENDING' ORDER BY l.applicationDate ASC")
     Page<Loan> findPendingLoanApplications(Pageable pageable);
+    
+    @Query("SELECT l FROM Loan l WHERE l.status = 'ACTIVE' AND l.nextPaymentDate < :currentDate")
+    List<Loan> findActiveLoansWithOverduePayments(@Param("currentDate") java.time.LocalDate currentDate);
+    
+    @Query("SELECT l FROM Loan l WHERE l.isOverdue = true AND l.status = 'ACTIVE'")
+    List<Loan> findOverdueLoans();
 }

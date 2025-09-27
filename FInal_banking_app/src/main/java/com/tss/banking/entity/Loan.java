@@ -80,6 +80,26 @@ public class Loan {
     @Column(name = "next_payment_date")
     private LocalDate nextPaymentDate;
 
+    @Column(name = "missed_payments", nullable = false)
+    @Builder.Default
+    private Integer missedPayments = 0;
+
+    @Column(name = "late_fee_amount", precision = 19, scale = 2)
+    @Builder.Default
+    private BigDecimal lateFeeAmount = BigDecimal.ZERO;
+
+    @Column(name = "total_late_fees", precision = 19, scale = 2)
+    @Builder.Default
+    private BigDecimal totalLateFees = BigDecimal.ZERO;
+
+    @Column(name = "is_overdue")
+    @Builder.Default
+    private Boolean isOverdue = false;
+
+    @Column(name = "overdue_days")
+    @Builder.Default
+    private Integer overdueDays = 0;
+
     @Column(length = 500)
     private String purpose;
 

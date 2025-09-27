@@ -16,6 +16,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Utility class for JWT token operations
@@ -278,4 +279,9 @@ public class JwtUtil {
     public String getUserTypeFromRefreshToken(String refreshToken) {
         return extractUserType(refreshToken);
     }
+
+	public static String getTokenFromRequest(HttpServletRequest httpRequest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
