@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadhaar Card OCR - High Accuracy Extraction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #00f2fe;
+            background: #e6f7ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover .upload-icon {
+            color: #4facfe;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-section {
+            margin-bottom: 30px;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+            margin: 20px auto;
+        }
+
+        .results-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .result-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .data-field {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .data-field label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-field .value {
+            color: #212529;
+            font-size: 1rem;
+            word-wrap: break-word;
+        }
+
+        .raw-text {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+
+
+        @media (max-width: 768px) {
+            .upload-section,
+            .results-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🆔 Aadhaar Card OCR</h1>
+            <p>High-accuracy Aadhaar card text extraction with AI-powered OCR - Fast & Precise</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="upload-area" onclick="document.getElementById('file-input').click();">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Click to upload or drag & drop</div>
+                    <div class="upload-subtext">Supports JPG, PNG, GIF (Max 10MB)</div>
+                    <input type="file" id="file-input" class="file-input" accept="image/*">
+                </div>
+
+                <div class="preview-section">
+                    <img id="image-preview" class="image-preview" src="#" alt="Image Preview">
+                </div>
+            </div>
+
+            <div class="loading-indicator" id="loading-indicator">
+                <div class="loading-spinner"></div>
+                <div>Processing your document...</div>
+                <div style="font-size: 0.9rem; color: #999; margin-top: 10px;">
+                    This may take a few seconds depending on image quality
+                </div>
+            </div>
+
+            <div class="results-section" id="results-section" style="display: none;">
+                <div class="result-card">
+                    <h3>📋 Extracted Information</h3>
+                    
+                    <div class="data-field">
+                        <label>Document Type</label>
+                        <div class="value" id="document-type">-</div>
+                    </div>
+
+                    <div class="data-field">
+                        <label>Name</label>
+                        <div class="value" id="extracted-name">-</div>
+                    </div>
+
+                    <div class="data-field">
+                        <label>ID Number</label>
+                        <div class="value" id="id-number">-</div>
+                    </div>
+
+                    <div class="data-field">
+                        <label>Date of Birth</label>
+                        <div class="value" id="date-of-birth">-</div>
+                    </div>
+
+                    <div class="data-field">
+                        <label>Address</label>
+                        <div class="value" id="address">-</div>
+                    </div>
+
+                    <div class="data-field">
+                        <label>Confidence Score</label>
+                        <div class="value" id="confidence-score">-</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidence-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>📝 Raw Extracted Text</h3>
+                    <div class="raw-text" id="raw-text">No text extracted yet...</div>
+                </div>
+            </div>
+
+
+
+            <div id="error-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const imagePreview = document.getElementById('image-preview');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const resultsSection = document.getElementById('results-section');
+        const uploadArea = document.querySelector('.upload-area');
+        const errorContainer = document.getElementById('error-container');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        async function handleFile(file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file.');
+                return;
+            }
+
+            // Validate file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB.');
+                return;
+            }
+
+            // Display image preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            resultsSection.style.display = 'none';
+            clearError();
+
+            // Prepare form data for upload
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Get selected extraction mode
+            const extractionMode = document.querySelector('input[name="extraction-mode"]:checked').value;
+            formData.append('extraction_mode', extractionMode);
+
+            try {
+                // Use the smart hybrid extraction method as the single option
+                const response = await fetch('/api/extract-text-with-correction', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error processing image: ${error.message}`);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            // Display extracted data - handle both old and new data structures
+            document.getElementById('document-type').textContent = data.document_type || data.documentType || 'Aadhaar Card';
+            document.getElementById('extracted-name').textContent = data.name || 'Not Found';
+            document.getElementById('id-number').textContent = data.aadhaarNumber || data.id_number || 'Not Found';
+            document.getElementById('date-of-birth').textContent = data.dateOfBirth || data.date_of_birth || 'Not Found';
+            document.getElementById('address').textContent = data.address || 'Not Found';
+            document.getElementById('raw-text').textContent = data.raw_text || 'No raw text available';
+
+            // Display confidence score
+            const confidence = data.confidenceScore || data.confidence_score || 0;
+            document.getElementById('confidence-score').textContent = `${confidence.toFixed(1)}%`;
+            document.getElementById('confidence-fill').style.width = `${confidence}%`;
+            
+            // Add gender if available
+            if (data.gender) {
+                // Check if gender field exists, if not create it
+                let genderField = document.getElementById('extracted-gender');
+                if (!genderField) {
+                    const nameField = document.getElementById('extracted-name').parentElement;
+                    const genderDiv = nameField.cloneNode(true);
+                    genderDiv.querySelector('label').textContent = 'Gender:';
+                    genderDiv.querySelector('#extracted-name').id = 'extracted-gender';
+                    nameField.parentElement.insertBefore(genderDiv, nameField.nextSibling);
+                    genderField = document.getElementById('extracted-gender');
+                }
+                genderField.textContent = data.gender;
+            }
+
+            // Show results
+            resultsSection.style.display = 'grid';
+        }
+
+        function showError(message) {
+            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        function clearError() {
+            errorContainer.innerHTML = '';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('OCR Application loaded successfully');
+        });
+    </script>
+</body>
+</html>

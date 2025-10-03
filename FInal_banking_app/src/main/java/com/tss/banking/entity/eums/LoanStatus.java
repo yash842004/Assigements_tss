@@ -1,8 +1,4 @@
-package com.tss.banking.entity.eums;
-
-/**
- * Enumeration for loan status
- */
+﻿package com.tss.banking.entity.eums;
 public enum LoanStatus {
     PENDING,
     APPROVED,

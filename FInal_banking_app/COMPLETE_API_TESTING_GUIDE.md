@@ -1,1490 +1,1257 @@
-# Banking App API Testing Guide - JWT Access Control
-
-This guide provides step-by-step instructions for testing the banking application APIs with JWT-based access control in Postman.
-
-## Enhanced Banking Features
-
-**� Comprehensive Access Control System:**
-- ✅ **Customer Data Isolation**: Each customer can ONLY access their own data (accounts, transactions, loans, FDs)
-- ✅ **Cross-Customer Protection**: Prevents customers from viewing other customers' information
-- ✅ **JWT Token Validation**: Secure token-based authentication with role verification
-- ✅ **Hierarchical Permissions**: Customer < Admin < Super Admin access levels
-- ✅ **Real-time Ownership Verification**: Every request validates data ownership
-
-**�👑 Super Admin Management:**
-- ✅ **Admin Creation**: Create new admin accounts with role assignment
-- ✅ **Role Management**: Add/remove ADMIN and SUPER_ADMIN roles
-- ✅ **Account Control**: Activate/deactivate admin accounts
-- ✅ **Admin Oversight**: View all admins and their details
-- ✅ **Access Control**: Hierarchical permissions with full system control
-
-**🏦 Loan Management with Automatic Processing:**
-- ✅ **Auto-Disbursement**: Loan approval automatically credits amount to account balance
-- ✅ **EMI Processing**: Automatic monthly EMI deduction from account
-- ✅ **Late Fee Management**: Automatic late fees for overdue payments
-- ✅ **Insufficient Balance Handling**: Prevents EMI deduction and applies penalties when balance is insufficient
-- ✅ **Transaction Recording**: All loan disbursements and EMI payments recorded in transaction history
-
-**💰 Fixed Deposit Management:**
-- ✅ **Automatic Fund Transfer**: FD creation debits from account, closure credits back to account
-- ✅ **Balance Validation**: Prevents FD creation with insufficient account balance
-- ✅ **Penalty Calculation**: Automatic penalty deduction for premature closures
-- ✅ **Transaction Tracking**: Complete audit trail of FD-related transactions
-
-## JWT Algorithm Information
-
-**Algorithm Used**: **HS256 (HMAC-SHA256)**
-- **Type**: Symmetric key cryptographic algorithm
-- **Key Type**: HMAC (Hash-based Message Authentication Code) with SHA-256
-- **Security**: Uses a shared secret key to both sign and verify tokens
-- **Key Length**: Minimum 32 bytes (256 bits) as enforced by the application
-- **Token Structure**: Header.Payload.Signature (standard JWT format)
-
-## Default Admin Credentials
-
-**Super Admin:**
-- Email: `admin@bank.com`
-- Password: `admin123`
-- Roles: SUPER_ADMIN, ADMIN
-
-**Regular Admin:**
-- Email: `user@bank.com`
-- Password: `user123`
-- Roles: ADMIN
+# Complete Banking Application API Testing Guide
 
 ## Table of Contents
-1. [Environment Setup](#environment-setup)
-2. [Authentication](#authentication)
-3. [Customer Operations](#customer-operations)
-4. [Account Operations](#account-operations)
-5. [Transaction Operations](#transaction-operations)
-6. [Loan Operations](#loan-operations)
-7. [Fixed Deposit Operations](#fixed-deposit-operations)
-8. [Admin Operations](#admin-operations)
-9. [Super Admin Management Operations](#super-admin-management-operations)
-10. [Reports & Analytics](#reports--analytics)
-11. [Access Control Testing](#access-control-testing)
-12. [Email Notification Testing](#email-notification-testing)
+
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Environment Setup](#environment-setup)
+4. [Authentication](#authentication)
+5. [Admin User Guide](#admin-user-guide)
+6. [Customer User Guide](#customer-user-guide)
+7. [Joint Account Management](#joint-account-management)
+8. [Advanced Features](#advanced-features)
+9. [Testing Scenarios](#testing-scenarios)
+10. [Troubleshooting](#troubleshooting)
+11. [API Reference](#api-reference)
+
+---
+
+## Overview
+
+This comprehensive guide provides step-by-step instructions for testing all features of the Complete Banking Application API, including:
+
+### 🏦 Core Features
+- **Customer Registration & Authentication**
+- **Account Management (Savings, Current, Joint Accounts)**
+- **Transaction Processing (Deposit, Withdrawal, Transfer)**
+- **Fixed Deposit Management**
+- **Loan Management**
+- **Admin Operations**
+- **Reporting & Analytics**
+
+### ✨ Advanced Features
+- **Joint Account Support** (Multi-holder accounts)
+- **Email Notifications** (All transactions)
+- **Role-based Access Control**
+- **Real-time Balance Updates**
+- **Automated FD Maturity & Renewal**
+- **EMI Calculations & Payments**
+
+---
+
+## Prerequisites
+
+### Required Software
+- **Java 17+**
+- **Maven 3.6+**
+- **MySQL 8.0+** (or H2 for testing)
+- **Postman** (recommended for API testing)
+- **Git**
+
+### Development Tools (Optional)
+- **IntelliJ IDEA** or **Eclipse**
+- **MySQL Workbench**
+- **VS Code** with REST Client extension
+
+---
 
 ## Environment Setup
 
-### 1. Create Environment Variables in Postman
-```
-Variable Name          | Initial Value
---------------------- | ----------------
-baseURL               | http://localhost:8080
-customerToken         | (leave empty)
-adminToken            | (leave empty)
-superAdminToken       | (leave empty)
-customerId            | (leave empty)
-accountId             | (leave empty)
-loanId                | (leave empty)
-transactionId         | (leave empty)
-fdId                  | (leave empty)
-fdNumber              | (leave empty)
-newAdminId            | (leave empty)
-```
+### 1. Clone and Setup Application
 
-### 2. Start the Application
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd FInal_banking_app
+
+# Build the application
+mvn clean install
+
+# Run the application
 mvn spring-boot:run
 ```
-Application will start on: `http://localhost:8080`
+
+### 2. Database Configuration
+
+**Option A: MySQL Database**
+```properties
+# application.properties
+spring.datasource.url=jdbc:mysql://localhost:3306/banking_db
+spring.datasource.username=root
+spring.datasource.password=yourpassword
+spring.jpa.hibernate.ddl-auto=update
+```
+
+**Option B: H2 In-Memory Database (for testing)**
+```properties
+# application-test.properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.h2.console.enabled=true
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+### 3. Email Configuration (Optional)
+
+```properties
+# Gmail Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-app-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+```
+
+### 4. Verify Application Startup
+
+```bash
+# Check if application is running
+curl http://localhost:8080/actuator/health
+
+# Expected Response
+{
+  "status": "UP"
+}
+```
+
+---
 
 ## Authentication
 
-### Step 1: Admin Login (Super Admin)
-**Method:** POST  
-**URL:** `{{baseURL}}/api/auth/admin/login`
+### Understanding User Roles
 
-**Headers:**
-```
+The application supports three user types:
+
+1. **SUPER_ADMIN** - Full system access
+2. **ADMIN** - Customer and account management
+3. **CUSTOMER** - Personal banking operations
+
+### Default Credentials
+
+**Super Admin**
+- Username: `admin`
+- Password: `admin123`
+
+**Test Customers**
+- Created during registration process
+
+---
+
+## Admin User Guide
+
+### 🔐 Step 1: Admin Authentication
+
+#### 1.1 Admin Login
+
+**Request:**
+```http
+POST http://localhost:8080/api/auth/admin/login
 Content-Type: application/json
-```
 
-**Body (JSON):**
-```json
 {
-    "email": "admin@bank.com",
+    "username": "admin",
     "password": "admin123"
 }
 ```
 
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("superAdminToken", response.data.token);
-    console.log("Super Admin Token set successfully");
-}
-```
-
-### Step 2: Admin Login (Regular Admin)
-**Method:** POST  
-**URL:** `{{baseURL}}/api/auth/admin/login`
-
-**Headers:**
-```
-Content-Type: application/json
-```
-
-**Body (JSON):**
+**Expected Response:**
 ```json
 {
-    "email": "user@bank.com",
-    "password": "user123"
+    "success": true,
+    "message": "Login successful",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiJ9...",
+        "username": "admin",
+        "role": "SUPER_ADMIN",
+        "expiresIn": 86400
+    }
 }
 ```
 
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("adminToken", response.data.token);
-    console.log("Admin Token set successfully");
-}
+**💡 Important:** Copy the token value for use in subsequent requests.
+
+---
+
+### 👥 Step 2: Customer Management
+
+#### 2.1 View All Customers
+
+**Request:**
+```http
+GET http://localhost:8080/api/admin/customers?page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
 ```
 
-### Step 3: Customer Registration
-**Method:** POST  
-**URL:** `{{baseURL}}/api/auth/customer/register`
-
-**Headers:**
-```
-Content-Type: application/json
-```
-
-**Body (JSON):**
+**Response Structure:**
 ```json
+{
+    "success": true,
+    "data": {
+        "content": [
+            {
+                "id": 1,
+                "firstName": "John",
+                "lastName": "Doe",
+                "email": "john.doe@example.com",
+                "phoneNumber": "1234567890",
+                "status": "ACTIVE",
+                "registrationDate": "2024-01-15T10:30:00"
+            }
+        ],
+        "pageable": { ... },
+        "totalElements": 5
+    }
+}
+```
+
+#### 2.2 Get Customer Details
+
+**Request:**
+```http
+GET http://localhost:8080/api/admin/customers/{customerId}
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 2.3 Customer Status Management
+
+**Deactivate Customer:**
+```http
+PUT http://localhost:8080/api/admin/customers/{customerId}/deactivate
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Activate Customer:**
+```http
+PUT http://localhost:8080/api/admin/customers/{customerId}/activate
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 2.4 Approve Customer Registration
+
+**Request:**
+```http
+PUT http://localhost:8080/api/admin/customers/{customerId}/approve
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{
+    "approvalNotes": "All documents verified successfully"
+}
+```
+
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Customer approved successfully",
+    "data": {
+        "id": 3,
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "email": "jane.smith@example.com",
+        "phoneNumber": "+1234567890",
+        "address": "456 Oak Street",
+        "status": "ACTIVE",
+        "registrationDate": "2024-01-15T10:30:00",
+        "lastUpdated": "2024-01-15T14:45:00"
+    }
+}
+```
+
+#### 2.5 Reject Customer Registration
+
+**Request:**
+```http
+PUT http://localhost:8080/api/admin/customers/{customerId}/reject
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{
+    "rejectionReason": "Incomplete documentation provided during registration"
+}
+```
+
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Customer rejected successfully",
+    "data": {
+        "id": 3,
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "email": "jane.smith@example.com",
+        "phoneNumber": "+1234567890",
+        "address": "456 Oak Street",
+        "status": "INACTIVE",
+        "registrationDate": "2024-01-15T10:30:00",
+        "lastUpdated": "2024-01-15T14:45:00"
+    }
+}
+```
+
+**Validation Rules:**
+- `rejectionReason`: Required, maximum 500 characters
+- Only admins can approve/reject customers
+- Customer receives email notification with approval/rejection details
+
+#### 2.6 Get Pending Customer Registrations
+
+**Request:**
+```http
+GET http://localhost:8080/api/admin/customers/pending?page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Pending customers retrieved successfully",
+    "data": {
+        "content": [
+            {
+                "id": 3,
+                "firstName": "Jane",
+                "lastName": "Smith",
+                "email": "jane.smith@example.com",
+                "phoneNumber": "+1234567890",
+                "address": "456 Oak Street",
+                "status": "PENDING_APPROVAL",
+                "registrationDate": "2024-01-15T10:30:00"
+            }
+        ],
+        "pageable": { ... },
+        "totalElements": 2
+    }
+}
+```
+
+---
+
+### 🏦 Step 3: Account Management (Admin View)
+
+#### 3.1 View All Accounts
+
+**Request:**
+```http
+GET http://localhost:8080/api/accounts?page=0&size=20
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 3.2 Account Operations
+
+**Close Account:**
+```http
+PUT http://localhost:8080/api/accounts/{accountId}/close
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Reopen Account:**
+```http
+PUT http://localhost:8080/api/accounts/{accountId}/reopen
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+---
+
+### 💰 Step 4: Loan Management (Admin)
+
+#### 4.1 View All Loan Applications
+
+**Request:**
+```http
+GET http://localhost:8080/api/admin/loans?page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 4.2 Approve Loan Application
+
+**Request:**
+```http
+PUT http://localhost:8080/api/loans/{loanId}/approve
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Loan approved successfully",
+    "data": {
+        "id": 1,
+        "status": "APPROVED",
+        "approvedDate": "2024-01-15T14:30:00"
+    }
+}
+```
+
+#### 4.3 Reject Loan Application
+
+**Request:**
+```http
+PUT http://localhost:8080/api/loans/{loanId}/reject
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{
+    "rejectionReason": "Insufficient credit score"
+}
+```
+
+---
+
+### 📊 Step 5: Reports and Analytics
+
+#### 5.1 Account Balance Report
+
+**Request:**
+```http
+GET http://localhost:8080/api/reports/account-balances?page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 5.2 Transaction Volume Report
+
+**Request:**
+```http
+GET http://localhost:8080/api/reports/transaction-volume?startDate=2024-01-01&endDate=2024-01-31&page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 5.3 Customer Activity Report
+
+**Request:**
+```http
+GET http://localhost:8080/api/reports/customer-activity?page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+#### 5.4 Most Active Accounts
+
+**Request:**
+```http
+GET http://localhost:8080/api/reports/most-active-accounts?page=0&size=10
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+---
+
+### 👨‍💼 Step 6: Admin Management
+
+#### 6.1 Create New Admin
+
+**Request:**
+```http
+POST http://localhost:8080/api/admin/admins
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{
+    "username": "manager1",
+    "password": "securePassword123",
+    "email": "manager1@bank.com",
+    "role": "ADMIN"
+}
+```
+
+#### 6.2 Manage Admin Roles
+
+**Update Admin Role:**
+```http
+PUT http://localhost:8080/api/admin/admins/{adminId}/role
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{
+    "role": "SUPER_ADMIN"
+}
+```
+
+---
+
+## Customer User Guide
+
+### 🔐 Step 1: Customer Registration & Authentication
+
+#### 1.1 Customer Registration
+
+**Request:**
+```http
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
 {
     "firstName": "John",
     "lastName": "Doe",
-    "fullName": "John Doe",
-    "email": "john.doe@email.com",
-    "password": "Customer123!",
-    "phone": "+1234567890",
-    "address": "123 Main St, New York, NY, 10001, USA",
-    "dateOfBirth": "1990-01-15"
+    "email": "john.doe@example.com",
+    "phoneNumber": "1234567890",
+    "address": "123 Main St, City, State 12345",
+    "dateOfBirth": "1990-01-15",
+    "password": "securePassword123"
 }
 ```
 
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("customerId", response.data.id);
-    console.log("Customer ID set: " + response.data.id);
-}
-```
-
-### Step 4: Approve Customer (Super Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/customers/{{customerId}}/approve`
-
-**Headers:**
-```
-Content-Type: application/json
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Body (JSON):**
+**Expected Response:**
 ```json
 {
-    "approvalNotes": "Customer verification completed successfully"
+    "success": true,
+    "message": "Customer registered successfully",
+    "data": {
+        "id": 1,
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john.doe@example.com",
+        "status": "ACTIVE"
+    }
 }
 ```
 
-### Step 5: Customer Login
-**Method:** POST  
-**URL:** `{{baseURL}}/api/auth/customer/login`
+#### 1.2 Customer Login
 
-**Headers:**
-```
+**Request:**
+```http
+POST http://localhost:8080/api/auth/login
 Content-Type: application/json
+
+{
+    "email": "john.doe@example.com",
+    "password": "securePassword123"
+}
 ```
 
-**Body (JSON):**
+**Expected Response:**
 ```json
 {
-    "email": "john.doe@email.com",
-    "password": "Customer123!"
+    "success": true,
+    "message": "Login successful",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiJ9...",
+        "customerId": 1,
+        "customerName": "John Doe",
+        "email": "john.doe@example.com",
+        "expiresIn": 86400
+    }
 }
 ```
 
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("customerToken", response.data.token);
-    console.log("Customer Token set successfully");
-}
+---
+
+### 👤 Step 2: Profile Management
+
+#### 2.1 Get Customer Profile
+
+**Request:**
+```http
+GET http://localhost:8080/api/customers/profile
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 ```
 
-## Customer Operations
+#### 2.2 Update Profile
 
-### Step 6: Get Customer Profile (Own Data)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ Success - Customer can access own data
-
-### Step 7: Try to Access Another Customer's Data (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/999`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - Access denied
-
-### Step 8: Update Customer Profile
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
+**Request:**
+```http
+PUT http://localhost:8080/api/customers/profile
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
 
-**Body (JSON):**
-```json
 {
-    "fullName": "John Updated Doe",
-    "email": "john.doe@email.com",
-    "phone": "9876543210",
-    "address": "456 Updated St, New York, NY, 10001, USA"
+    "firstName": "John",
+    "lastName": "Doe",
+    "phoneNumber": "1234567890",
+    "address": "456 Updated Address, City, State 12345"
 }
 ```
 
-**Expected Result:** ✅ Success - Customer can update own data
+---
 
-### Step 9: Change Password
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}/change-password`
+### 🏦 Step 3: Account Management
 
-**Headers:**
-```
+#### 3.1 Create Savings Account
+
+**Request:**
+```http
+POST http://localhost:8080/api/accounts
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
 
-**Body (JSON):**
-```json
 {
-    "currentPassword": "Customer123!",
-    "newPassword": "NewPassword123!",
-    "confirmPassword": "NewPassword123!"
-}
-```
-
-## Account Operations
-
-### Step 10: Create Account
-**Method:** POST  
-**URL:** `{{baseURL}}/api/accounts`
-
-**Headers:**
-```
-Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
-
-**Body (JSON):**
-```json
-{
-    "customerId": {{customerId}},
+    "customerId": 1,
     "accountType": "SAVINGS",
     "initialDeposit": 1000.00
 }
 ```
 
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("accountId", response.data.id);
-    console.log("Account ID set: " + response.data.id);
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Account created successfully",
+    "data": {
+        "id": 1,
+        "accountNumber": "ACC001234567890",
+        "accountType": "SAVINGS",
+        "balance": 1000.00,
+        "status": "ACTIVE",
+        "customerId": 1,
+        "customerName": "John Doe",
+        "createdDate": "2024-01-15T10:30:00"
+    }
 }
 ```
 
-### Step 11: Get Account Details (Own Account)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/{{accountId}}`
+#### 3.2 Create Current Account
 
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ Success - Customer can access own account
-
-### Step 12: Get Account Balance
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/{{accountId}}/balance`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-### Step 13: Get Accounts by Customer ID
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/customer/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-### Step 14: Get Account Summary
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/{{accountId}}/summary`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-## Transaction Operations
-
-### Step 15: Make a Deposit
-**Method:** POST  
-**URL:** `{{baseURL}}/api/transactions/deposit?accountId={{accountId}}&amount=500.00&description=Initial deposit`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Note:** This endpoint uses query parameters, not JSON body.
-
-### Step 16: Make a Withdrawal
-**Method:** POST  
-**URL:** `{{baseURL}}/api/transactions/withdraw?accountId={{accountId}}&amount=100.00&description=ATM withdrawal`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Note:** This endpoint uses query parameters, not JSON body.
-
-### Step 17: Transfer Money
-**Method:** POST  
-**URL:** `{{baseURL}}/api/transactions/transfer`
-
-**Headers:**
-```
+**Request:**
+```http
+POST http://localhost:8080/api/accounts
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
 
-**Body (JSON):**
-```json
 {
-    "fromAccountId": {{accountId}},
-    "toAccountNumber": "ACC1234567890",
-    "amount": 250.00,
-    "description": "Transfer to friend"
+    "customerId": 1,
+    "accountType": "CURRENT",
+    "initialDeposit": 5000.00
 }
 ```
 
-### Step 18: Get Transaction History
-**Method:** GET  
-**URL:** `{{baseURL}}/api/transactions/account/{{accountId}}`
+#### 3.3 Get Account Details
 
-**Headers:**
+**Request:**
+```http
+GET http://localhost:8080/api/accounts/{accountId}
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 ```
-Authorization: Bearer {{customerToken}}
+
+#### 3.4 Get Account Balance
+
+**Request:**
+```http
+GET http://localhost:8080/api/accounts/{accountId}/balance
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 ```
 
-## Loan Operations
+#### 3.5 Get All Customer Accounts
 
-### Step 19: Apply for Loan
-**Method:** POST  
-**URL:** `{{baseURL}}/api/loans/apply`
-
-**Headers:**
+**Request:**
+```http
+GET http://localhost:8080/api/accounts/customer/{customerId}
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 ```
+
+---
+
+### 💳 Step 4: Transaction Operations
+
+#### 4.1 Deposit Money
+
+**Request:**
+```http
+POST http://localhost:8080/api/transactions/deposit
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 Content-Type: application/json
-Authorization: Bearer {{customerToken}}
+
+{
+    "accountId": 1,
+    "amount": 500.00,
+    "description": "Salary deposit"
+}
 ```
 
-**Body (JSON):**
+**Expected Response:**
 ```json
 {
-    "accountId": {{accountId}},
-    "loanType": "PERSONAL",
+    "success": true,
+    "message": "Deposit successful",
+    "data": {
+        "id": 1,
+        "accountId": 1,
+        "transactionType": "CREDIT",
+        "amount": 500.00,
+        "description": "Salary deposit",
+        "balance": 1500.00,
+        "transactionDate": "2024-01-15T14:30:00"
+    }
+}
+```
+
+#### 4.2 Withdraw Money
+
+**Request:**
+```http
+POST http://localhost:8080/api/transactions/withdraw
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+    "accountId": 1,
+    "amount": 200.00,
+    "description": "ATM withdrawal"
+}
+```
+
+#### 4.3 Transfer Money
+
+**Request:**
+```http
+POST http://localhost:8080/api/transactions/transfer
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+    "fromAccountId": 1,
+    "toAccountId": 2,
+    "amount": 300.00,
+    "description": "Transfer to savings"
+}
+```
+
+#### 4.4 Get Transaction History
+
+**Request:**
+```http
+GET http://localhost:8080/api/transactions/account/{accountId}?page=0&size=10&sortBy=transactionDate&sortDir=desc
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+```
+
+---
+
+### 🏛️ Step 5: Fixed Deposit Management
+
+#### 5.1 Create Fixed Deposit
+
+**Request:**
+```http
+POST http://localhost:8080/api/fixed-deposits
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+    "accountId": 1,
     "principalAmount": 10000.00,
-    "interestRate": 8.5,
-    "termMonths": 24,
+    "tenureMonths": 12,
+    "interestRate": 7.5
+}
+```
+
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Fixed deposit created successfully",
+    "data": {
+        "id": 1,
+        "fdNumber": "FD001234567890",
+        "accountId": 1,
+        "principalAmount": 10000.00,
+        "interestRate": 7.5,
+        "tenureMonths": 12,
+        "maturityAmount": 10750.00,
+        "startDate": "2024-01-15",
+        "maturityDate": "2025-01-15",
+        "status": "ACTIVE"
+    }
+}
+```
+
+#### 5.2 Get FD Details
+
+**Request:**
+```http
+GET http://localhost:8080/api/fixed-deposits/{fdId}
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+```
+
+#### 5.3 Get Customer FDs
+
+**Request:**
+```http
+GET http://localhost:8080/api/fixed-deposits/customer/{customerId}
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+```
+
+#### 5.4 Close FD (Premature)
+
+**Request:**
+```http
+PUT http://localhost:8080/api/fixed-deposits/{fdId}/close
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+```
+
+#### 5.5 Enable Auto-Renewal
+
+**Request:**
+```http
+PUT http://localhost:8080/api/fixed-deposits/{fdId}/auto-renewal
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+    "autoRenewal": true
+}
+```
+
+---
+
+### 💰 Step 6: Loan Management
+
+#### 6.1 Apply for Personal Loan
+
+**Request:**
+```http
+POST http://localhost:8080/api/loans
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "loanType": "PERSONAL",
+    "principalAmount": 50000.00,
+    "interestRate": 12.5,
+    "tenureMonths": 24,
     "purpose": "Home renovation"
 }
 ```
 
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("loanId", response.data.id);
-    console.log("Loan ID set: " + response.data.id);
-}
-```
+#### 6.2 Apply for Home Loan
 
-### Step 20: Get Loan Details (Own Loan)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/{{loanId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-### Step 21: Get Customer Loans
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/customer/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-### Step 22: Try to Access Another Customer's Loans (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/customer/999`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - Access denied
-
-## Admin Operations
-
-### Step 23: Approve Loan (Admin)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/loans/{{loanId}}/approve`
-
-**Headers:**
-```
+**Request:**
+```http
+POST http://localhost:8080/api/loans
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 Content-Type: application/json
-Authorization: Bearer {{adminToken}}
-```
 
-**Body (JSON):**
-```json
 {
-    "approvalNotes": "Loan approved after verification",
-    "approvedAmount": 10000.00
+    "customerId": 1,
+    "loanType": "HOME",
+    "principalAmount": 500000.00,
+    "interestRate": 8.5,
+    "tenureMonths": 240,
+    "purpose": "Purchase of residential property"
 }
 ```
 
-**Note:** ✅ **Automatic Disbursement:** When a loan is approved, the loan amount is automatically credited to the customer's account balance and a transaction record is created.
+#### 6.3 Get Loan Details
 
-### Step 24: Get All Customers (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
+**Request:**
+```http
+GET http://localhost:8080/api/loans/{loanId}
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 ```
 
-**Expected Result:** ✅ Success for Admin, ❌ 403 for Customer
+#### 6.4 Make EMI Payment
 
-### Step 25: Get All Accounts (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-### Step 26: Get All Loans (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-### Step 27: Get Pending Loan Applications (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/pending`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-### Step 27A: Get Pending Customer Approvals (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/admin/customers/pending`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** Returns list of customers awaiting approval
-
-### Step 27B: Approve Customer Registration (Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/customers/{{customerId}}/approve`
-
-**Headers:**
-```
+**Request:**
+```http
+POST http://localhost:8080/api/loans/{loanId}/pay-emi
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 Content-Type: application/json
-Authorization: Bearer {{adminToken}}
-```
 
-**Body (JSON):**
-```json
 {
-    "approvalNotes": "Customer documents verified and approved"
+    "accountId": 1,
+    "amount": 2361.11
 }
 ```
 
-### Step 27C: Reject Customer Registration (Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/customers/{{customerId}}/reject`
+#### 6.5 Get EMI Schedule
 
-**Headers:**
+**Request:**
+```http
+GET http://localhost:8080/api/loans/{loanId}/emi-schedule
+Authorization: Bearer YOUR_CUSTOMER_TOKEN
 ```
-Content-Type: application/json
-Authorization: Bearer {{adminToken}}
-```
-
-**Body (JSON):**
-```json
-{
-    "rejectionReason": "Incomplete documentation"
-}
-```
-
-### Step 28: EMI Payment (Customer)
-**Method:** POST  
-**URL:** `{{baseURL}}/api/loans/emi-payment`
-
-**Headers:**
-```
-Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
-
-**Body (JSON):**
-```json
-{
-    "loanId": {{loanId}},
-    "amount": 885.65,
-    "description": "Monthly EMI payment",
-    "isAutomaticDeduction": false
-}
-```
-
-**Note:** The EMI payment feature includes:
-- ✅ **Automatic Account Debit:** Amount is automatically debited from the associated account balance
-- ✅ **Insufficient Balance Check:** Throws exception if account doesn't have enough balance
-- ✅ **Late Fee Application:** Automatically applies late fees for overdue payments
-- ✅ **Outstanding Amount Update:** Updates remaining loan balance after payment
-
-### Step 29: Get Overdue Loans (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/overdue`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** Returns list of loans with overdue payments including late fees
-
-### Step 30: Process Automatic EMI (Admin Only)
-**Method:** POST  
-**URL:** `{{baseURL}}/api/loans/{{loanId}}/auto-emi`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Note:** This endpoint manually triggers automatic EMI deduction for a specific loan
-
-## Super Admin Management Operations
-
-### Step 31: Create New Admin (Super Admin Only)
-**Method:** POST  
-**URL:** `{{baseURL}}/api/admin`
-
-**Headers:**
-```
-Content-Type: application/json
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Body (JSON):**
-```json
-{
-    "firstName": "John",
-    "lastName": "AdminUser",
-    "email": "john.admin@bank.com",
-    "password": "admin123",
-    "roles": ["ADMIN"]
-}
-```
-
-**Post-Response Script:**
-```javascript
-if (pm.response.code === 200) {
-    var response = pm.response.json();
-    pm.environment.set("newAdminId", response.data.id);
-    console.log("New Admin ID set: " + response.data.id);
-}
-```
-
-**Expected Result:** ✅ Success for Super Admin, ❌ 403 for Regular Admin
-
-### Step 32: Get All Admins (Super Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/admin?page=0&size=10`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Expected Result:** ✅ Success for Super Admin, ❌ 403 for Regular Admin
-
-### Step 33: Get Admin Details
-**Method:** GET  
-**URL:** `{{baseURL}}/api/admin/{{newAdminId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-### Step 34: Add Role to Admin (Super Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/{{newAdminId}}/roles/add/SUPER_ADMIN`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Expected Result:** ✅ Success - Admin now has SUPER_ADMIN role
-
-### Step 35: Remove Role from Admin (Super Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/{{newAdminId}}/roles/remove/SUPER_ADMIN`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Expected Result:** ✅ Success - SUPER_ADMIN role removed
-
-### Step 36: Deactivate Admin (Super Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/{{newAdminId}}/deactivate`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Expected Result:** ✅ Success - Admin account is deactivated
-
-### Step 37: Activate Admin (Super Admin Only)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/admin/{{newAdminId}}/activate`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Expected Result:** ✅ Success - Admin account is reactivated
-
-### Step 38: Test Access Control - Regular Admin Cannot Manage Admins
-**Method:** GET  
-**URL:** `{{baseURL}}/api/admin`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - Regular admins cannot view all admins
-
-### Fixed Deposit Admin Operations
-
-#### Step 26A: Get All FDs (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/all?page=0&size=20&sortBy=createdAt&sortDirection=desc`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ✅ Success for Admin, ❌ 403 for Customer
-
-#### Step 26B: Get FDs by Status (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/status/ACTIVE?page=0&size=10`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Valid statuses:** ACTIVE, MATURED, CLOSED, PREMATURE_CLOSED, RENEWED
-
-#### Step 26C: Get Matured FDs (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/matured`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-#### Step 26D: Get FDs Maturing in Days (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/maturing-in-days?days=30`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ✅ Returns FDs that will mature in the next 30 days
-
-#### Step 26E: Get FD Statistics (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/statistics`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ✅ Returns total active FD amount and count
-
-## Reports & Analytics
-
-### Standard Reports
-
-#### Step 28: Get Customer Report (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/customers?fromDate=2025-01-01&toDate=2025-12-31`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ✅ Success for Admin, ❌ 403 for Customer
-
-#### Step 29: Get Account Report (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/accounts?fromDate=2025-01-01&toDate=2025-12-31`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-#### Step 30: Get Transaction Report (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/transactions?fromDate=2025-01-01&toDate=2025-12-31`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-#### Step 31: Get Financial Summary (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/financial-summary?fromDate=2025-01-01&toDate=2025-12-31`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-### Analytics Reports
-
-#### Step 32: Get Daily Transaction Volume (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/transaction-volume?fromDate=2025-09-01&toDate=2025-09-30`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-#### Step 33: Get Top Customers by Balance (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/top-customers?limit=10`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-#### Step 34: Get Most Active Accounts (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/active-accounts?limit=10`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-#### Step 35: Get Largest Transactions (Admin Only)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/reports/largest-transactions?limit=10`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-## Access Control Testing
-
-### 🔐 **Customer Data Isolation Tests**
-
-These tests verify that customers can ONLY access their own data and cannot access other customers' information.
-
-### Test 1: Customer Accessing Own Data (Should Work)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ 200 Success - Customer can access their own profile
-
-### Test 2: Customer Accessing Another Customer's Data (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/999`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: You can only access your own data"
-
-### Test 3: Customer Accessing Own Account (Should Work)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/{{accountId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ 200 Success - Customer can view their own account
-
-### Test 4: Customer Accessing Another Customer's Account (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/999`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: You can only access your own accounts"
-
-### Test 5: Customer Accessing Own Transactions (Should Work)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/{{accountId}}/transactions`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ 200 Success - Customer can view their own transaction history
-
-### Test 6: Customer Accessing Another Customer's Transactions (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/accounts/999/transactions`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: You can only access your own transactions"
-
-### Test 7: Customer Accessing Own Loans (Should Work)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/customer/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ 200 Success - Customer can view their own loans
-
-### Test 8: Customer Accessing Another Customer's Loans (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/loans/customer/999`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: You can only access your own loans"
-
-### Test 9: Customer Accessing Admin Endpoints (Should Fail)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: Admin privileges required"
-
-### Test 10: Customer Trying to Approve Loans (Should Fail)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/loans/{{loanId}}/approve`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: Admin privileges required"
-
-### 👨‍💼 **Admin Access Control Tests**
-
-### Test 11: Regular Admin vs Super Admin Operations
-**Try with Regular Admin Token:**
-**Method:** GET  
-**URL:** `{{baseURL}}/api/admin`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ❌ 403 Forbidden - "Access denied: Super Admin privileges required"
-
-**Try with Super Admin Token:**
-**Method:** GET  
-**URL:** `{{baseURL}}/api/admin`
-
-**Headers:**
-```
-Authorization: Bearer {{superAdminToken}}
-```
-
-**Expected Result:** ✅ 200 Success - Super Admin can view all admins
-
-### Test 12: Admin Accessing Customer Data (Should Work)
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{adminToken}}
-```
-
-**Expected Result:** ✅ 200 Success - Admins can access all customer data
-
-### 🛡️ **Token Validation Tests**
-
-### Test 13: Invalid Token
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer invalid_token_here
-```
-
-**Expected Result:** ❌ 401 Unauthorized
-
-### Test 14: Expired Token
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{expiredToken}}
-```
-
-**Expected Result:** ❌ 401 Unauthorized
-
-### Test 15: No Authorization Header
-**Method:** GET  
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Content-Type: application/json
-```
-
-**Expected Result:** ❌ 401 Unauthorized
-
-## 🔒 **Access Control Summary**
-
-### **Customer Access Rules:**
-- ✅ **Own Data Only**: Customers can access only their own profiles, accounts, transactions, loans, and FDs
-- ❌ **No Cross-Customer Access**: Cannot access other customers' data
-- ❌ **No Admin Operations**: Cannot perform administrative functions
-- ❌ **No System-Wide Queries**: Cannot view lists of all customers, accounts, etc.
-
-### **Admin Access Rules:**
-- ✅ **All Customer Data**: Can access any customer's information
-- ✅ **System Operations**: Can perform loan approvals, customer management, etc.
-- ❌ **Role Limitations**: Regular admins cannot perform super admin operations
-
-### **Super Admin Access Rules:**
-- ✅ **Unrestricted Access**: Can perform all operations in the system
-- ✅ **Admin Management**: Can create, modify, and delete other admin accounts
-- ✅ **System Configuration**: Full control over all system settings
-
-### **Security Features Implemented:**
-
-1. **🔐 JWT Token-Based Authentication**
-   - Secure token generation and validation
-   - User type identification (CUSTOMER/ADMIN)
-   - Role-based authorization (ADMIN/SUPER_ADMIN)
-
-2. **🛡️ Request-Level Access Control**
-   - Every sensitive endpoint validates user permissions
-   - Automatic owner verification for customer data
-   - Hierarchical access control (Customer < Admin < Super Admin)
-
-3. **🔍 Data Ownership Validation**
-   - Real-time verification of data ownership
-   - Prevention of cross-customer data access
-   - Account-transaction relationship validation
-
-4. **⚠️ Security Exception Handling**
-   - Proper HTTP status codes (401, 403)
-   - Descriptive error messages for debugging
-   - No sensitive information leakage in errors
-
-5. **🔄 Multi-Layer Protection**
-   - Controller-level access validation
-   - Service-level business rule enforcement
-   - Database-level relationship constraints
-
-## Error Handling Examples
-
-### Common Security Responses:
-
-**401 Unauthorized:**
-```json
-{
-    "success": false,
-    "message": "JWT token is required",
-    "data": null,
-    "timestamp": "2024-12-25T10:30:00Z"
-}
-```
-
-**403 Forbidden:**
-```json
-{
-    "success": false,
-    "message": "Access denied: You can only access your own data",
-    "data": null,
-    "timestamp": "2024-12-25T10:30:00Z"
-}
-```
-
-**403 Admin Required:**
-```json
-{
-    "success": false,
-    "message": "Access denied: Admin privileges required",
-    "data": null,
-    "timestamp": "2024-12-25T10:30:00Z"
-}
-```
-
-**403 Super Admin Required:**
-```json
-{
-    "success": false,
-    "message": "Access denied: Super Admin privileges required",
-    "data": null,
-    "timestamp": "2024-12-25T10:30:00Z"
-}
-```
-**URL:** `{{baseURL}}/api/customers/{{customerId}}`
-
-**Headers:**
-```
-Authorization: Bearer invalid_token_here
-```
-
-**Expected Result:** ❌ 401 Unauthorized
-
-## Response Status Codes
-
-- **200 OK**: Request successful
-- **201 Created**: Resource created successfully
-- **400 Bad Request**: Invalid request data
-- **401 Unauthorized**: Invalid or missing authentication token
-- **403 Forbidden**: Access denied due to insufficient permissions
-- **404 Not Found**: Resource not found
-- **500 Internal Server Error**: Server error
-
-## Access Control Rules Summary
-
-### Customer Access Rules:
-- ✅ Can access their own data (profile, accounts, transactions, loans)
-- ❌ Cannot access other customers' data
-- ❌ Cannot access admin endpoints
-- ❌ Cannot approve/reject loans or customers
-
-### Regular Admin Access Rules:
-- ✅ Can view all customers, accounts, transactions, loans
-- ✅ Can approve/reject loans
-- ✅ Can view reports
-- ❌ Cannot approve/reject customers (Super Admin only)
-- ❌ Cannot create/delete other admins (Super Admin only)
-
-### Super Admin Access Rules:
-- ✅ Full access to all operations
-- ✅ Can approve/reject customers
-- ✅ Can create/delete admins
-- ✅ Can perform all regular admin operations
-
-## Troubleshooting
-
-### Common Issues:
-
-1. **401 Unauthorized**
-   - Check if token is included in Authorization header
-   - Verify token format: `Bearer <token>`
-   - Ensure token hasn't expired
-
-2. **403 Forbidden**
-   - Verify user has correct permissions
-   - Check if trying to access another user's data
-   - Confirm admin role for admin operations
-
-3. **Token Expired**
-   - Re-login to get new token
-   - Update environment variables with new token
-
-4. **Customer Not Approved**
-   - Use Super Admin token to approve customer
-   - Customer must be approved before account operations
-
-5. **403 Forbidden on Customer Operations (Change Password, Update Profile, etc.)**
-   - **Root Cause**: Customer ID mismatch or customer not properly logged in after approval
-   - **Solution Steps**:
-     1. Ensure customer is approved (Step 4) before attempting login
-     2. After approval, perform fresh customer login (Step 5) to get updated token
-     3. Verify the `customerId` environment variable matches the ID in the URL
-     4. Check that you're using the correct `customerToken` from the login response
-   - **Common Issue**: Using old token or wrong customer ID in URL path
-
-6. **Request Body Field Name Errors**
-   - **Password Change**: Use `currentPassword` (not `oldPassword`)
-   - **Customer Update**: Use `fullName` (not `firstName`/`lastName`), `phone` (not `phoneNumber`), `address` as string (not object)
-   - **Common Error**: "Cannot invoke...because the return value...is null" indicates wrong field names
-
-7. **Admin Login Failed - "Invalid admin credentials"**
-   - **Solution**: Clear your database and restart the application
-   - Default credentials will be recreated with proper password encoding
-   - Use the correct credentials:
-     - **Super Admin**: `admin@bank.com` / `admin123`
-     - **Regular Admin**: `user@bank.com` / `user123`
-   
-   **Alternative**: If you want to keep existing data, update admin passwords manually:
-   ```sql
-   -- Connect to your database and run:
-   UPDATE admins SET password_hash = '$2a$10$...' WHERE email = 'admin@bank.com';
-   ```
-
-7. **Loan Application Failed**
-   - **Issue**: 500 Internal Server Error when applying for loan
-   - **Solution**: Ensure request body includes all required fields:
-     - `accountId` (not customerId)
-     - `loanType` (e.g., "PERSONAL", "HOME", "AUTO")
-     - `principalAmount` (minimum $1,000)
-     - `interestRate` (between 0.01 and 30)
-     - `termMonths` (between 6 and 360 months)
-     - `purpose` (optional)
-
-6. **Transaction Operations Not Working**
-   - **Issue**: Deposits/Withdrawals not showing in transaction history
-   - **Solution**: Ensure you're using query parameters, not JSON body for deposit/withdraw endpoints
-   - **Correct Format**: 
-     - Deposit: `/api/transactions/deposit?accountId=1&amount=100.00&description=test`
-     - Withdraw: `/api/transactions/withdraw?accountId=1&amount=100.00&description=test`
-
-### Environment Variable Check:
-Before testing, ensure all environment variables are set:
-```javascript
-// Add this as a Pre-request Script to check variables
-console.log("Base URL: " + pm.environment.get("baseURL"));
-console.log("Customer Token: " + pm.environment.get("customerToken"));
-console.log("Admin Token: " + pm.environment.get("adminToken"));
-console.log("Customer ID: " + pm.environment.get("customerId"));
-console.log("Account ID: " + pm.environment.get("accountId"));
-```
-
-This completes the comprehensive testing guide for the Banking App with JWT-based access control!
-
-# Fixed Deposit Operations
-
-Fixed Deposits (FD) allow customers to invest money for a fixed period at a predetermined interest rate.
-
-**Key Features:**
-- ✅ **Automatic Fund Management**: FD creation automatically debits from specified account, FD closure automatically credits to specified account
-- ✅ **Insufficient Balance Protection**: Prevents FD creation if account has insufficient funds
-- ✅ **Transaction Recording**: All debits/credits are recorded in transaction history
-- ✅ **Penalty Calculation**: Automatic penalty deduction for premature closures
-
-### Prerequisites
-- Customer must be authenticated
-- Customer should have sufficient funds in their account for FD creation
-
-### Step 22A: Calculate FD Maturity Amount
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/calculate-maturity?principalAmount=100000&interestRate=7.5&tenureMonths=12`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ Returns calculated maturity amount
-
-### Step 22B: Create Fixed Deposit
-**Method:** POST  
-**URL:** `{{baseURL}}/api/fixed-deposits/create`
-
-**Note:** ⚠️ **Automatic Account Debit**: When creating an FD, the principal amount will be automatically debited from the specified account. Ensure the account has sufficient balance, or you'll get an "Insufficient Funds" error.
-
-**Headers:**
-```
-Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
-
-**Body (JSON):**
-```json
-{
-    "customerId": {{customerId}},
-    "accountId": {{accountId}},
-    "principalAmount": 100000.00,
-    "interestRate": 7.5,
-    "tenureMonths": 12,
-    "autoRenewal": false,
-    "prematureWithdrawalAllowed": true,
-    "nomineeName": "John Doe Jr",
-    "nomineeRelationship": "Son"
-}
-```
-
-**Test Script:**
-```javascript
-if (pm.response.code === 201) {
-    var response = pm.response.json();
-    pm.environment.set("fdId", response.data.id);
-    pm.environment.set("fdNumber", response.data.fdNumber);
-    console.log("FD ID set: " + response.data.id);
-    console.log("FD Number set: " + response.data.fdNumber);
-}
-```
-
-### Step 22C: Get FD Details by ID
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/{{fdId}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ Returns FD details with interest earned and maturity information
-
-### Step 22D: Get FD Details by FD Number
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/fd-number/{{fdNumber}}`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-### Step 22E: Get Customer's All FDs
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/customer/{{customerId}}?page=0&size=10&sortBy=createdAt&sortDirection=desc`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-### Step 22F: Calculate Interest Earned on FD
-**Method:** GET  
-**URL:** `{{baseURL}}/api/fixed-deposits/{{fdId}}/interest-earned`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Expected Result:** ✅ Returns current interest earned amount
-
-### Step 22G: Close/Withdraw FD (Premature)
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/fixed-deposits/close`
-
-**Note:** ⚠️ **Automatic Account Credit**: When closing an FD, the maturity/closure amount (minus penalty, if applicable) will be automatically credited to the specified account.
-
-**Headers:**
-```
-Content-Type: application/json
-Authorization: Bearer {{customerToken}}
-```
-
-**Body (JSON):**
-```json
-{
-    "fdId": {{fdId}},
-    "accountId": {{accountId}},
-    "reason": "Emergency fund needed",
-    "isPremature": true
-}
-```
-
-**Expected Result:** ✅ FD closed with penalty applied (if applicable)
-
-### Step 22H: Renew Matured FD
-**Method:** PUT  
-**URL:** `{{baseURL}}/api/fixed-deposits/{{fdId}}/renew`
-
-**Headers:**
-```
-Authorization: Bearer {{customerToken}}
-```
-
-**Note:** This will only work if the FD has matured
 
 ---
 
-## 23. Email Notification Testing 📧
+## Joint Account Management
 
-**Important:** All email notifications are sent automatically when performing credit/debit operations. Monitor your email or check application logs to verify notifications are sent.
+### 🤝 Understanding Joint Accounts
 
-### 23A: Test Transaction Email Notifications
+Joint accounts allow multiple customers to share ownership and access to a single bank account. Features include:
 
-**Perform these operations to test email notifications:**
+- **Primary Holder**: Account creator with full privileges
+- **Secondary Holders**: Added members with transaction privileges
+- **Shared Access**: All holders can perform transactions
+- **Email Notifications**: All holders receive transaction alerts
 
-1. **Deposit Operation** (Credit Notification)
-   - Make a deposit using Step 8A
-   - ✅ **Expected Email**: Balance update with credit details
+### Step 1: Create Joint Account
 
-2. **Withdrawal Operation** (Debit Notification)
-   - Make a withdrawal using Step 8B
-   - ✅ **Expected Email**: Balance update with debit details
+#### 1.1 Create Joint Savings Account
 
-3. **Transfer Operation** (Dual Notifications)
-   - Perform a transfer using Step 9A
-   - ✅ **Expected Emails**: 
-     - Debit notification to sender
-     - Credit notification to receiver
+**Request:**
+```http
+POST http://localhost:8080/api/accounts/joint
+Authorization: Bearer PRIMARY_CUSTOMER_TOKEN
+Content-Type: application/json
 
-### 23B: Test Loan Email Notifications
-
-1. **Loan Approval Notification**
-   - Approve a loan using Step 17A
-   - ✅ **Expected Email**: Loan disbursement notification with account balance update
-
-2. **EMI Deduction Notification**
-   - Make EMI payment using Step 18A
-   - ✅ **Expected Email**: EMI payment confirmation with remaining balance
-
-3. **Automatic EMI Notification**
-   - Triggered by scheduled task (automatic)
-   - ✅ **Expected Email**: Automatic EMI deduction confirmation
-
-### 23C: Test Fixed Deposit Email Notifications
-
-1. **FD Creation Notification**
-   - Create an FD using Step 22A
-   - ✅ **Expected Emails**:
-     - FD creation confirmation
-     - Account debit notification for FD amount
-
-2. **FD Maturity Notification**
-   - Triggered by scheduled task when FD matures
-   - ✅ **Expected Email**: FD maturity notification with maturity amount
-
-3. **FD Closure Notification**
-   - Close an FD using Step 22G
-   - ✅ **Expected Emails**:
-     - FD closure confirmation
-     - Account credit notification for closure amount
-
-### 23D: Email Notification Features
-
-**All Email Notifications Include:**
-- ✅ Customer name and email
-- ✅ Account number and current balance
-- ✅ Transaction amount and type (CREDIT/DEBIT)
-- ✅ Previous balance and new balance
-- ✅ Transaction reference ID
-- ✅ Timestamp of operation
-- ✅ Relevant operation details (loan number, FD details, etc.)
-
-**Email Configuration:**
-- Configure SMTP settings in `application.properties`
-- Email notifications are sent asynchronously
-- Failed email attempts are logged for troubleshooting
-
-### 23E: Monitoring Email Notifications
-
-**In Application Logs:**
-```
-[INFO] Email notification sent successfully to: customer@example.com
-[INFO] Transaction notification sent for account: 1234567890
-[INFO] Balance update notification sent for CREDIT operation
+{
+    "primaryCustomerId": 1,
+    "secondaryCustomerIds": [2, 3],
+    "accountType": "JOINT_SAVINGS",
+    "initialDeposit": 5000.00
+}
 ```
 
-**Check Your Email Client:**
-- Look for emails from the banking application
-- Verify all required information is included
-- Confirm email formatting and content accuracy
+**Expected Response:**
+```json
+{
+    "success": true,
+    "message": "Joint account created successfully",
+    "data": {
+        "id": 5,
+        "accountNumber": "ACC987654321098",
+        "accountType": "JOINT_SAVINGS",
+        "balance": 5000.00,
+        "status": "ACTIVE",
+        "customerId": 1,
+        "customerName": "John Doe",
+        "isJointAccount": true,
+        "jointHolders": [
+            {
+                "id": 1,
+                "customerId": 2,
+                "customerName": "Jane Smith",
+                "customerEmail": "jane.smith@example.com",
+                "holderRole": "SECONDARY",
+                "addedDate": "2024-01-15T15:30:00",
+                "isActive": true
+            },
+            {
+                "id": 2,
+                "customerId": 3,
+                "customerName": "Bob Johnson",
+                "customerEmail": "bob.johnson@example.com",
+                "holderRole": "SECONDARY",
+                "addedDate": "2024-01-15T15:30:00",
+                "isActive": true
+            }
+        ]
+    }
+}
+```
 
-**Troubleshooting:**
-- Check SMTP configuration in `application.properties`
-- Verify email service implementation
-- Check application logs for email sending errors
-- Ensure recipient email addresses are valid
+### Step 2: Manage Joint Account Holders
+
+#### 2.1 Get Joint Account Holders
+
+**Request:**
+```http
+GET http://localhost:8080/api/accounts/{jointAccountId}/holders
+Authorization: Bearer ANY_HOLDER_TOKEN
+```
+
+#### 2.2 Add New Joint Holder
+
+**Request:**
+```http
+POST http://localhost:8080/api/accounts/joint/add-holder
+Authorization: Bearer PRIMARY_HOLDER_TOKEN
+Content-Type: application/json
+
+{
+    "accountId": 5,
+    "customerId": 4
+}
+```
+
+#### 2.3 Remove Joint Holder
+
+**Request:**
+```http
+DELETE http://localhost:8080/api/accounts/5/holders
+Authorization: Bearer PRIMARY_HOLDER_TOKEN
+Content-Type: application/json
+
+{
+    "accountId": 5,
+    "customerId": 3
+}
+```
+
+### Step 3: Joint Account Transactions
+
+All standard transaction operations work with joint accounts:
+
+#### 3.1 Deposit by Any Holder
+
+**Request:**
+```http
+POST http://localhost:8080/api/transactions/deposit
+Authorization: Bearer ANY_HOLDER_TOKEN
+Content-Type: application/json
+
+{
+    "accountId": 5,
+    "amount": 1000.00,
+    "description": "Monthly contribution"
+}
+```
+
+#### 3.2 Transfer from Joint Account
+
+**Request:**
+```http
+POST http://localhost:8080/api/transactions/transfer
+Authorization: Bearer ANY_HOLDER_TOKEN
+Content-Type: application/json
+
+{
+    "fromAccountId": 5,
+    "toAccountId": 1,
+    "amount": 500.00,
+    "description": "Transfer to personal account"
+}
+```
+
+---
+
+## Advanced Features
+
+### 📧 Email Notifications
+
+The system automatically sends email notifications for:
+
+- **All Transactions** (Deposit, Withdrawal, Transfer)
+- **Loan Operations** (Approval, EMI payments)
+- **Fixed Deposit Events** (Creation, Maturity, Closure)
+- **Joint Account Activities** (Holder addition/removal)
+
+**Email Recipients:**
+- **Individual Accounts**: Account owner
+- **Joint Accounts**: All active holders
+
+### 🔒 Access Control Features
+
+#### Customer Access Rules:
+- Can only access own accounts and data
+- Joint account holders can access shared accounts
+- Cannot view other customers' information
+
+#### Admin Access Rules:
+- **ADMIN**: Customer and account management
+- **SUPER_ADMIN**: Full system access including admin management
+
+### ⚡ Real-time Features
+
+- **Balance Updates**: Immediate balance updates after transactions
+- **Transaction History**: Real-time transaction logging
+- **Status Changes**: Instant account/loan status updates
+
+---
+
+## Testing Scenarios
+
+### 🧪 Scenario 1: Complete Customer Journey
+
+1. **Register New Customer**
+2. **Login and Get Profile**
+3. **Create Savings Account**
+4. **Make Initial Deposit**
+5. **Create Fixed Deposit**
+6. **Apply for Loan**
+7. **Check Email Notifications**
+
+### 🧪 Scenario 2: Joint Account Workflow
+
+1. **Register Multiple Customers**
+2. **Primary Customer Creates Joint Account**
+3. **Verify All Holders Receive Notifications**
+4. **Secondary Holder Makes Transaction**
+5. **Add New Holder**
+6. **Remove a Holder**
+
+### 🧪 Scenario 3: Admin Operations
+
+1. **Admin Login**
+2. **View Pending Customer Registrations**
+3. **Approve Customer Registration**
+4. **Reject Customer Registration**
+5. **View Customer Reports**
+6. **Approve Loan Application**
+7. **Generate Reports**
+8. **Create New Admin**
+
+### 🧪 Scenario 4: Error Handling
+
+1. **Invalid Login Credentials**
+2. **Insufficient Balance Withdrawal**
+3. **Access Other Customer's Data**
+4. **Invalid Account Numbers**
+
+---
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Issue 1: Authentication Failed
+**Symptoms:** 401 Unauthorized responses
+**Solutions:**
+- Verify token is included in Authorization header
+- Check token expiration (24 hours)
+- Re-login to get fresh token
+
+#### Issue 2: Access Denied
+**Symptoms:** 403 Forbidden responses  
+**Solutions:**
+- Verify user role permissions
+- Check customer ID matches token
+- Ensure admin privileges for admin operations
+
+#### Issue 3: Account Not Found
+**Symptoms:** 404 Not Found for accounts
+**Solutions:**
+- Verify account exists and is active
+- Check account ownership/access rights
+- Use correct account ID in requests
+
+#### Issue 4: Insufficient Balance
+**Symptoms:** Transaction fails with balance error
+**Solutions:**
+- Check current account balance
+- Ensure sufficient funds for withdrawal/transfer
+- Account for any holds or freezes
+
+#### Issue 5: Email Notifications Not Working
+**Symptoms:** No emails received
+**Solutions:**
+- Check email configuration in application.properties
+- Verify Gmail app password setup
+- Check spam/junk folders
+
+### Debug Commands
+
+```bash
+# Check application logs
+tail -f logs/banking-app.log
+
+# Verify database connection
+curl http://localhost:8080/actuator/health
+
+# Check active profiles
+curl http://localhost:8080/actuator/env | grep "activeProfiles"
+
+# Monitor JVM metrics
+curl http://localhost:8080/actuator/metrics
+```
+
+---
+
+## API Reference
+
+### Base URL
+```
+http://localhost:8080/api
+```
+
+### Authentication Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Customer registration |
+| POST | `/auth/login` | Customer login |
+| POST | `/auth/admin/login` | Admin login |
+
+### Customer Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/customers/profile` | Get customer profile |
+| PUT | `/customers/profile` | Update customer profile |
+| PUT | `/customers/verify-email` | Verify email address |
+| PUT | `/customers/verify-phone` | Verify phone number |
+
+### Account Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/accounts` | Create new account |
+| GET | `/accounts/{id}` | Get account details |
+| GET | `/accounts/{id}/balance` | Get account balance |
+| GET | `/accounts/customer/{customerId}` | Get customer accounts |
+| PUT | `/accounts/{id}/close` | Close account |
+| PUT | `/accounts/{id}/reopen` | Reopen account |
+
+### Joint Account Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/accounts/joint` | Create joint account |
+| GET | `/accounts/{id}/joint-holders` | Get joint holders |
+| POST | `/accounts/joint/add-holder` | Add joint holder |
+| DELETE | `/accounts/joint/remove-holder` | Remove joint holder |
+
+### Transaction Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/transactions/deposit` | Deposit money |
+| POST | `/transactions/withdraw` | Withdraw money |
+| POST | `/transactions/transfer` | Transfer money |
+| GET | `/transactions/account/{accountId}` | Get transaction history |
+
+### Fixed Deposit Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/fixed-deposits` | Create fixed deposit |
+| GET | `/fixed-deposits/{id}` | Get FD details |
+| GET | `/fixed-deposits/customer/{customerId}` | Get customer FDs |
+| PUT | `/fixed-deposits/{id}/close` | Close FD |
+| PUT | `/fixed-deposits/{id}/auto-renewal` | Set auto-renewal |
+
+### Loan Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/loans` | Apply for loan |
+| GET | `/loans/{id}` | Get loan details |
+| GET | `/loans/customer/{customerId}` | Get customer loans |
+| PUT | `/loans/{id}/approve` | Approve loan (Admin) |
+| PUT | `/loans/{id}/reject` | Reject loan (Admin) |
+| POST | `/loans/{id}/pay-emi` | Make EMI payment |
+
+### Admin Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/customers` | Get all customers |
+| GET | `/admin/customers/pending` | Get pending customers |
+| GET | `/admin/customers/{id}` | Get customer details |
+| PUT | `/admin/customers/{id}/activate` | Activate customer |
+| PUT | `/admin/customers/{id}/deactivate` | Deactivate customer |
+| PUT | `/admin/customers/{id}/approve` | Approve customer registration |
+| PUT | `/admin/customers/{id}/reject` | Reject customer registration |
+| POST | `/admin/admins` | Create new admin |
+| PUT | `/admin/admins/{id}/role` | Update admin role |
+
+### Report Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/reports/account-balances` | Account balance report |
+| GET | `/reports/transaction-volume` | Transaction volume report |
+| GET | `/reports/customer-activity` | Customer activity report |
+| GET | `/reports/most-active-accounts` | Most active accounts |
+
+---
+
+## Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 500 | Internal Server Error |
+
+---
+
+## Support
+
+For technical support or questions:
+
+1. **Check Application Logs**: `logs/banking-app.log`
+2. **Review API Documentation**: This guide
+3. **Test with Postman Collection**: Use provided collection
+4. **Verify Database State**: Check MySQL/H2 console
+
+---
+
+**Last Updated:** September 27, 2025  
+**Version:** 2.0.0  
+**Author:** Banking Application Team

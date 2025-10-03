@@ -1,8 +1,4 @@
-package com.tss.banking.entity.eums;
-
-/**
- * Enumeration for loan type
- */
+﻿package com.tss.banking.entity.eums;
 public enum LoanType {
     PERSONAL,
     HOME,

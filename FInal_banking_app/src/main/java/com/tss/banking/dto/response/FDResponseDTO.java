@@ -1,22 +1,17 @@
-package com.tss.banking.dto.response;
-
+﻿package com.tss.banking.dto.response;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import com.tss.banking.entity.eums.FDStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FDResponseDTO {
-
     private Long id;
     private String fdNumber;
     private Long customerId;

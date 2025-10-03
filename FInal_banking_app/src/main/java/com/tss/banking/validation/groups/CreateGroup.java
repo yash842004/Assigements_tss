@@ -1,7 +1,3 @@
-package com.tss.banking.validation.groups;
-
-/**
- * Validation group for create operations
- */
+﻿package com.tss.banking.validation.groups;
 public interface CreateGroup {
 }

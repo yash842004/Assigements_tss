@@ -1,6 +1,4 @@
-package com.tss.banking.entity.eums;
-
+﻿package com.tss.banking.entity.eums;
 public enum AccountType {
-
-	SAVINGS, CURRENT, FIXED_DEPOSIT
+	SAVINGS, CURRENT, FIXED_DEPOSIT, JOINT_SAVINGS, JOINT_CURRENT
 }

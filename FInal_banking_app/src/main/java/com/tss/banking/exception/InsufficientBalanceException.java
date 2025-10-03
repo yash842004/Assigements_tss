@@ -1,28 +1,18 @@
-package com.tss.banking.exception;
-
+﻿package com.tss.banking.exception;
 import java.math.BigDecimal;
-
-/**
- * Exception thrown when account has insufficient balance for a transaction
- */
 public class InsufficientBalanceException extends RuntimeException {
-    
     public InsufficientBalanceException() {
         super("Insufficient balance for the transaction");
     }
-    
     public InsufficientBalanceException(String message) {
         super(message);
     }
-    
     public InsufficientBalanceException(String message, Throwable cause) {
         super(message, cause);
     }
-    
     public InsufficientBalanceException(BigDecimal balance, BigDecimal requestedAmount) {
         super("Insufficient balance. Available: " + balance + ", Requested: " + requestedAmount);
     }
-    
     public InsufficientBalanceException(String accountNumber, BigDecimal balance, BigDecimal requestedAmount) {
         super("Insufficient balance in account " + accountNumber + ". Available: " + balance + ", Requested: " + requestedAmount);
     }

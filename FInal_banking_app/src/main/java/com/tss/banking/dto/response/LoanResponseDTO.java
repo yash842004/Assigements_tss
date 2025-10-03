@@ -1,23 +1,18 @@
-package com.tss.banking.dto.response;
-
+﻿package com.tss.banking.dto.response;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import com.tss.banking.entity.eums.LoanStatus;
 import com.tss.banking.entity.eums.LoanType;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoanResponseDTO {
-
     private Long id;
     private String loanNumber;
     private LoanType loanType;
@@ -37,23 +32,15 @@ public class LoanResponseDTO {
     private String rejectionReason;
     private LocalDateTime createdDate;
     private LocalDateTime lastUpdated;
-    
-    // Customer information
     private Long customerId;
     private String customerName;
-    
-    // Account information
     private Long accountId;
     private String accountNumber;
-    
-    // Late payment tracking
     private Integer missedPayments;
     private BigDecimal lateFeeAmount;
     private BigDecimal totalLateFees;
     private Boolean isOverdue;
     private Integer overdueDays;
-    
-    // Admin information (for approved loans)
     private Long approvedBy;
     private String approvedByName;
 }

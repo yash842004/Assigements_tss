@@ -1,10 +1,8 @@
-package com.tss.banking.service.impl;
-
+﻿package com.tss.banking.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.tss.banking.dto.request.CustomerApprovalRequestDTO;
 import com.tss.banking.dto.request.CustomerRegistrationRequestDTO;
 import com.tss.banking.dto.request.CustomerRejectionRequestDTO;
@@ -28,38 +25,29 @@ import com.tss.banking.exception.DuplicateResourceException;
 import com.tss.banking.exception.ValidationException;
 import com.tss.banking.repository.CustomerRepository;
 import com.tss.banking.service.CustomerService;
-
+import com.tss.banking.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class CustomerServiceImpl implements CustomerService {
-
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final EmailService emailService;
     @Override
     public CustomerResponseDTO registerCustomer(CustomerRegistrationRequestDTO request) {
         log.info("Registering new customer with email: {}", request.getEmail());
-        
-        // Check for duplicate email
         if (customerRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Customer with email " + request.getEmail() + " already exists");
         }
-        
-        // Check for duplicate phone number
         if (request.getPhone() != null && customerRepository.existsByPhoneNumber(request.getPhone())) {
             throw new DuplicateResourceException("Customer with phone number " + request.getPhone() + " already exists");
         }
-        
-        // Parse full name into first and last name
         String[] nameParts = request.getFullName().trim().split("\\s+", 2);
         String firstName = nameParts[0];
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
-        
         Customer customer = Customer.builder()
                 .firstName(firstName)
                 .lastName(lastName)
@@ -71,12 +59,10 @@ public class CustomerServiceImpl implements CustomerService {
                 .registrationDate(LocalDateTime.now())
                 .lastUpdated(LocalDateTime.now())
                 .build();
-
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Customer registered successfully with ID: {}", savedCustomer.getId());
         return mapToResponseDTO(savedCustomer);
     }
-
     @Override
     @Transactional(readOnly = true)
     public CustomerResponseDTO getCustomerById(Long customerId) {
@@ -84,50 +70,37 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = findCustomerById(customerId);
         return mapToResponseDTO(customer);
     }
-
     @Override
     public CustomerResponseDTO updateCustomer(Long customerId, CustomerUpdateRequestDTO request) {
         log.info("Updating customer with ID: {}", customerId);
-        
         Customer customer = findCustomerById(customerId);
-        
-        // Check for duplicate email (excluding current customer)
         if (request.getEmail() != null && !request.getEmail().equals(customer.getEmail()) &&
             customerRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Customer with email " + request.getEmail() + " already exists");
         }
-        
-        // Check for duplicate phone number (excluding current customer)
         if (request.getPhone() != null && !request.getPhone().equals(customer.getPhoneNumber()) &&
             customerRepository.existsByPhoneNumber(request.getPhone())) {
             throw new DuplicateResourceException("Customer with phone number " + request.getPhone() + " already exists");
         }
-        
-        // Update fields if provided
         if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
             String[] nameParts = request.getFullName().trim().split("\\s+", 2);
             customer.setFirstName(nameParts[0]);
             customer.setLastName(nameParts.length > 1 ? nameParts[1] : "");
         }
-        
         if (request.getEmail() != null) {
             customer.setEmail(request.getEmail());
         }
-        
         if (request.getPhone() != null) {
             customer.setPhoneNumber(request.getPhone());
         }
-        
         if (request.getAddress() != null) {
             customer.setAddress(request.getAddress());
         }
-        
         customer.setLastUpdated(LocalDateTime.now());
         Customer updatedCustomer = customerRepository.save(customer);
         log.info("Customer updated successfully with ID: {}", customerId);
         return mapToResponseDTO(updatedCustomer);
     }
-
     @Override
     public CustomerResponseDTO deactivateCustomer(Long customerId) {
         log.info("Deactivating customer with ID: {}", customerId);
@@ -138,7 +111,6 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Customer deactivated successfully with ID: {}", customerId);
         return mapToResponseDTO(updatedCustomer);
     }
-
     @Override
     public CustomerResponseDTO activateCustomer(Long customerId) {
         log.info("Activating customer with ID: {}", customerId);
@@ -149,23 +121,15 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Customer activated successfully with ID: {}", customerId);
         return mapToResponseDTO(updatedCustomer);
     }
-
-    // Removed deprecated validateCustomerLogin method - use validateCustomerCredentials instead
-    // Removed duplicate changePassword method - use the one with PasswordChangeRequestDTO
-
     @Transactional(readOnly = true)
     public PagedResponseDTO<CustomerResponseDTO> getAllCustomers(int page, int size, String sortBy, String sortDirection) {
         log.debug("Fetching customers - page: {}, size: {}, sortBy: {}, direction: {}", page, size, sortBy, sortDirection);
-        
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
         Page<Customer> customerPage = customerRepository.findAll(pageable);
-        
         List<CustomerResponseDTO> customers = customerPage.getContent().stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
-
         return PagedResponseDTO.<CustomerResponseDTO>builder()
                 .content(customers)
                 .page(customerPage.getNumber())
@@ -176,18 +140,14 @@ public class CustomerServiceImpl implements CustomerService {
                 .last(customerPage.isLast())
                 .build();
     }
-
     @Transactional(readOnly = true)
     public PagedResponseDTO<CustomerResponseDTO> searchCustomers(String searchTerm, int page, int size) {
         log.debug("Searching customers with term: {}", searchTerm);
-        
         Pageable pageable = PageRequest.of(page, size);
         Page<Customer> customerPage = customerRepository.findBySearchTerm(searchTerm, pageable);
-        
         List<CustomerResponseDTO> customers = customerPage.getContent().stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
-
         return PagedResponseDTO.<CustomerResponseDTO>builder()
                 .content(customers)
                 .page(customerPage.getNumber())
@@ -198,7 +158,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .last(customerPage.isLast())
                 .build();
     }
-
     @Transactional(readOnly = true)
     public List<CustomerResponseDTO> getCustomersByStatus(CustomerStatus status) {
         log.debug("Fetching customers with status: {}", status);
@@ -207,28 +166,23 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
-
     @Transactional(readOnly = true)
     public long getCustomerCount() {
         return customerRepository.count();
     }
-
     @Transactional(readOnly = true)
     public long getActiveCustomerCount() {
         return customerRepository.countByStatus(CustomerStatus.ACTIVE);
     }
-
     @Override
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return customerRepository.existsByEmail(email);
     }
-
     @Transactional(readOnly = true)
     public boolean existsByPhoneNumber(String phoneNumber) {
         return customerRepository.existsByPhoneNumber(phoneNumber);
     }
-
     @Override
     @Transactional(readOnly = true)
     public List<CustomerResponseDTO> getCustomersPendingApproval() {
@@ -238,7 +192,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
-
     @Override
     @Transactional(readOnly = true)
     public Page<CustomerResponseDTO> getCustomersPendingApproval(Pageable pageable) {
@@ -246,63 +199,53 @@ public class CustomerServiceImpl implements CustomerService {
         Page<Customer> customerPage = customerRepository.findByStatusOrderByRegistrationDateAsc(CustomerStatus.PENDING_APPROVAL, pageable);
         return customerPage.map(this::mapToResponseDTO);
     }
-
     @Override
     public CustomerResponseDTO approveCustomer(Long customerId, Long adminId, CustomerApprovalRequestDTO request) {
         log.info("Approving customer with ID: {} by admin ID: {}", customerId, adminId);
-        
         Customer customer = findCustomerById(customerId);
-        
-        // Validate customer status
         if (customer.getStatus() != CustomerStatus.PENDING_APPROVAL) {
             throw new BusinessRuleViolationException("Only customers pending approval can be approved");
         }
-        
-        // Activate customer and verify their contact information
         customer.setStatus(CustomerStatus.ACTIVE);
-        customer.setEmailVerified(true);  // Admin approval implies email verification
-        customer.setPhoneVerified(true);  // Admin approval implies phone verification
+        customer.setEmailVerified(true);
+        customer.setPhoneVerified(true);
         customer.setLastUpdated(LocalDateTime.now());
-        
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Customer approved successfully with ID: {}", customerId);
-        
+        try {
+            emailService.sendCustomerApprovalNotification(savedCustomer);
+            log.info("Approval email notification sent to customer: {}", savedCustomer.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send approval email notification to customer: {}", savedCustomer.getEmail(), e);
+        }
         return mapToResponseDTO(savedCustomer);
     }
-
     @Override
     public CustomerResponseDTO rejectCustomer(Long customerId, Long adminId, CustomerRejectionRequestDTO request) {
         log.info("Rejecting customer with ID: {} by admin ID: {}", customerId, adminId);
-        
         Customer customer = findCustomerById(customerId);
-        
-        // Validate customer status
         if (customer.getStatus() != CustomerStatus.PENDING_APPROVAL) {
             throw new BusinessRuleViolationException("Only customers pending approval can be rejected");
         }
-        
-        // Reject customer
         customer.setStatus(CustomerStatus.SUSPENDED);
         customer.setLastUpdated(LocalDateTime.now());
-        
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Customer rejected successfully with ID: {}", customerId);
-        
+        try {
+            String rejectionReason = request.getRejectionReason() != null ? request.getRejectionReason() : "Administrative review required";
+            emailService.sendCustomerRejectionNotification(savedCustomer, rejectionReason);
+            log.info("Rejection email notification sent to customer: {}", savedCustomer.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send rejection email notification to customer: {}", savedCustomer.getEmail(), e);
+        }
         return mapToResponseDTO(savedCustomer);
     }
-
-    /**
-     * Fix customer password encoding - migrate plain text to encoded passwords
-     * This method is for data migration purposes only
-     */
     @Override
     public void fixCustomerPasswordEncoding(String email, String plainPassword) {
         log.info("Fixing password encoding for customer: {}", email);
         Optional<Customer> customerOpt = customerRepository.findByEmail(email);
-        
         if (customerOpt.isPresent()) {
             Customer customer = customerOpt.get();
-            // Store password as plain text
             customer.setPasswordHash(plainPassword);
             customer.setLastUpdated(LocalDateTime.now());
             customerRepository.save(customer);
@@ -311,13 +254,10 @@ public class CustomerServiceImpl implements CustomerService {
             log.warn("Customer not found with email: {}", email);
         }
     }
-
-    // Helper methods
     private Customer findCustomerById(Long customerId) {
         return customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found with ID: " + customerId));
     }
-
     private CustomerResponseDTO mapToResponseDTO(Customer customer) {
         return CustomerResponseDTO.builder()
                 .id(customer.getId())
@@ -334,7 +274,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .lastUpdated(customer.getLastUpdated())
                 .build();
     }
-
 	@Override
 	@Transactional(readOnly = true)
 	public CustomerResponseDTO getCustomerByEmail(String email) {
@@ -343,7 +282,6 @@ public class CustomerServiceImpl implements CustomerService {
 				.orElseThrow(() -> new CustomerNotFoundException("Customer not found with email: " + email));
 		return mapToResponseDTO(customer);
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public Page<CustomerResponseDTO> getAllCustomers(Pageable pageable) {
@@ -351,7 +289,6 @@ public class CustomerServiceImpl implements CustomerService {
 		Page<Customer> customerPage = customerRepository.findAll(pageable);
 		return customerPage.map(this::mapToResponseDTO);
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public Page<CustomerResponseDTO> getCustomersByStatus(CustomerStatus status, Pageable pageable) {
@@ -359,7 +296,6 @@ public class CustomerServiceImpl implements CustomerService {
 		Page<Customer> customerPage = customerRepository.findByStatus(status, pageable);
 		return customerPage.map(this::mapToResponseDTO);
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public Page<CustomerResponseDTO> searchCustomers(String searchTerm, Pageable pageable) {
@@ -367,24 +303,18 @@ public class CustomerServiceImpl implements CustomerService {
 		Page<Customer> customerPage = customerRepository.findBySearchTerm(searchTerm, pageable);
 		return customerPage.map(this::mapToResponseDTO);
 	}
-
 	@Override
 	public void changePassword(Long customerId, PasswordChangeRequestDTO passwordChangeRequest) {
 		log.info("Changing password for customer ID: {}", customerId);
 		Customer customer = findCustomerById(customerId);
-
-		// Validate current password using simple comparison
 		if (!passwordChangeRequest.getCurrentPassword().equals(customer.getPasswordHash())) {
 			throw new ValidationException("Current password is incorrect");
 		}
-
-		// Store the new password as plain text
 		customer.setPasswordHash(passwordChangeRequest.getNewPassword());
 		customer.setLastUpdated(LocalDateTime.now());
 		customerRepository.save(customer);
 		log.info("Password changed successfully for customer ID: {}", customerId);
 	}
-
 	@Override
 	public CustomerResponseDTO updateCustomerStatus(Long customerId, CustomerStatus status) {
 		log.info("Updating customer status to {} for customer ID: {}", status, customerId);
@@ -395,7 +325,6 @@ public class CustomerServiceImpl implements CustomerService {
 		log.info("Customer status updated successfully for ID: {}", customerId);
 		return mapToResponseDTO(updatedCustomer);
 	}
-
 	@Override
 	public CustomerResponseDTO suspendCustomer(Long customerId) {
 		log.info("Suspending customer with ID: {}", customerId);
@@ -406,7 +335,6 @@ public class CustomerServiceImpl implements CustomerService {
 		log.info("Customer suspended successfully with ID: {}", customerId);
 		return mapToResponseDTO(updatedCustomer);
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public boolean isCustomerActive(Long customerId) {
@@ -414,95 +342,71 @@ public class CustomerServiceImpl implements CustomerService {
 		Customer customer = findCustomerById(customerId);
 		return customer.getStatus() == CustomerStatus.ACTIVE;
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public Customer getCustomerEntityById(Long customerId) {
 		log.debug("Fetching customer entity with ID: {}", customerId);
 		return findCustomerById(customerId);
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<Customer> getCustomerEntityByEmail(String email) {
 		log.debug("Fetching customer entity with email: {}", email);
 		return customerRepository.findByEmail(email);
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<Customer> validateCustomerCredentials(String email, String password) {
 		log.debug("Validating customer credentials for email: {}", email);
 		Optional<Customer> customerOpt = customerRepository.findByEmail(email);
-		
 		if (customerOpt.isPresent()) {
 			Customer customer = customerOpt.get();
-			if (password.equals(customer.getPasswordHash()) && 
+			if (password.equals(customer.getPasswordHash()) &&
 				customer.getStatus() == CustomerStatus.ACTIVE) {
 				return customerOpt;
 			}
 		}
 		return Optional.empty();
 	}
-
 	@Override
 	@Transactional(readOnly = true)
 	public int getCustomerAccountCount(Long customerId) {
 		log.debug("Getting account count for customer ID: {}", customerId);
-		// This would require AccountRepository injection to count accounts by customer
-		// For now, returning 0 as placeholder - needs AccountRepository dependency
 		return 0;
 	}
-
 	@Override
 	public void deleteCustomer(Long customerId) {
 		log.info("Deleting customer with ID: {}", customerId);
 		Customer customer = findCustomerById(customerId);
-		
-		// Soft delete by setting status to DELETED instead of hard delete
 		customer.setStatus(CustomerStatus.INACTIVE);
 		customer.setLastUpdated(LocalDateTime.now());
 		customerRepository.save(customer);
-		
-		// For hard delete, use: customerRepository.delete(customer);
 		log.info("Customer deleted successfully with ID: {}", customerId);
 	}
-
 	@Override
 	public CustomerResponseDTO verifyEmail(Long customerId) {
 		log.info("Verifying email for customer ID: {}", customerId);
 		Customer customer = findCustomerById(customerId);
-		
 		customer.setEmailVerified(true);
 		customer.setLastUpdated(LocalDateTime.now());
-		
 		Customer savedCustomer = customerRepository.save(customer);
 		log.info("Email verified successfully for customer ID: {}", customerId);
-		
 		return mapToResponseDTO(savedCustomer);
 	}
-
 	@Override
 	public CustomerResponseDTO verifyPhone(Long customerId) {
 		log.info("Verifying phone for customer ID: {}", customerId);
 		Customer customer = findCustomerById(customerId);
-		
 		customer.setPhoneVerified(true);
 		customer.setLastUpdated(LocalDateTime.now());
-		
 		Customer savedCustomer = customerRepository.save(customer);
 		log.info("Phone verified successfully for customer ID: {}", customerId);
-		
 		return mapToResponseDTO(savedCustomer);
 	}
-
 	@Override
 	public void fixExistingCustomerVerificationStatus() {
 		log.info("Fixing verification status for existing active customers");
-		
-		// Find all active customers with unverified email or phone
 		List<Customer> customersToFix = customerRepository.findByStatusAndUnverifiedContact(CustomerStatus.ACTIVE);
-		
 		for (Customer customer : customersToFix) {
 			if (!customer.getEmailVerified() || !customer.getPhoneVerified()) {
 				log.info("Fixing verification status for customer ID: {} ({})", customer.getId(), customer.getEmail());
@@ -512,7 +416,6 @@ public class CustomerServiceImpl implements CustomerService {
 				customerRepository.save(customer);
 			}
 		}
-		
 		log.info("Fixed verification status for {} customers", customersToFix.size());
 	}
 }

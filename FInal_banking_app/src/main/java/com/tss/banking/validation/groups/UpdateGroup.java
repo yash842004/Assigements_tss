@@ -1,7 +1,3 @@
-package com.tss.banking.validation.groups;
-
-/**
- * Validation group for update operations
- */
+﻿package com.tss.banking.validation.groups;
 public interface UpdateGroup {
 }

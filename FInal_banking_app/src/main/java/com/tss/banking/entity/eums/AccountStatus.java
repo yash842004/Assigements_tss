@@ -1,8 +1,4 @@
-package com.tss.banking.entity.eums;
-
-/**
- * Enumeration for account status
- */
+﻿package com.tss.banking.entity.eums;
 public enum AccountStatus {
     ACTIVE,
     INACTIVE,
